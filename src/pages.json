@@ -1,0 +1,17 @@
+{
+    "pages": [
+        {
+            "path": "pages/Home/HomePage",
+            "style": {
+                "enablePullDownRefresh": false
+            }
+        }
+    ],
+    "globalStyle": {
+        "navigationBarTextStyle": "#FFFFFF",
+        "navigationBarTitleText": "uni-app",
+        "navigationBarBackgroundColor": "#478BFF",
+        "backgroundColor": "#FFFFFF",
+        "navigationStyle": "custom"
+    }
+}
