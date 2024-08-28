@@ -62,7 +62,13 @@
                 "abiFilters" : [ "armeabi-v7a", "arm64-v8a", "x86" ]
             },
             /* ios打包配置 */
-            "ios" : {},
+            "ios" : {
+                "privacyDescription" : {
+                    "NSPhotoLibraryUsageDescription" : "需要访问相册权限以便于应用使用",
+                    "NSPhotoLibraryAddUsageDescription" : "需要访问相册权限以便于应用使用",
+                    "NSCameraUsageDescription" : "需要访问相机权限以便于应用使用"
+                }
+            },
             /* SDK配置 */
             "sdkConfigs" : {}
         }
