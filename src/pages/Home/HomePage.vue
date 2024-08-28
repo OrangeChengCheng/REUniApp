@@ -67,6 +67,8 @@ import { ref, onMounted } from 'vue';
 import BaseView from '@/components/Base/BaseView.vue';
 import SelFaceNumDialog from '@/components/Dialog/SelFaceNumDialog.vue';
 import CustomInputDialog from '@/components/Dialog/CustomInputDialog.vue';
+import { judgeIosPermission } from '@/js_sdk/wa-permission/permission.js'
+
 
 const reModule = ref(null);
 const ref_selFaceNum_dialog = ref(null);
@@ -75,6 +77,7 @@ const sel_module_type = ref(0);
 const load_faceNum = ref(1500000);
 const scan_resourcesAddress = ref('');
 const scan_dataSetId = ref('');
+const uni_app_osName = ref('');
 
 onMounted(() => {
     if (Object.prototype.hasOwnProperty.call(uni, 'requireNativePlugin')) {
@@ -86,6 +89,7 @@ onMounted(() => {
     uni.getSystemInfo({
         success: (res) => {
             console.log('设备信息获取成功：' + JSON.stringify(res));
+			uni_app_osName.value = res.osName;
             uniapp_log(JSON.stringify(res));
         },
         fail: (err) => {
@@ -107,6 +111,11 @@ const nav_bar_item_callback = (type) => {
 
 // MARK NavItemClick 扫码
 const nav_item_scanAction = () => {
+	if (uni_app_osName === 'ios') {
+		let hasCameraPermision = judgeIosPermission("camera");
+		uni.showToast({ title: '相机权限：' + hasCameraPermision, icon: 'none' });
+		console.log('相机权限： ', hasCameraPermision);
+	}
     if (Object.prototype.hasOwnProperty.call(uni, 'getAppAuthorizeSetting')) {
         const appAuthorizeSetting = uni.getAppAuthorizeSetting();
         if (appAuthorizeSetting.cameraAuthorized && appAuthorizeSetting.cameraAuthorized.length) {

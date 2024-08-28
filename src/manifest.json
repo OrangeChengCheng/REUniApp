@@ -64,9 +64,9 @@
             /* ios打包配置 */
             "ios" : {
                 "privacyDescription" : {
-                    "NSPhotoLibraryUsageDescription" : "需要访问相册权限以便于应用使用",
-                    "NSPhotoLibraryAddUsageDescription" : "需要访问相册权限以便于应用使用",
-                    "NSCameraUsageDescription" : "需要访问相机权限以便于应用使用"
+                    "NSPhotoLibraryUsageDescription" : "需要相册权限",
+                    "NSPhotoLibraryAddUsageDescription" : "需要相册权限",
+                    "NSCameraUsageDescription" : "需要相机权限"
                 }
             },
             /* SDK配置 */
