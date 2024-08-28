@@ -12,11 +12,11 @@
                 <view class="modules-top-box">
                     <view class="modules-item" @click="modulesAction(1)">
                         <icon-font name="ic-moxingguanli"></icon-font>
-                        <text class="modules-item-text">一亿面</text>
+                        <text class="modules-item-text">五亿面</text>
                     </view>
                     <view class="modules-item" @click="modulesAction(2)">
                         <icon-font name="ic-moxingzuguanli"></icon-font>
-                        <text class="modules-item-text">五千万面</text>
+                        <text class="modules-item-text">一亿面</text>
                     </view>
                     <view class="modules-item" @click="modulesAction(3)">
                         <icon-font name="ic-ico-qxsy"></icon-font>
@@ -32,11 +32,7 @@
                         <icon-font name="ic-WMTS" @click="modulesAction(5)"></icon-font>
                         <text class="modules-item-text">一百万面</text>
                     </view>
-                    <view class="modules-item">
-                        <icon-font name="ic-plane" @click="modulesAction(6)"></icon-font>
-                        <text class="modules-item-text">七亿面</text>
-                    </view>
-                    <!-- <view class="modules-item modules-item-empty"> </view> -->
+                    <view class="modules-item modules-item-empty"> </view>
                 </view>
             </view>
             <view class="other-box" v-if="false">
@@ -168,28 +164,32 @@ const model_handleDataSet = () => {
     var maxInstDrawFaceNum = load_faceNum.value;
     switch (sel_module_type.value) {
         case 1:
-            dataSetId = '3a14a3cc0c974d1a050688c0cb3df936';
-            resourcesAddress = 'http://realbim.bjblackhole.cn:18088/blackhole3D/EngineRes/RequestEngineRes?dir=url_res_d&path=3a14a3cc0c974d1a050688c0cb3df936';
+            dataSetId = 'res_bigelem06';
+            resourcesAddress = 'https://realbim.bjblackhole.cn:8009/default.aspx?dir=url_res02&path=res_bigelem06';
             break;
         case 2:
-            dataSetId = '3a14a3cc0649767274fb78000f136e33';
-            resourcesAddress = 'http://realbim.bjblackhole.cn:18088/blackhole3D/EngineRes/RequestEngineRes?dir=url_res_e&path=3a14a3cc0649767274fb78000f136e33';
+            dataSetId = '3a14a3cc0c974d1a050688c0cb3df936';
+            resourcesAddress =
+                'http://realbim.bjblackhole.cn:18088/blackhole3D/EngineRes/RequestEngineRes?dir=url_res_d&path=3a14a3cc0c974d1a050688c0cb3df936';
             break;
+        // case 2:
+        //     dataSetId = '3a14a3cc0649767274fb78000f136e33';
+        //     resourcesAddress = 'http://realbim.bjblackhole.cn:18088/blackhole3D/EngineRes/RequestEngineRes?dir=url_res_e&path=3a14a3cc0649767274fb78000f136e33';
+        //     break;
         case 3:
             dataSetId = '3a14a3cbeeebdfb01d634989ca575ed0';
-            resourcesAddress = 'http://realbim.bjblackhole.cn:18088/blackhole3D/EngineRes/RequestEngineRes?dir=url_res_e&path=3a14a3cbeeebdfb01d634989ca575ed0';
+            resourcesAddress =
+                'http://realbim.bjblackhole.cn:18088/blackhole3D/EngineRes/RequestEngineRes?dir=url_res_e&path=3a14a3cbeeebdfb01d634989ca575ed0';
             break;
         case 4:
             dataSetId = '3a14a3cbd8e209a9b2a638121097345c';
-            resourcesAddress = 'http://realbim.bjblackhole.cn:18088/blackhole3D/EngineRes/RequestEngineRes?dir=url_res_d&path=3a14a3cbd8e209a9b2a638121097345c';
+            resourcesAddress =
+                'http://realbim.bjblackhole.cn:18088/blackhole3D/EngineRes/RequestEngineRes?dir=url_res_d&path=3a14a3cbd8e209a9b2a638121097345c';
             break;
         case 5:
             dataSetId = '3a14a3cbd41753a6781666f6aae444e2';
-            resourcesAddress = 'http://realbim.bjblackhole.cn:18088/blackhole3D/EngineRes/RequestEngineRes?dir=url_res_e&path=3a14a3cbd41753a6781666f6aae444e2';
-            break;
-        case 6:
-            dataSetId = 'res_bigelem06';
-            resourcesAddress = 'https://realbim.bjblackhole.cn:8009/default.aspx?dir=url_res02&path=res_bigelem06';
+            resourcesAddress =
+                'http://realbim.bjblackhole.cn:18088/blackhole3D/EngineRes/RequestEngineRes?dir=url_res_e&path=3a14a3cbd41753a6781666f6aae444e2';
             break;
         default:
             break;
