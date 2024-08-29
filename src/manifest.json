@@ -65,8 +65,8 @@
             "ios" : {
                 "privacyDescription" : {
                     "NSPhotoLibraryUsageDescription" : "需要相册权限",
-                    "NSPhotoLibraryAddUsageDescription" : "需要相册权限",
-                    "NSCameraUsageDescription" : "需要相机权限"
+                    "NSCameraUsageDescription" : "需要相机权限",
+                    "NSLocalNetworkUsageDescription" : "我们需要网络权限来进行数据传输"
                 }
             },
             /* SDK配置 */
