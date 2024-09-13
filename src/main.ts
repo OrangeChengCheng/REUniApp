@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-08-14 10:24:21
- * @LastEditTime: 2024-08-26 18:15:08
+ * @LastEditTime: 2024-09-13 10:50:48
  */
 import { createSSRApp } from "vue";
 import App from "./App.vue";
@@ -12,12 +12,16 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import 'element-plus/theme-chalk/index.css'
 import zhCn from 'element-plus/es/locale/lang/zh-cn' //1 引入中文
 import GlobalComponents from "./plugin/globalComponent";
+import tool from "@/utils"
 
 
 const app = createSSRApp(App);
 const pinia = Pinia.createPinia();
 
 app.use(pinia);
+app.use(tool);
+
+
 app.use(ElementPlus, {
     locale: zhCn //2 这里使用中文
 });
