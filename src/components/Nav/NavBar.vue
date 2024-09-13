@@ -1,14 +1,14 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-22 11:05:25
- * @LastEditTime: 2024-08-26 15:57:22
+ * @LastEditTime: 2024-09-13 16:47:14
 -->
 <template>
-    <view class="sup-nav-bar">
+    <view class="sup-nav-bar" :style="`background-color:var(${nav_bar_color})`">
         <!-- 顶部状态栏 -->
-        <view class="status-bar"></view>
+        <view class="status-bar" :style="`background-color:var(${nav_bar_color})`"></view>
         <!-- 导航栏 -->
-        <view class="nav-bar">
+        <view class="nav-bar" :style="`background-color:var(${nav_bar_color})`">
             <view class="nav-bar-item" v-if="nav_bar_item_back">
                 <text class="nav-bar-item-btn-text">返回</text>
                 <button class="nav-bar-item-btn" @click="navBarItemAction('nav-bar-item-back')"></button>
@@ -51,6 +51,10 @@ const props = defineProps({
         type: Boolean,
         default: false,
     },
+    nav_bar_color: {
+        type: String,
+        default: '--color-main-blue',
+    },
     nav_bar_item_callback: Function,
 });
 
@@ -67,7 +71,6 @@ const navBarItemAction = (type) => {
     width: 100%;
     display: flex;
     flex-direction: column;
-    background-color: var(--color-main-blue);
 }
 
 .status-bar {
@@ -76,13 +79,11 @@ const navBarItemAction = (type) => {
     height: calc(80rpx);
     height: calc(80rpx + constant(safe-area-inset-top));
     height: calc(80rpx + env(safe-area-inset-top));
-    background-color: var(--color-main-blue);
 }
 .nav-bar {
     position: relative;
     width: 100%;
     height: 88rpx;
-    background-color: var(--color-main-blue);
     display: flex;
     align-items: center;
     justify-content: space-between;

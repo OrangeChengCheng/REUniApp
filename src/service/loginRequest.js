@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2022-11-08 12:03:13
- * @LastEditTime: 2024-09-13 10:59:15
+ * @LastEditTime: 2024-09-13 17:27:02
  */
 import axios from 'axios';
 import { ElMessage as Message } from 'element-plus';
@@ -11,8 +11,10 @@ import { ElMessage as Message } from 'element-plus';
 
 // 创建axios实例
 const service = axios.create({
-    baseURL: uni.$window.serverBaseUrl, // api的base_url
-    timeout: uni.$window.commonTimeout, // 请求超时时间
+    // baseURL: uni.$window.serverBaseUrl, // api的base_url
+    // timeout: uni.$window.commonTimeout, // 请求超时时间
+    baseURL: "http://192.168.31.6:9202/api/developercenter", // api的base_url
+    timeout: 30000, // 请求超时时间
 });
 
 service.interceptors.request.use((config) => {

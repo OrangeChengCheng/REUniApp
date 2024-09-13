@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-22 10:11:39
- * @LastEditTime: 2024-08-26 11:11:47
+ * @LastEditTime: 2024-09-13 16:46:53
 -->
 <template>
     <view class="sup-base-view">
@@ -10,6 +10,7 @@
             :nav_bar_item_back="nav_bar_item_back"
             :nav_bar_item_setting="nav_bar_item_setting"
             :nav_bar_item_scan="nav_bar_item_scan"
+            :nav_bar_color="nav_bar_color"
             :nav_bar_item_callback="nav_bar_item_callback"></nav-bar>
         <view class="base-solt">
             <slot></slot>
@@ -39,6 +40,10 @@ const props = defineProps({
         type: Boolean,
         default: false,
     },
+    nav_bar_color: {
+        type: String,
+        default: '--color-main-blue',
+    },
     nav_bar_item_callback: Function,
 });
 
@@ -48,7 +53,10 @@ const nav_bar_item_callback = (type) => {
         uni.navigateBack();
     }
 };
+
 </script>
+
+
 
 // MOD-- CSS
 <style lang="scss" scoped>

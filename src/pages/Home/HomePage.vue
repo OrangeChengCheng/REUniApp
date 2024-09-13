@@ -69,8 +69,6 @@ import SelFaceNumDialog from '@/components/Dialog/SelFaceNumDialog.vue';
 import CustomInputDialog from '@/components/Dialog/CustomInputDialog.vue';
 // import { judgeIosPermission } from '@/js_sdk/wa-permission/permission.js'
 
-import { getEngineFunctionList } from '@/service/interface';
-
 const reModule = ref(null);
 const ref_selFaceNum_dialog = ref(null);
 const ref_customInput_dialog = ref(null);
@@ -112,43 +110,6 @@ const nav_bar_item_callback = (type) => {
 
 // MARK NavItemClick 扫码
 const nav_item_scanAction = () => {
-    uni.$u.toast('666');
-
-    getEngineFunctionList();
-
-    return;
-    // console.log('uni_app_osName ---------- ', uni_app_osName.value);
-    // if (uni_app_osName.value  === 'ios') {
-    // 	var isOn = undefined;
-    // 	var types = 0;
-    // 	var app = plus.ios.invoke('UIApplication', 'sharedApplication');
-    // 	console.log('app ---------- ', JSON.stringify(app));
-    // 	var settings = plus.ios.invoke(app, 'currentUserNotificationSettings');
-    // 	console.log('settings ---------- ', JSON.stringify(settings));
-    // 	if (settings) {
-    // 		types = settings.plusGetAttribute('types');
-    // 		plus.ios.deleteObject(settings);
-    // 	} else {
-    // 		types = plus.ios.invoke(app, 'enabledRemoteNotificationTypes');
-    // 	}
-    // 	console.log('types ---------- ', types);
-    // 	plus.ios.deleteObject(app);
-    // 	isOn = (0 != types);
-    // 	console.log('isOn ---------- ', isOn);
-    // 	if (isOn == false) {
-    // 		uni.showToast({ title: '您还没有开启通知权限，无法接受到消息通知，是否前往设置？', icon: 'none' });
-    // 		var app = plus.ios.invoke('UIApplication', 'sharedApplication');
-    // 		var setting = plus.ios.invoke('NSURL', 'URLWithString:', 'app-settings:');
-    // 		console.log('setting ---------- ', setting);
-    // 		plus.ios.invoke(app, 'openURL:', setting);
-    // 		plus.ios.deleteObject(setting);
-    // 		plus.ios.deleteObject(app);
-    // 	}
-    // 	// let hasCameraPermision = judgeIosPermission("camera");
-    // 	// uni.showToast({ title: '相机权限：' + hasCameraPermision, icon: 'none' });
-    // 	// console.log('相机权限： ', hasCameraPermision);
-    // }
-    // return;
     if (Object.prototype.hasOwnProperty.call(uni, 'getAppAuthorizeSetting')) {
         const appAuthorizeSetting = uni.getAppAuthorizeSetting();
         if (appAuthorizeSetting.cameraAuthorized && appAuthorizeSetting.cameraAuthorized.length) {
