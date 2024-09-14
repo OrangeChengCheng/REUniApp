@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-13 15:14:00
- * @LastEditTime: 2024-09-13 15:35:04
+ * @LastEditTime: 2024-09-14 15:13:18
  */
 import { defineStore } from 'pinia'
 
@@ -12,7 +12,7 @@ interface Card {
 
 export const useCardStore = defineStore('card', {
     state: (): { cardList: Card[] } => ({
-        cardList: JSON.parse(localStorage.getItem('RE_cardList') || '[]') || []
+        cardList: JSON.parse(uni.getStorageSync('RE_cardList') || '[]') || []
     }),
     actions: {
         addCard(shearUrl: string) {
@@ -26,7 +26,7 @@ export const useCardStore = defineStore('card', {
             return this.cardList;
         },
         saveToLocalStorage() {
-            localStorage.setItem('RE_cardList', JSON.stringify(this.cardList));
+            uni.setStorageSync('RE_cardList', JSON.stringify(this.cardList));
         },
         clearCardList() {
             this.cardList = [];

@@ -1,5 +1,5 @@
 import config from './config'
-
+import reApi from './reApi'
 
 
 function toast(title: string) {
@@ -26,6 +26,9 @@ export default {
             exampleUrl: config.exampleUrl,
             downloadBaseUrl: config.downloadBaseUrl,
             commonTimeout: config.commonTimeout,
+        };
+        uni.$re = {
+            unipluginLog: reApi.unipluginLog,
         };
     }
 }

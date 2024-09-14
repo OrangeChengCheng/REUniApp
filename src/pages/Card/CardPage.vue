@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-09-13 17:14:32
+ * @LastEditTime: 2024-09-14 15:16:00
 -->
 <template>
     <base-view :nav_bar_item_back="false" :nav_bar_color="`--color-main-bg`">
@@ -16,15 +16,39 @@
 
 // MOD-- JavaScript
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import BaseView from '@/components/Base/BaseView.vue';
 import { getEngineFunctionList } from '@/service/interface';
 import { useCardStore } from '@/stores/card';
 
 const card_store = useCardStore();
 
+
+onMounted(() => {
+    card_store.addCard('www.google.com');
+});
+
 const input_click = () => {
-    getEngineFunctionList();
+    console.log('-----------------------');
+    uni.showToast({ title: 'input_click', icon: 'none' });
+
+    uni.$u.toast('666666666666666');
+    uni.$re.unipluginLog('input_click  1');
+    getEngineFunctionList().then((res) => {
+        // console.log(JSON.stringify(res));
+        uni.$re.unipluginLog(JSON.stringify(res));
+    }).catch(err => {
+        console.log(err);
+        uni.$re.unipluginLog(JSON.stringify(err));
+        uni.showToast({ title: JSON.stringify(err), icon: 'none' });
+    });
+
+
+
+    uni.$re.unipluginLog('input_click  2');
+    console.log(card_store.getSortedCardList());
+    uni.$re.unipluginLog(JSON.stringify(card_store.getSortedCardList()));
+    uni.$re.unipluginLog('input_click  3');
 };
 
 const scan_click = () => {
@@ -86,6 +110,11 @@ const uniapp_scanQRCode = () => {
     });
 };
 
+// // MARK uni-app 打印信息
+// const unipluginLog = (logStr) => {
+//     if (!reModule.value) return;
+//     reModule.value.unipluginLog({ msg: logStr });
+// };
 </script>
 
 // MOD-- CSS
@@ -94,7 +123,8 @@ const uniapp_scanQRCode = () => {
     position: relative;
     display: flex;
     flex: 1;
-    background-color: var(--color-main-bg);
+    background-color: aquamarine;
+    // background-color: var(--color-main-bg);
     flex-direction: column;
     overflow-y: auto;
 
