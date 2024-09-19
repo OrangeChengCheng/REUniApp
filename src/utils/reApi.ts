@@ -1,7 +1,13 @@
+/*
+ * @Author: Lemon C
+ * @Date: 2024-09-14 14:22:08
+ * @LastEditTime: 2024-09-18 15:25:58
+ */
 
 
 interface ApiMethods {
     unipluginLog(log: string): void;
+    realEngineRender(data: object): Promise<any>;
     getREModule(): any;
 }
 
@@ -21,6 +27,16 @@ const api: ApiMethods = {
     unipluginLog: (log: string) => {
         api.getREModule()?.unipluginLog({ msg: log });
     },
+
+    // MARK re-api 加载模型
+    realEngineRender: (data: object): Promise<any> => {
+        return new Promise<any>((resolve) => {
+            api.getREModule()?.realEngineRender(data, (ret: any) => {
+                resolve(ret);
+            });
+        });
+    },
+
 }
 
 export default api;

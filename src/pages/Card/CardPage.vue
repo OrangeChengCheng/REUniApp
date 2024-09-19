@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-09-14 15:16:00
+ * @LastEditTime: 2024-09-19 18:52:57
 -->
 <template>
     <base-view :nav_bar_item_back="false" :nav_bar_color="`--color-main-bg`">
@@ -12,17 +12,23 @@
             </view>
         </view>
     </base-view>
+    <proj-input-dialog
+        ref="ref_projInput_dialog"
+        :dialog_shareUrl="scan_shareUrl"
+        :dialog_ProjInputCallBack="dialog_ProjInputCallBack"></proj-input-dialog>
 </template>
 
 // MOD-- JavaScript
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import BaseView from '@/components/Base/BaseView.vue';
-import { getEngineFunctionList } from '@/service/interface';
+import ProjInputDialog from '@/components/Dialog/ProjInputDialog.vue';
+import { getSceneById, getSingleSceneTreeById, getProjectModel } from '@/service/interface';
 import { useCardStore } from '@/stores/card';
 
 const card_store = useCardStore();
-
+const ref_projInput_dialog = ref<InstanceType<typeof ProjInputDialog> | null>(null);
+const scan_shareUrl = ref('');
 
 onMounted(() => {
     card_store.addCard('www.google.com');
@@ -30,25 +36,7 @@ onMounted(() => {
 
 const input_click = () => {
     console.log('-----------------------');
-    uni.showToast({ title: 'input_click', icon: 'none' });
-
-    uni.$u.toast('666666666666666');
-    uni.$re.unipluginLog('input_click  1');
-    getEngineFunctionList().then((res) => {
-        // console.log(JSON.stringify(res));
-        uni.$re.unipluginLog(JSON.stringify(res));
-    }).catch(err => {
-        console.log(err);
-        uni.$re.unipluginLog(JSON.stringify(err));
-        uni.showToast({ title: JSON.stringify(err), icon: 'none' });
-    });
-
-
-
-    uni.$re.unipluginLog('input_click  2');
-    console.log(card_store.getSortedCardList());
-    uni.$re.unipluginLog(JSON.stringify(card_store.getSortedCardList()));
-    uni.$re.unipluginLog('input_click  3');
+    // ref_projInput_dialog.value.show_dialog();
 };
 
 const scan_click = () => {
@@ -82,7 +70,7 @@ const uniapp_getScanAuthorize = () => {
         success() {
             // 用户同意授权
             console.log('相机授权成功');
-            scanQRCode();
+            uniapp_scanQRCode();
         },
         fail() {
             // 用户拒绝授权
@@ -101,20 +89,86 @@ const uniapp_scanQRCode = () => {
     // 扫二维码
     uni.scanCode({
         success: (res) => {
-            console.log('扫码内容：' + res.result);
+            uni.$re.unipluginLog(JSON.stringify(res.result));
+            scan_shareUrl.value = res.result;
+            ref_projInput_dialog.value.show_dialog();
         },
         fail: (err) => {
-            console.log('扫码失败', err);
             uni.showToast({ title: err.errMsg, icon: 'none' });
+            uni.$re.unipluginLog(JSON.stringify(err));
         },
     });
 };
 
-// // MARK uni-app 打印信息
-// const unipluginLog = (logStr) => {
-//     if (!reModule.value) return;
-//     reModule.value.unipluginLog({ msg: logStr });
-// };
+// MARK Dialog 自定义模型查看
+const dialog_ProjInputCallBack = (e: any) => {
+    console.log(e);
+
+    let shareUrl = e.shareUrl;
+    uni.$re.unipluginLog('shareUrl=' + shareUrl);
+
+    // 使用字符串截取方式，无法使用URL的方式，uniapp在真机上无法使用URL方式
+    const startIndex = shareUrl.indexOf('?'); // 查找查询字符串的开始位置（跳过'#'和'/index?'）
+    const queryString = shareUrl.substring(startIndex + 1); // 提取查询字符串部分，注意要跳过'?'
+    const params: any = queryString.split('&'); // 分割成参数数组
+    let sceneId = '',
+        tokenId = '';
+    params.forEach((param: any) => {
+        const [key, value] = param.split('=');
+        if (key === 'sceneId') {
+            sceneId = value;
+        } else if (key === 'tokenId') {
+            tokenId = value;
+        }
+    });
+    uni.$re.unipluginLog('params' + JSON.stringify(params));
+
+    uni.setStorageSync('RE_TokenId', tokenId);
+
+    getSceneById(sceneId).then((res) => {
+        console.log(res);
+    });
+    getSingleSceneTreeById({ sceneId: sceneId }).then((res) => {
+        console.log(res);
+        let dataSetIdList = getDataSetIds(res.data);
+        getProjectModel({ dataSetIds: dataSetIdList }).then((res_2) => {
+            console.log(res_2);
+            let dataSetList: any[] = [];
+            res_2.data.forEach((item: any) => {
+                dataSetList.push({
+                    dataSetId: item.resId,
+                    resourcesAddress: item.resourcesAddress,
+                });
+            });
+            uni.$re
+                .realEngineRender({
+                    name: 'uni-app',
+                    dataSetList: dataSetList,
+                })
+                .then((res) => {
+                    console.log(res);
+                    uni.$re.unipluginLog(JSON.stringify(res));
+                });
+        });
+    });
+};
+
+// MARK 递归获取数据集标识集合
+const getDataSetIds = (sceneTree: any) => {
+    let dataSetIdList: string[] = [];
+    if (sceneTree && sceneTree.length > 0) {
+        sceneTree.forEach((item: any) => {
+            if (item.dataSetId && item.dataSetId !== '00000000-0000-0000-0000-000000000000') {
+                dataSetIdList.push(item.dataSetId);
+            }
+            if (item.subNodes && item.subNodes.length > 0) {
+                let childrenDataSetList = getDataSetIds(item.subNodes);
+                dataSetIdList = dataSetIdList.concat(childrenDataSetList);
+            }
+        });
+    }
+    return dataSetIdList;
+};
 </script>
 
 // MOD-- CSS

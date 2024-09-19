@@ -8,7 +8,8 @@
 
 const config = {
     serverBaseUrl: 'http://192.168.31.7:9012/blackHole3D/basic',
-    serverUrl: 'http://192.168.31.6:9202/api/developercenter',
+    serverUrl: 'http://192.168.31.6:9012/blackHole3D/project',
+    // serverUrl: 'http://192.168.31.6:9202/api/developercenter',
     imageBaseUrl: 'https://developer.bjblackhole.com/ImageServer',
     exampleUrl: 'https://demo.bjblackhole.com/default.aspx',
     downloadBaseUrl: 'http://192.168.31.6:9203/api/developercenter/download',//文件查看下载

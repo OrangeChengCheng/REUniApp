@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-08-14 10:24:21
- * @LastEditTime: 2024-09-14 10:29:36
+ * @LastEditTime: 2024-09-18 09:39:53
  */
 import { createSSRApp } from "vue";
 import App from "./App.vue";
@@ -46,14 +46,5 @@ export function createApp() {
 }
 
 
-// export function createApp() {
-//     const app = createSSRApp(App);
-//     app.use(Pinia.createPinia());
-//     app.use(ElementPlus);
-//     return {
-//         app,
-//         Pinia,
-//     };
-// }
 
 

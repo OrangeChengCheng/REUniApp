@@ -29,6 +29,7 @@ export default {
         };
         uni.$re = {
             unipluginLog: reApi.unipluginLog,
+            realEngineRender: reApi.realEngineRender,
         };
     }
 }

@@ -234,7 +234,7 @@ const uniapp_getScanAuthorize = () => {
         success() {
             // 用户同意授权
             console.log('相机授权成功');
-            scanQRCode();
+            uniapp_scanQRCode();
         },
         fail() {
             // 用户拒绝授权

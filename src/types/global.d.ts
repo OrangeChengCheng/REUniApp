@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-13 18:01:53
- * @LastEditTime: 2024-09-14 14:29:14
+ * @LastEditTime: 2024-09-18 14:59:17
  */
 
 
@@ -17,8 +17,16 @@ declare global {
         }
         $re: {
             unipluginLog(log: string): void;
+            realEngineRender(data: object): Promise<any>;
         }
-        $window: Object;
+        $window: {
+            serverBaseUrl: string;
+            serverUrl: string,
+            imageBaseUrl: string,
+            exampleUrl: string,
+            downloadBaseUrl: string,
+            commonTimeout: number,
+        };
     }
 }
 
