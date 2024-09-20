@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-14 12:21:00
- * @LastEditTime: 2024-09-19 15:29:54
+ * @LastEditTime: 2024-09-20 11:56:31
  */
 
 
@@ -19,7 +19,7 @@ export function requestPost(url: string, data?: object): Promise<any> {
             method: 'POST',
             header: {
                 'content-type': 'application/json',
-                'authorization': uni.getStorageSync('RE_TokenId'),
+                'authorization': uni.getStorageSync('RE_Token'),
             },
             success: (res) => {
                 if (res.statusCode && res.statusCode == 200) {
@@ -63,7 +63,7 @@ export function requestGet(url: string, data?: object): Promise<any> {
             method: 'GET',
             header: {
                 'content-type': 'application/json',
-                'authorization': uni.getStorageSync('RE_TokenId'),
+                'authorization': uni.getStorageSync('RE_Token'),
             },
             success: (res) => {
                 if (res.statusCode && res.statusCode == 200) {
@@ -99,7 +99,7 @@ export function requestGet(url: string, data?: object): Promise<any> {
 
 
 function checkToken() {
-    if (!uni.getStorageSync('RE_TokenId') || uni.getStorageSync('RE_TokenId').length <= 0) {
+    if (!uni.getStorageSync('RE_Token') || uni.getStorageSync('RE_Token').length <= 0) {
         uni.showToast({ title: '链接无效，请联系管理员!', icon: 'none' });
         return false;
     } else {

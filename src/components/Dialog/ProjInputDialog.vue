@@ -1,19 +1,29 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-27 17:04:55
- * @LastEditTime: 2024-09-19 18:23:03
+ * @LastEditTime: 2024-09-20 10:18:07
 -->
 <template>
     <div class="sup-proj-input-dialog" v-if="dialog_visible">
         <transition name="content_box_fade">
             <div class="content-box" v-if="content_box_visible">
                 <view class="modules-item">
-                    <text class="modules-title">分享链接</text>
+                    <text class="modules-title">{{ `分享链接${dialog_needResource ? '（优先查看）' : ''}` }}</text>
                     <textarea
                         class="modules-textarea"
                         :value="shareUrl"
                         placeholder="请输入分享链接"
                         @blur="shareUrl_textarea_blur"
+                        :maxlength="-1"
+                        auto-height />
+                </view>
+                <view class="modules-item" v-if="dialog_needResource">
+                    <text class="modules-title">模型资源链接</text>
+                    <textarea
+                        class="modules-textarea"
+                        :value="resourcesAddress"
+                        placeholder="请输入模型资源链接"
+                        @blur="resourcesAddress_textarea_blur"
                         :maxlength="-1"
                         auto-height />
                 </view>
@@ -35,6 +45,10 @@ const props = defineProps({
         type: String,
         default: '',
     },
+    dialog_needResource: {
+        type: Boolean,
+        default: false,
+    },
     dialog_ProjInputCallBack: {
         type: Function,
         default: () => {},
@@ -44,8 +58,9 @@ const props = defineProps({
 const dialog_visible = ref(false);
 const content_box_visible = ref(false);
 const shareUrl = ref('');
+const resourcesAddress = ref('');
 
-watch([() => props.dialog_shareUrl], (val) => {
+watch([() => props.dialog_shareUrl], () => {
     shareUrl.value = props.dialog_shareUrl;
 });
 
@@ -79,14 +94,19 @@ const shareUrl_textarea_blur = (e: any) => {
     shareUrl.value = e.detail.value;
 };
 
+// MARK Textarea 失去焦点 resourcesAddress
+const resourcesAddress_textarea_blur = (e: any) => {
+    resourcesAddress.value = e.detail.value;
+};
+
 // MARK Click 确定
 const confirm_click = () => {
-    if (!shareUrl.value || !shareUrl.value.length) {
-        uni.showToast({ title: '请填写分享链接', icon: 'none' });
+    if (!shareUrl.value.length && !resourcesAddress.value.length) {
+        uni.showToast({ title: '请填写链接', icon: 'none' });
         return;
     }
     hide_dialog();
-    props.dialog_ProjInputCallBack({ shareUrl: shareUrl.value });    
+    props.dialog_ProjInputCallBack({ shareUrl: shareUrl.value, resourcesAddress: resourcesAddress.value });
 };
 
 // MARK Expose 导出方法

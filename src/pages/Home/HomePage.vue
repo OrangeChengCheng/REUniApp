@@ -67,7 +67,6 @@ import { ref, onMounted } from 'vue';
 import BaseView from '@/components/Base/BaseView.vue';
 import SelFaceNumDialog from '@/components/Dialog/SelFaceNumDialog.vue';
 import CustomInputDialog from '@/components/Dialog/CustomInputDialog.vue';
-// import { judgeIosPermission } from '@/js_sdk/wa-permission/permission.js'
 
 const reModule = ref(null);
 const ref_selFaceNum_dialog = ref(null);
