@@ -1,14 +1,14 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-04-19 12:22:21
- * @LastEditTime: 2024-09-13 11:06:27
+ * @LastEditTime: 2024-09-20 18:24:06
  */
 
 
 
 const config = {
     serverBaseUrl: 'http://192.168.31.7:9012/blackHole3D/basic',
-    serverUrl: 'http://192.168.31.6:9012/blackHole3D/project',
+    serverUrl: 'https://engine3.bjblackhole.com/blackHole3D/project',
     // serverUrl: 'http://192.168.31.6:9202/api/developercenter',
     imageBaseUrl: 'https://developer.bjblackhole.com/ImageServer',
     exampleUrl: 'https://demo.bjblackhole.com/default.aspx',
