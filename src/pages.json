@@ -1,6 +1,12 @@
 {
     "pages": [
         {
+            "path": "pages/Main/MainPage",
+            "style": {
+                "enablePullDownRefresh": false
+            }
+        },
+        {
             "path": "pages/Card/CardPage",
             "style": {
                 "enablePullDownRefresh": false

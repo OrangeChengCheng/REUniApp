@@ -1,10 +1,10 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-09-20 19:01:23
+ * @LastEditTime: 2024-09-21 14:57:39
 -->
 <template>
-    <base-view :nav_bar_item_back="false" :nav_bar_color="`--color-main-bg`">
+    <base-view :nav_bar="false" :nav_bar_item_back="false" :nav_bar_color="`--color-main-bg`">
         <view class="sup-card-page">
             <view class="input-box">
                 <view class="input-card" @click="input_click">输入</view>
@@ -45,7 +45,7 @@ onMounted(() => {
 
 const input_click = () => {
     dialog_input_needRecourse.value = true;
-    ref_projInput_dialog.value.show_dialog();
+    ref_projInput_dialog.value?.show_dialog();
 };
 
 const scan_click = () => {
@@ -101,7 +101,7 @@ const uniapp_scanQRCode = () => {
             uni.$re.unipluginLog(JSON.stringify(res.result));
             scan_shareUrl.value = res.result;
             dialog_input_needRecourse.value = false;
-            ref_projInput_dialog.value.show_dialog();
+            ref_projInput_dialog.value?.show_dialog();
         },
         fail: (err) => {
             uni.showToast({ title: err.errMsg, icon: 'none' });

@@ -1,18 +1,19 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-22 10:11:39
- * @LastEditTime: 2024-09-13 16:46:53
+ * @LastEditTime: 2024-09-21 21:30:48
 -->
 <template>
     <view class="sup-base-view">
         <nav-bar
+            :nav_bar="nav_bar"
             :nav_bar_title="nav_bar_title"
             :nav_bar_item_back="nav_bar_item_back"
             :nav_bar_item_setting="nav_bar_item_setting"
             :nav_bar_item_scan="nav_bar_item_scan"
             :nav_bar_color="nav_bar_color"
             :nav_bar_item_callback="nav_bar_item_callback"></nav-bar>
-        <view class="base-solt">
+        <view :class="`base-solt ${nav_bar ? 'base-solt-nav-bar' : ''}`">
             <slot></slot>
         </view>
     </view>
@@ -44,6 +45,10 @@ const props = defineProps({
         type: String,
         default: '--color-main-blue',
     },
+    nav_bar: {
+        type: Boolean,
+        default: true,
+    },
     nav_bar_item_callback: Function,
 });
 
@@ -53,10 +58,7 @@ const nav_bar_item_callback = (type) => {
         uni.navigateBack();
     }
 };
-
 </script>
-
-
 
 // MOD-- CSS
 <style lang="scss" scoped>
@@ -68,16 +70,21 @@ const nav_bar_item_callback = (type) => {
     width: 100vw;
     height: 100vh;
     flex-direction: column;
-    overflow:hidden;
+    overflow: hidden;
 }
 
 .base-solt {
     position: relative;
     display: flex;
     width: 100%;
-    height: calc(100% - 128rpx);
-    height: calc(100% - calc(128rpx + constant(safe-area-inset-top)));
-    height: calc(100% - calc(128rpx + env(safe-area-inset-top)));
+    height: calc(100% - 40px);
+    height: calc(100% - calc(40px + constant(safe-area-inset-top)));
+    height: calc(100% - calc(40px + env(safe-area-inset-top)));
     overflow: hidden;
+}
+.base-solt-nav-bar {
+    height: calc(100% - 84px);
+    height: calc(100% - calc(84px + constant(safe-area-inset-top)));
+    height: calc(100% - calc(84px + env(safe-area-inset-top)));
 }
 </style>

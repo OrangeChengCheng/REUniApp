@@ -1,14 +1,14 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-22 11:05:25
- * @LastEditTime: 2024-09-13 16:47:14
+ * @LastEditTime: 2024-09-21 17:09:28
 -->
 <template>
     <view class="sup-nav-bar" :style="`background-color:var(${nav_bar_color})`">
         <!-- 顶部状态栏 -->
         <view class="status-bar" :style="`background-color:var(${nav_bar_color})`"></view>
         <!-- 导航栏 -->
-        <view class="nav-bar" :style="`background-color:var(${nav_bar_color})`">
+        <view class="nav-bar" v-if="nav_bar" :style="`background-color:var(${nav_bar_color})`">
             <view class="nav-bar-item" v-if="nav_bar_item_back">
                 <text class="nav-bar-item-btn-text">返回</text>
                 <button class="nav-bar-item-btn" @click="navBarItemAction('nav-bar-item-back')"></button>
@@ -55,6 +55,10 @@ const props = defineProps({
         type: String,
         default: '--color-main-blue',
     },
+    nav_bar: {
+        type: Boolean,
+        default: true,
+    },
     nav_bar_item_callback: Function,
 });
 
@@ -76,18 +80,18 @@ const navBarItemAction = (type) => {
 .status-bar {
     position: relative;
     width: 100%;
-    height: calc(80rpx);
-    height: calc(80rpx + constant(safe-area-inset-top));
-    height: calc(80rpx + env(safe-area-inset-top));
+    height: calc(40px);
+    height: calc(40px + constant(safe-area-inset-top));
+    height: calc(40px + env(safe-area-inset-top));
 }
 .nav-bar {
     position: relative;
     width: 100%;
-    height: 88rpx;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 20rpx;
+    padding: 0 10px;
     box-sizing: border-box;
 }
 
@@ -101,8 +105,8 @@ const navBarItemAction = (type) => {
 }
 .nav-bar-item {
     position: relative;
-    width: 88rpx;
-    height: 88rpx;
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -115,8 +119,8 @@ const navBarItemAction = (type) => {
     position: absolute;
     top: 0;
     left: 0;
-    width: 88rpx;
-    height: 88rpx;
+    width: 44px;
+    height: 44px;
     background-color: transparent;
     &:after {
         border: unset;
