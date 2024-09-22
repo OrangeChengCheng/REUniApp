@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-09-22 16:38:38
+ * @LastEditTime: 2024-09-22 18:23:54
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -17,7 +17,11 @@
                 </view>
                 <view class="content">
                     <top-bar></top-bar>
-                    <top-bar v-if="tb_isFixed" :topbar_has_search="tb_isFixed"></top-bar>
+                    <top-bar
+                        v-if="tb_isFixed"
+                        :topbar_has_search="tb_isFixed"
+                        :topbar_houerArea_callback="topbar_houerArea_callback"
+                        :topbar_tab_callback="topbar_tab_callback"></top-bar>
                     <view class="grid-container" :style="style_grid_computed">
                         <view class="grid-item" v-for="(item, index) in list_show" :key="index">
                             <card></card>
@@ -63,6 +67,7 @@ onMounted(() => {
             update_gridColumns();
         },
     });
+    // 获取应用到前台状态
     uni.onAppShow((e: any) => {
         uni.$re.unipluginLog('应用到前台 ' + JSON.stringify(e));
         uniapp_getClipboard();
@@ -106,16 +111,16 @@ const uniapp_getClipboard = () => {
     });
 };
 
-const aaa = () => {
-    list_show.value = list_recently_viewed.value;
-    // 解决view层不同步的问题
-    sw_contain_scrollTop.value = sw_contain_scrollTop_curr.value;
-    nextTick(() => {
-        sw_contain_scrollTop.value = 200;
-    });
-};
-const bbb = () => {
-    list_show.value = list_collect.value;
+// MARK Topbar 展位区域点击
+const topbar_houerArea_callback = () => {};
+
+// MARK Topbar tab切换
+const topbar_tab_callback = (index: number) => {
+    if (index == 1) {
+        list_show.value = list_collect.value;
+    } else {
+        list_show.value = list_recently_viewed.value;
+    }
     // 解决view层不同步的问题
     sw_contain_scrollTop.value = sw_contain_scrollTop_curr.value;
     nextTick(() => {
