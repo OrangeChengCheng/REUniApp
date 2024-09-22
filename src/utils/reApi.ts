@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-14 14:22:08
- * @LastEditTime: 2024-09-18 15:25:58
+ * @LastEditTime: 2024-09-22 16:39:51
  */
 
 
@@ -18,7 +18,7 @@ const api: ApiMethods = {
             const reModule = uni.requireNativePlugin('REUniPlugin-REModule');
             return reModule;
         } else {
-            uni.showToast({ title: '加载插件失败', icon: 'none' });
+            // uni.showToast({ title: '加载插件失败', icon: 'none' });
             return null;
         }
     },
