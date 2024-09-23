@@ -96,8 +96,8 @@ const input_confirm = (e: any) => {
     height: 130px;
     display: flex;
     flex-direction: column;
-    background-color: red;
     flex-shrink: 0;
+    background-color: var(--color-main-bg);
 }
 
 .sup-top-bar-fixed {
@@ -107,45 +107,46 @@ const input_confirm = (e: any) => {
     height: 130px;
     display: flex;
     flex-direction: column;
-    background-color: greenyellow;
     flex-shrink: 0;
     z-index: 1;
+    background-color: var(--color-main-bg);
 }
 
 .search-area {
     position: relative;
     width: 100%;
     display: flex;
-    background-color: aqua;
-    padding: 10px;
+    padding: 10px 12px;
     box-sizing: border-box;
 
     .border-view {
         position: relative;
         width: 100%;
-        height: 55px;
-        border-radius: 10px;
-        border: 1px solid black;
+        height: 56px;
+        border-radius: 15px;
+        border: 2px solid var(--color-main-black);
         display: flex;
         align-items: center;
 
         .icon-search {
             position: relative;
-            margin-left: 10px;
+            margin-left: 16px;
+            flex-shrink: 0;
         }
         .uni-input {
             position: relative;
-            margin-left: 10px;
+            margin-left: 12px;
             display: flex;
             flex: 1;
         }
         .scan-area {
             position: relative;
-            width: 50px;
+            width: 56px;
             height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
+            flex-shrink: 0;
         }
         .houer-area {
             position: absolute;
@@ -153,7 +154,7 @@ const input_confirm = (e: any) => {
             left: 10px;
             right: 50px;
             bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: transparent;
         }
     }
 }
@@ -164,19 +165,22 @@ const input_confirm = (e: any) => {
     flex: 1;
     display: flex;
     align-items: center;
-    padding: 10px;
+    padding: 10px 12px;
     box-sizing: border-box;
-    background-color: bisque;
 
     .tab-bar {
         position: relative;
-        margin-right: 30px;
+        margin-right: 20px;
         font-weight: normal;
-        font-size: 18px;
+        font-size: 20px;
+        color: var(--color-main-gray);
+        line-height: 24px;
 
         &.active {
             font-weight: bold;
             font-size: 20px;
+            color: var(--color-main-black);
+            line-height: 24px;
         }
     }
 }

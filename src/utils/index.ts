@@ -6,6 +6,7 @@
 import config from './config'
 import reApi from './reApi'
 import uniApi from './uniApi'
+import tool from './tool'
 
 
 function toast(title: string) {
@@ -37,6 +38,12 @@ export default {
             unipluginLog: reApi.unipluginLog,
             realEngineRender: reApi.realEngineRender,
         };
+        uni.$tool = {
+            url_handle: tool.url_handle,
+            time_compare: tool.time_compare,
+        };
         uni.scan_code = uniApi.scan_code;
+        uni.show_loading = uniApi.show_loading;
+        uni.hide_loading = uniApi.hide_loading;
     }
 }

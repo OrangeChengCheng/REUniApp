@@ -3,6 +3,8 @@ interface ApiMethods {
     scan_checkPermission(): number;
     scan_authorize(): Promise<any>;
     scan_QRCode(): Promise<any>;
+    show_loading(): void;
+    hide_loading(): void;
 }
 
 const api: ApiMethods = {
@@ -80,8 +82,8 @@ const api: ApiMethods = {
             // 扫二维码
             uni.scanCode({
                 success: (res) => {
-                    uni.$re.unipluginLog(JSON.stringify(res));
-                    resolve(res);
+                    uni.$re.unipluginLog('扫码内容： ' + JSON.stringify(res));
+                    resolve(res.result);
                 },
                 fail: (err) => {
                     uni.showToast({ title: err.errMsg, icon: 'none' });
@@ -90,6 +92,18 @@ const api: ApiMethods = {
                 },
             });
         });
+    },
+
+    // MARK uni-app  展示loading
+    show_loading: () => {
+        uni.showLoading({
+            title: '加载中...',
+        });
+    },
+
+    // MARK uni-app  隐藏loading
+    hide_loading: () => {
+        uni.hideLoading();
     },
 
 }

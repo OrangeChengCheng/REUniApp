@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-08-14 10:24:21
- * @LastEditTime: 2024-09-18 09:39:53
+ * @LastEditTime: 2024-09-23 17:29:39
  */
 import { createSSRApp } from "vue";
 import App from "./App.vue";
@@ -13,8 +13,6 @@ import 'element-plus/theme-chalk/index.css'
 import zhCn from 'element-plus/es/locale/lang/zh-cn' //1 引入中文
 import GlobalComponents from "./plugin/globalComponent";
 import tool from "@/utils"
-
-
 
 
 

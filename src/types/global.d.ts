@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-13 18:01:53
- * @LastEditTime: 2024-09-23 10:55:46
+ * @LastEditTime: 2024-09-23 18:39:46
  */
 
 
@@ -27,7 +27,13 @@ declare global {
             downloadBaseUrl: string,
             commonTimeout: number,
         };
+        $tool: {
+            url_handle(utl: string): any;
+            time_compare(frontTime: Date, backTime: Date): string;
+        };
         scan_code(): Promise<any>;
+        show_loading(): void;
+        hide_loading(): void;
     }
 }
 

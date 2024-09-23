@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-09-21 14:57:39
+ * @LastEditTime: 2024-09-23 17:58:11
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_item_back="false" :nav_bar_color="`--color-main-bg`">
@@ -32,15 +32,13 @@ import {
     getSingleSceneTreeById_old,
     getProjectModel_old,
 } from '@/service/interface';
-import { useCardStore } from '@/stores/card';
 
-const card_store = useCardStore();
 const ref_projInput_dialog = ref<InstanceType<typeof ProjInputDialog> | null>(null);
 const scan_shareUrl = ref('');
 const dialog_input_needRecourse = ref(false);
 
 onMounted(() => {
-    card_store.addCard('www.google.com');
+    
 });
 
 const input_click = () => {
