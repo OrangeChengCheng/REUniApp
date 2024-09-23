@@ -1,5 +1,11 @@
+/*
+ * @Author: Lemon C
+ * @Date: 2024-09-14 10:05:14
+ * @LastEditTime: 2024-09-23 10:58:22
+ */
 import config from './config'
 import reApi from './reApi'
+import uniApi from './uniApi'
 
 
 function toast(title: string) {
@@ -31,5 +37,6 @@ export default {
             unipluginLog: reApi.unipluginLog,
             realEngineRender: reApi.realEngineRender,
         };
+        uni.scan_code = uniApi.scan_code;
     }
 }

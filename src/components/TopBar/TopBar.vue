@@ -3,8 +3,12 @@
         <view class="search-area">
             <view class="border-view">
                 <icon-font class="icon-search" name="ic-moxingguanli" size="24px"></icon-font>
-                <input class="uni-input" confirm-type="search" :placeholder="`${topbar_has_search ? '请输入搜索标题' : '请输入分享链接'}`" />
-                <view class="scan-area">
+                <input
+                    class="uni-input"
+                    confirm-type="search"
+                    :placeholder="`${topbar_has_search ? '请输入搜索标题' : '请输入分享链接'}`"
+                    @confirm="input_confirm" />
+                <view class="scan-area" @click.stop="scan_area_click">
                     <icon-font name="ic-moxingzuguanli" size="24px"></icon-font>
                 </view>
                 <view class="houer-area" v-if="!topbar_has_search" @click.stop="houer_area_click"></view>
@@ -38,6 +42,14 @@ const props = defineProps({
         type: Function,
         default: () => {},
     },
+    topbar_scan_callback: {
+        type: Function,
+        default: () => {},
+    },
+    topbar_search_callback: {
+        type: Function,
+        default: () => {},
+    },
 });
 
 const tab_index = ref(0); // 0：最近打开  1：收藏
@@ -54,13 +66,25 @@ onMounted(() => {
     tab_index.value = props.topbar_tab_index;
 });
 
+// MARK Click  占位区域点击
 const houer_area_click = () => {
     props.topbar_houerArea_callback();
 };
 
+// MARK Click  tab切换
 const tab_click = (index: number) => {
     tab_index.value = index;
     props.topbar_tab_callback(index);
+};
+
+// MARK Click 扫码点击
+const scan_area_click = () => {
+    props.topbar_scan_callback();
+};
+
+// MARK Input 输入完成
+const input_confirm = (e: any) => {
+    props.topbar_search_callback(e.detail.value);
 };
 </script>
 

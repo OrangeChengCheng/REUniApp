@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-09-22 18:23:54
+ * @LastEditTime: 2024-09-23 11:10:29
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -16,11 +16,15 @@
                     <view class="banner-box"> </view>
                 </view>
                 <view class="content">
-                    <top-bar></top-bar>
+                    <top-bar
+                        :topbar_houerArea_callback="topbar_houerArea_callback"
+                        :topbar_scan_callback="topbar_scan_callback"
+                        :topbar_tab_callback="topbar_tab_callback"></top-bar>
                     <top-bar
                         v-if="tb_isFixed"
                         :topbar_has_search="tb_isFixed"
-                        :topbar_houerArea_callback="topbar_houerArea_callback"
+                        :topbar_scan_callback="topbar_scan_callback"
+                        :topbar_search_callback="topbar_search_callback"
                         :topbar_tab_callback="topbar_tab_callback"></top-bar>
                     <view class="grid-container" :style="style_grid_computed">
                         <view class="grid-item" v-for="(item, index) in list_show" :key="index">
@@ -113,6 +117,23 @@ const uniapp_getClipboard = () => {
 
 // MARK Topbar 展位区域点击
 const topbar_houerArea_callback = () => {};
+
+// MARK Topbar 扫码
+const topbar_scan_callback = () => {
+    console.log('--------');
+
+    uni.scan_code()
+        .then((res: any) => {
+            uni.showToast({ title: JSON.stringify(res), icon: 'none' });
+        })
+        .catch((err: any) => {});
+};
+
+// MARK Topbar 搜索
+const topbar_search_callback = (e: any) => {
+    console.log('搜索内容: ' + JSON.stringify(e));
+    uni.$re.unipluginLog('搜索内容: ' + JSON.stringify(e));
+};
 
 // MARK Topbar tab切换
 const topbar_tab_callback = (index: number) => {

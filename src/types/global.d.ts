@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-13 18:01:53
- * @LastEditTime: 2024-09-18 14:59:17
+ * @LastEditTime: 2024-09-23 10:55:46
  */
 
 
@@ -27,6 +27,7 @@ declare global {
             downloadBaseUrl: string,
             commonTimeout: number,
         };
+        scan_code(): Promise<any>;
     }
 }
 
