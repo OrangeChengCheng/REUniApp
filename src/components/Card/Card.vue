@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-22 11:31:42
- * @LastEditTime: 2024-09-23 18:47:18
+ * @LastEditTime: 2024-09-23 19:20:10
 -->
 <template>
     <view class="sup-card" @click="card_click">
@@ -10,7 +10,10 @@
             <text class="bottom-title">{{ card_proj.projName }}</text>
             <text class="bottom-time"> {{ `${lastTime_computed}前 查看` }}</text>
         </view>
-        <view class="collect-area"></view>
+        <view
+            class="collect-area"
+            :style="`${card_proj.collect ? 'background-color: red' : 'background-color: green'}`"
+            @click.stop="collect_area_click"></view>
     </view>
 </template>
 
@@ -33,6 +36,10 @@ const props = defineProps({
         type: Function,
         default: () => {},
     },
+    card_collect_callback: {
+        type: Function,
+        default: () => {},
+    },
 });
 
 const touch_timer = ref<number | null>(null);
@@ -45,6 +52,11 @@ const lastTime_computed = computed(() => {
     let diff = uni.$tool.time_compare(lastTime, currTime);
     return diff;
 });
+
+// MARK Click  收藏点击
+const collect_area_click = () => {
+    props.card_collect_callback(props.card_proj);
+};
 
 // MARK Click  卡片点击
 const card_click = () => {
@@ -128,6 +140,5 @@ const bottom_area_touchend = () => {
     right: 10px;
     width: 24px;
     height: 24px;
-    background-color: hotpink;
 }
 </style>

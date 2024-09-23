@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-13 15:14:00
- * @LastEditTime: 2024-09-23 18:02:23
+ * @LastEditTime: 2024-09-23 19:26:08
  */
 import { defineStore } from 'pinia'
 import { type Share } from '@/types/class';
@@ -20,8 +20,18 @@ export const useCardStore = defineStore('card', {
             this.cardList.push(shareData);
             this.saveToLocalStorage();
         },
-        getSortedCardList() {
+        getCardList() {
             return this.cardList;
+        },
+        addCollect(shareData: Share, coollect: boolean) {
+            let find = this.cardList.find((e: Share) => e.url === shareData.url || e.id === shareData.id);
+            if (find) {
+                find.collect = coollect;
+            }
+            this.saveToLocalStorage();
+        },
+        getCollectCardList() {
+            return this.cardList.filter((e: Share) => e.collect === true);
         },
         saveToLocalStorage() {
             uni.setStorageSync('RE_cardList', JSON.stringify(this.cardList));

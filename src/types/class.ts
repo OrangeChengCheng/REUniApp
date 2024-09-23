@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-23 16:54:42
- * @LastEditTime: 2024-09-23 18:26:20
+ * @LastEditTime: 2024-09-23 19:09:23
  */
 
 
@@ -12,6 +12,7 @@ export interface Share {
     lastTime: Date;
     dataSetList: object;
     worldCRS: string;
+    collect: boolean;
 }
 
 export const newShare = (overrides?: Partial<Share>): Share => {
@@ -22,6 +23,7 @@ export const newShare = (overrides?: Partial<Share>): Share => {
         lastTime: new Date(),
         dataSetList: {},
         worldCRS: "",
+        collect: false,
         ...overrides
     };
 };

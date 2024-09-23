@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-09-23 18:46:06
+ * @LastEditTime: 2024-09-23 19:30:19
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -30,7 +30,11 @@
                         :topbar_tab_callback="topbar_tab_callback"></top-bar>
                     <view class="grid-container" :style="style_grid_computed">
                         <view class="grid-item" v-for="(item, index) in list_show" :key="index">
-                            <card :card_proj="item" :card_callback="card_callback" :card_longpress_callback="card_longpress_callback"></card>
+                            <card
+                                :card_proj="item"
+                                :card_callback="card_callback"
+                                :card_longpress_callback="card_longpress_callback"
+                                :card_collect_callback="card_collect_callback"></card>
                         </view>
                     </view>
                 </view>
@@ -89,9 +93,8 @@ const style_grid_computed = computed(() => {
 });
 
 onMounted(() => {
-    list_recently_viewed.value = card_store.getSortedCardList();
+    update_cardList();
 
-    list_show.value = list_recently_viewed.value;
     // 获取屏幕信息
     uni.getSystemInfo({
         success: function (res) {
@@ -112,6 +115,17 @@ onMounted(() => {
 onUnmounted(() => {
     uni.offWindowResize(listen_windoeResize); // 监听屏幕变化
 });
+
+// MARK 更新数据
+const update_cardList = () => {
+    list_recently_viewed.value = card_store.getCardList();
+    list_collect.value = card_store.getCollectCardList();
+    if (tb_tab_index.value == 1) {
+        list_show.value = list_collect.value;
+    } else {
+        list_show.value = list_recently_viewed.value;
+    }
+};
 
 // MARK Listen  屏幕变化
 const listen_windoeResize = (e: any) => {
@@ -194,6 +208,12 @@ const card_callback = (e: Share) => {
 const card_longpress_callback = (e: Share) => {
     console.log('卡片长按', e);
     uni.$re.unipluginLog('卡片长按' + JSON.stringify(e));
+};
+
+// MARK Click  收藏
+const card_collect_callback = (e: Share) => {
+    card_store.addCollect(e, !e.collect);
+    update_cardList();
 };
 
 // MARK Topbar tab切换
