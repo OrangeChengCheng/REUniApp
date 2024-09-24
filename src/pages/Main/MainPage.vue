@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-09-24 18:47:10
+ * @LastEditTime: 2024-09-24 19:15:47
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -31,6 +31,7 @@
                     <view class="grid-container" :style="style_grid_computed">
                         <view class="grid-item" v-for="(item, index) in list_show" :key="index">
                             <card
+                                :card_min="grid_isMin"
                                 :card_proj="item"
                                 :card_callback="card_callback"
                                 :card_longpress_callback="card_longpress_callback"
@@ -83,6 +84,8 @@ const sw_contain_scrollTop_curr = ref(0); // 记录当前滚动
 const uniapi_windowWidth = ref(0); // 屏幕宽度
 const uniapi_windowHeight = ref(0); // 屏幕高度
 const grid_columns = ref(2);
+const grid_columnWidth = ref(180 + 20);
+const grid_isMin = ref(false);
 
 const ref_urlInput_dialog = ref<InstanceType<typeof UrlInputDialog> | null>(null);
 const dialog_projName = ref(''); // 分享项目名称
@@ -150,8 +153,13 @@ const listen_contain_scroll = (e: any) => {
 
 // MARK Listen 更新 Grid 比例
 const update_gridColumns = () => {
-    const columnWidth = 180 + 20; // item 宽度 + 间距
-    grid_columns.value = Math.floor(uniapi_windowWidth.value / columnWidth);
+    if (uniapi_windowWidth.value / 2 < grid_columnWidth.value) {
+        grid_isMin.value = true;
+        grid_columns.value = 2;
+    } else {
+        grid_isMin.value = false;
+        grid_columns.value = Math.floor(uniapi_windowWidth.value / grid_columnWidth.value);
+    }
 };
 
 // MARK uniapp 获取粘贴板内容
@@ -537,6 +545,7 @@ const getDataSetIds_old = (sceneTree: any) => {
 <style lang="scss" scoped>
 .sup-main-page {
     position: relative;
+    width: 100%;
     display: flex;
     flex: 1;
     background-color: var(--color-main-bg);
@@ -544,6 +553,7 @@ const getDataSetIds_old = (sceneTree: any) => {
 
 .contain-scroll-view {
     position: relative;
+    width: 100%;
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -582,6 +592,7 @@ const getDataSetIds_old = (sceneTree: any) => {
 
     .grid-container {
         position: relative;
+        width: 100%;
         display: grid;
         gap: 10px;
         padding: 10px 12px;

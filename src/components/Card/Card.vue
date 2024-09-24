@@ -1,10 +1,10 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-22 11:31:42
- * @LastEditTime: 2024-09-24 11:43:48
+ * @LastEditTime: 2024-09-24 19:16:32
 -->
 <template>
-    <view class="sup-card" @click="card_click">
+    <view class="sup-card" :style="`${card_min ? 'width: 150px;' : 'width: 180px'}`" @click="card_click">
         <view class="top-area">
             <image src="../../static/Main/card_bg.png" class="top-area-bg" />
         </view>
@@ -26,6 +26,10 @@ import type { PropType } from 'vue';
 import { type Share } from '@/types/class';
 
 const props = defineProps({
+    card_min: {
+        type: Boolean,
+        default: false,
+    },
     card_proj: {
         type: Object as PropType<Share>,
         default: () => ({} as Share),
@@ -87,7 +91,7 @@ const bottom_area_touchend = () => {
 <style lang="scss" scoped>
 .sup-card {
     position: relative;
-    width: 180px;
+    // width: 180px;
     height: 240px;
     display: flex;
     flex-direction: column;
