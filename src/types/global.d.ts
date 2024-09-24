@@ -17,7 +17,7 @@ declare global {
         }
         $re: {
             unipluginLog(log: string): void;
-            realEngineRender(data: object): Promise<any>;
+            realEngineRender(data: any): Promise<any>;
         }
         $window: {
             serverBaseUrl: string;

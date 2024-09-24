@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-09-23 19:30:19
+ * @LastEditTime: 2024-09-24 11:09:55
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -13,7 +13,7 @@
                 :scroll-top="sw_contain_scrollTop"
                 @scroll="listen_contain_scroll">
                 <view class="banner">
-                    <view class="banner-box"> </view>
+                    <view class="banner-box" @click="banner_click"> </view>
                 </view>
                 <view class="content">
                     <top-bar
@@ -169,6 +169,12 @@ const uniapp_getClipboard = () => {
     });
 };
 
+// MARK Topbar banner区域点击
+const banner_click = () => {
+    card_store.clearCardList();
+    update_cardList();
+};
+
 // MARK Topbar 占位区域点击
 const topbar_houerArea_callback = () => {
     dialog_shareUrl_disabled.value = false;
@@ -200,8 +206,22 @@ const topbar_search_callback = (e: any) => {
 
 // MARK Click  卡片点击
 const card_callback = (e: Share) => {
-    console.log('卡片点击', e);
-    uni.$re.unipluginLog('卡片点击' + JSON.stringify(e));
+    console.log('卡片点击', JSON.stringify(e));
+    uni.$re.unipluginLog('卡片点击' + JSON.stringify(e.dataSetList));
+
+    // 不知道什么原因导致ts的数组到安卓中变成JSONObject导致解析崩溃，这样操作可以重置属性，避免ts的属性带入
+    let dataSetListJson = JSON.stringify(e.dataSetList);
+    let dataSetList = JSON.parse(dataSetListJson);
+    uni.$re
+        .realEngineRender({
+            name: 'uni-app',
+            worldCRS: e.worldCRS,
+            dataSetList: dataSetList,
+        })
+        .then((result) => {
+            console.log(result);
+            uni.$re.unipluginLog(JSON.stringify(result));
+        });
 };
 
 // MARK Click  卡片长按
