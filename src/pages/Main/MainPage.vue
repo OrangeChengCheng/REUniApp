@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-09-24 11:09:55
+ * @LastEditTime: 2024-09-24 14:36:52
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -45,6 +45,7 @@
         ref="ref_urlInput_dialog"
         :dialog_projName="dialog_projName"
         :dialog_shareUrl="dialog_shareUrl"
+        :dialog_revise="dialog_revise"
         :dialog_shareUrl_disabled="dialog_shareUrl_disabled"
         :dialog_UrlInputCallBack="dialog_UrlInputCallBack"></url-input-dialog>
 </template>
@@ -68,13 +69,14 @@ import { newShare, type Share } from '@/types/class';
 import { useCardStore } from '@/stores/card';
 
 const card_store = useCardStore();
+const TopBar_fixedSpace = 230;
 const list_show = ref<Share[]>([]); // 当前内容展示列表
-// const list_recently_viewed = ref(Array.from({ length: 100 }, (_, i) => `最近浏览 ->   ${i + 1}`)); // 最近浏览列表
-// const list_collect = ref(Array.from({ length: 100 }, (_, i) => `收藏 ->   ${i + 1}`)); // 收藏列表
 const list_recently_viewed = ref<Share[]>([]); // 最近浏览列表
 const list_collect = ref<Share[]>([]); // 收藏列表
+const list_search = ref<Share[]>([]); // 搜索列表
 const tb_isFixed = ref(false); // 顶部模块是否固定显示
 const tb_tab_index = ref(0); // 顶部模块是否固定显示
+const tb_tab_search = ref(false); // 搜索状态
 const sw_contain_scrollTop = ref(0); // 设置滚动
 const sw_contain_scrollTop_curr = ref(0); // 记录当前滚动
 const uniapi_windowWidth = ref(0); // 屏幕宽度
@@ -84,6 +86,7 @@ const grid_columns = ref(2);
 const ref_urlInput_dialog = ref<InstanceType<typeof UrlInputDialog> | null>(null);
 const dialog_projName = ref(''); // 分享项目名称
 const dialog_shareUrl = ref(''); // 分享链接
+const dialog_revise = ref(false); // 是否是修改
 const dialog_shareUrl_disabled = ref(true); // 分享链接无法输入
 
 const style_grid_computed = computed(() => {
@@ -138,9 +141,8 @@ const listen_windoeResize = (e: any) => {
 
 // MARK Listen  内容滚动监听
 const listen_contain_scroll = (e: any) => {
-    tb_isFixed.value = e.detail.scrollTop >= 200;
+    tb_isFixed.value = e.detail.scrollTop >= TopBar_fixedSpace;
     sw_contain_scrollTop_curr.value = e.detail.scrollTop;
-    console.log('外 scrollTop：', e.detail.scrollTop);
 };
 
 // MARK Listen 更新 Grid 比例
@@ -228,6 +230,12 @@ const card_callback = (e: Share) => {
 const card_longpress_callback = (e: Share) => {
     console.log('卡片长按', e);
     uni.$re.unipluginLog('卡片长按' + JSON.stringify(e));
+
+    dialog_shareUrl.value = e.url;
+    dialog_projName.value = e.projName;
+    dialog_revise.value = true;
+    dialog_shareUrl_disabled.value = true;
+    ref_urlInput_dialog.value?.show_dialog();
 };
 
 // MARK Click  收藏
@@ -247,15 +255,19 @@ const topbar_tab_callback = (index: number) => {
     // 解决view层不同步的问题
     sw_contain_scrollTop.value = sw_contain_scrollTop_curr.value;
     nextTick(() => {
-        sw_contain_scrollTop.value = 200;
+        sw_contain_scrollTop.value = TopBar_fixedSpace;
     });
 };
 
-// MARK Dialog  查看模型
+// MARK Dialog  查看模型/确认修改
 const dialog_UrlInputCallBack = (e: any) => {
     console.log(e);
     let shareParams: any = uni.$tool.url_handle(e.shareUrl);
-    if (shareParams) showShareUrlRes(shareParams);
+    if (dialog_revise.value) {
+        card_store.reviseProjName(shareParams, e.projName);
+    } else {
+        if (shareParams) showShareUrlRes(shareParams);
+    }
 };
 
 // MARK 查看分享链接资源
@@ -306,7 +318,7 @@ const showSceneRes = (sceneId: string) => {
 
 // MARK re-api 查看分享链接资源 -- 模型资源
 const showModelRes = (dataSetId: string) => {
-    getDataSetList({ dataSetIds: [dataSetId] }).then((res) => {
+    getDataSetList_old({ dataSetIds: [dataSetId], resourceId: dataSetId }).then((res) => {
         console.log('数据集：', res);
         let shareData: Share = newShare({
             url: dialog_shareUrl.value,
@@ -459,6 +471,7 @@ const getDataSetIds = (sceneTree: any) => {
     }
     return dataSetIdList;
 };
+
 // MARK Service 递归获取数据集标识集合（old）
 const getDataSetIds_old = (sceneTree: any) => {
     let dataSetIdList: string[] = [];
@@ -497,7 +510,7 @@ const getDataSetIds_old = (sceneTree: any) => {
     position: relative;
     display: flex;
     width: 100%;
-    height: 200px;
+    height: 230px;
     justify-content: center;
     align-items: center;
     padding: 20px 12px 30px 12px;

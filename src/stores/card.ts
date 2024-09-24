@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-13 15:14:00
- * @LastEditTime: 2024-09-23 19:26:08
+ * @LastEditTime: 2024-09-24 14:05:41
  */
 import { defineStore } from 'pinia'
 import { type Share } from '@/types/class';
@@ -39,6 +39,18 @@ export const useCardStore = defineStore('card', {
         clearCardList() {
             this.cardList = [];
             this.saveToLocalStorage();
+        },
+
+        reviseProjName(shareData: Share, projName: string) {
+            let find = this.cardList.find((e: Share) => e.url === shareData.url || e.id === shareData.id);
+            if (find) {
+                find.projName = projName;
+            }
+            this.saveToLocalStorage();
+        },
+        searchCard(search: string) {
+            let findList = this.cardList.filter((e: Share) => e.projName.includes(search));
+            return findList;
         },
 
         // MARK 重复校验

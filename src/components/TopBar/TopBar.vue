@@ -2,21 +2,29 @@
     <view :class="`${topbar_has_search ? 'sup-top-bar-fixed' : 'sup-top-bar'}`">
         <view class="search-area">
             <view class="border-view">
-                <icon-font class="icon-search" name="ic-moxingguanli" size="24px"></icon-font>
+                <view class="search-area">
+                    <icon-font name="searchbox_icon_search_default" size="24px" color="--color-main-black"></icon-font>
+                </view>
                 <input
                     class="uni-input"
                     confirm-type="search"
                     :placeholder="`${topbar_has_search ? '请输入搜索标题' : '请输入分享链接'}`"
                     @confirm="input_confirm" />
                 <view class="scan-area" @click.stop="scan_area_click">
-                    <icon-font name="ic-moxingzuguanli" size="24px"></icon-font>
+                    <icon-font name="searchbox_icon_scan_default" size="24px" color="--color-main-black"></icon-font>
                 </view>
                 <view class="houer-area" v-if="!topbar_has_search" @click.stop="houer_area_click"></view>
             </view>
         </view>
         <view class="tab-area">
-            <view :class="tab_index_computed(0)" @click.stop="tab_click(0)">最近打开</view>
-            <view :class="tab_index_computed(1)" @click.stop="tab_click(1)">收藏</view>
+            <view :class="tab_index_computed(0)" @click.stop="tab_click(0)">
+                最近打开
+                <icon-font v-if="tab_index == 0" class="icon_tabSel" name="tab_bg_selected" size="10px" color="--color-main-blue"></icon-font>
+            </view>
+            <view :class="`tab-bar-collect ${tab_index_computed(1)}`" @click.stop="tab_click(1)">
+                收藏
+                <icon-font v-if="tab_index == 1" class="icon_tabSel" name="tab_bg_selected" size="10px" color="--color-main-blue"></icon-font>
+            </view>
         </view>
     </view>
 </template>
@@ -128,14 +136,18 @@ const input_confirm = (e: any) => {
         display: flex;
         align-items: center;
 
-        .icon-search {
+        .search-area {
             position: relative;
-            margin-left: 16px;
+            width: 56px;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             flex-shrink: 0;
         }
+
         .uni-input {
             position: relative;
-            margin-left: 12px;
             display: flex;
             flex: 1;
         }
@@ -170,11 +182,15 @@ const input_confirm = (e: any) => {
 
     .tab-bar {
         position: relative;
+        width: 90px;
+        height: 100%;
         margin-right: 20px;
         font-weight: normal;
         font-size: 20px;
         color: var(--color-main-gray);
         line-height: 24px;
+        display: flex;
+        align-items: center;
 
         &.active {
             font-weight: bold;
@@ -182,6 +198,17 @@ const input_confirm = (e: any) => {
             color: var(--color-main-black);
             line-height: 24px;
         }
+
+        .icon_tabSel {
+            position: absolute;
+            right: 5px;
+            bottom: 0;
+            width: 20px;
+            height: 10px;
+        }
+    }
+    .tab-bar-collect {
+        width: 52px;
     }
 }
 </style>

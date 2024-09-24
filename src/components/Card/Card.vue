@@ -1,19 +1,21 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-22 11:31:42
- * @LastEditTime: 2024-09-23 19:20:10
+ * @LastEditTime: 2024-09-24 11:43:48
 -->
 <template>
     <view class="sup-card" @click="card_click">
-        <view class="top-area"></view>
+        <view class="top-area">
+            <image src="../../static/Main/card_bg.png" class="top-area-bg" />
+        </view>
         <view class="bottom-area" @touchstart="bottom_area_touchstart" @touchend="bottom_area_touchend">
             <text class="bottom-title">{{ card_proj.projName }}</text>
             <text class="bottom-time"> {{ `${lastTime_computed}前 查看` }}</text>
         </view>
-        <view
-            class="collect-area"
-            :style="`${card_proj.collect ? 'background-color: red' : 'background-color: green'}`"
-            @click.stop="collect_area_click"></view>
+        <view class="collect-area" @click.stop="collect_area_click">
+            <icon-font v-if="card_proj.collect" name="card_icon_like_pressed" size="24px" color="--color-main-blue"></icon-font>
+            <icon-font v-else name="card_icon_like_default" size="24px" color="--color-white"></icon-font>
+        </view>
     </view>
 </template>
 
@@ -95,10 +97,15 @@ const bottom_area_touchend = () => {
     position: relative;
     width: 100%;
     aspect-ratio: 1;
-    background-color: azure;
     border-radius: 8px;
     display: flex;
     flex-shrink: 0;
+    overflow: hidden;
+
+    .top-area-bg {
+        width: 100%;
+        height: 100%;
+    }
 }
 
 .bottom-area {

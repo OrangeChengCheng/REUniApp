@@ -1,13 +1,15 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-27 17:04:55
- * @LastEditTime: 2024-09-23 15:50:01
+ * @LastEditTime: 2024-09-24 13:53:13
 -->
 <template>
     <div class="sup-url-input-dialog" v-if="dialog_visible">
         <transition name="content_box_fade">
             <div class="content-box" v-if="content_box_visible">
-                <view class="icon-area"></view>
+                <view class="icon-area">
+                    <icon-font name="pop_icon_link_default" size="20px" color="--color-main-blue"></icon-font>
+                </view>
                 <view class="modules-item">
                     <text class="modules-title">项目名称</text>
                     <textarea
@@ -41,7 +43,7 @@
                 </view> -->
                 <view class="btn-group">
                     <el-button class="cancel" @click="bg_click">取消</el-button>
-                    <el-button class="confirm" type="primary" @click="confirm_click">查看模型</el-button>
+                    <el-button class="confirm" type="primary" @click="confirm_click">{{ `${dialog_revise ? '确认修改' : '查看模型'}` }}</el-button>
                 </view>
             </div>
         </transition>
@@ -64,6 +66,10 @@ const props = defineProps({
     dialog_shareUrl_disabled: {
         type: Boolean,
         default: true,
+    },
+    dialog_revise: {
+        type: Boolean,
+        default: false,
     },
     dialog_needResource: {
         type: Boolean,
@@ -176,7 +182,6 @@ defineExpose({
             position: relative;
             width: 20px;
             height: 20px;
-            background-color: aqua;
         }
 
         .modules-item {
