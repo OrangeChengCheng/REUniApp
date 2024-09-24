@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-09-24 17:16:25
+ * @LastEditTime: 2024-09-24 18:47:10
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -12,11 +12,7 @@
                 :show-scrollbar="false"
                 :scroll-top="sw_contain_scrollTop"
                 @scroll="listen_contain_scroll">
-                <view class="banner">
-                    <view class="banner-box" @click="banner_click">
-                        <image class="banner-image" src="https://demo.bjblackhole.com/BlackHole3.0/img/app_banner_1.png" mode="scaleToFill" />
-                    </view>
-                </view>
+                <banner-comp :banner_re_callback="banner_re_callback"></banner-comp>
                 <view class="content">
                     <top-bar
                         :topbar_tab_index="tb_tab_index"
@@ -52,15 +48,18 @@
         :dialog_revise="dialog_revise"
         :dialog_shareUrl_disabled="dialog_shareUrl_disabled"
         :dialog_UrlInputCallBack="dialog_UrlInputCallBack"></url-input-dialog>
+    <custom-input-dialog ref="ref_customInput_dialog" :dialog_CustomInputCallBack="showResourceAddressRes"></custom-input-dialog>
 </template>
 
 // MOD-- JavaScript
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick, computed } from 'vue';
 import BaseView from '@/components/Base/BaseView.vue';
+import BannerComp from '@/components/Banner/BannerComp.vue';
 import TopBar from '@/components/TopBar/TopBar.vue';
 import Card from '@/components/Card/Card.vue';
 import UrlInputDialog from '@/components/Dialog/UrlInputDialog.vue';
+import CustomInputDialog from '@/components/Dialog/CustomInputDialog.vue';
 import {
     getSceneById,
     getSingleSceneTreeById,
@@ -77,10 +76,8 @@ const TopBar_fixedSpace = 230;
 const list_show = ref<Share[]>([]); // 当前内容展示列表
 const list_recently_viewed = ref<Share[]>([]); // 最近浏览列表
 const list_collect = ref<Share[]>([]); // 收藏列表
-const list_search = ref<Share[]>([]); // 搜索列表
 const tb_isFixed = ref(false); // 顶部模块是否固定显示
 const tb_tab_index = ref(0); // 顶部模块是否固定显示
-const tb_tab_search = ref(false); // 搜索状态
 const sw_contain_scrollTop = ref(0); // 设置滚动
 const sw_contain_scrollTop_curr = ref(0); // 记录当前滚动
 const uniapi_windowWidth = ref(0); // 屏幕宽度
@@ -92,6 +89,8 @@ const dialog_projName = ref(''); // 分享项目名称
 const dialog_shareUrl = ref(''); // 分享链接
 const dialog_revise = ref(false); // 是否是修改
 const dialog_shareUrl_disabled = ref(true); // 分享链接无法输入
+
+const ref_customInput_dialog = ref<InstanceType<typeof CustomInputDialog> | null>(null);
 
 const style_grid_computed = computed(() => {
     return {
@@ -139,7 +138,7 @@ const listen_windoeResize = (e: any) => {
     uniapi_windowWidth.value = e.size.windowWidth; // 窗口宽度
     uniapi_windowHeight.value = e.size.windowHeight; // 窗口高度
     console.log('uniapi_windowWidth: ' + e.size.windowWidth + '     uniapi_windowHeight: ' + e.size.windowHeight);
-
+    uni.$re.unipluginLog('uniapi_windowWidth: ' + e.size.windowWidth + '     uniapi_windowHeight: ' + e.size.windowHeight);
     update_gridColumns();
 };
 
@@ -169,16 +168,24 @@ const uniapp_getClipboard = () => {
                     dialog_projName.value = urlData.projName;
                     dialog_shareUrl_disabled.value = true;
                     ref_urlInput_dialog.value?.show_dialog();
+                    uniapp_clearClipboard();
                 }, 500);
             }
         },
     });
 };
 
-// MARK Topbar banner区域点击
-const banner_click = () => {
-    card_store.clearCardList();
-    update_cardList();
+// MARK uni-app  清空粘贴板
+const uniapp_clearClipboard = () => {
+    uni.setClipboardData({
+        data: '',
+        success: () => {},
+    });
+};
+
+// MARK Topbar banner区域连续点击
+const banner_re_callback = () => {
+    ref_customInput_dialog.value?.show_dialog();
 };
 
 // MARK Topbar 占位区域点击
@@ -349,6 +356,31 @@ const showModelRes = (dataSetId: string) => {
                 uni.$re.unipluginLog(JSON.stringify(result));
             });
     });
+};
+
+// MARK re-api 查看模型资源链接
+const showResourceAddressRes = (e: any) => {
+    let dataSetList = [
+        {
+            dataSetId: e.dataSetId,
+            resourcesAddress: e.resourcesAddress,
+            useTransInfo: true,
+            rotate: [0, 0, 0, 1],
+            scale: [1, 1, 1],
+            offset: [0.0, 0.0, 0.0],
+            dataSetCRS: '',
+            dataSetCRSNorth: 0.0,
+        },
+    ];
+    uni.$re
+        .realEngineRender({
+            name: 'uni-app',
+            dataSetList: dataSetList,
+            maxInstDrawFaceNum: e.faceNum,
+        })
+        .then((result) => {
+            uni.$re.unipluginLog(JSON.stringify(result));
+        });
 };
 
 // MARK Service 获取场景信息

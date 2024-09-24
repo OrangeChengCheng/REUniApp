@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-09-24 15:56:05
+ * @LastEditTime: 2024-09-24 17:59:59
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -103,7 +103,7 @@ const listen_windoeResize = (e: any) => {
     uniapi_windowWidth.value = e.size.windowWidth; // 窗口宽度
     uniapi_windowHeight.value = e.size.windowHeight; // 窗口高度
     console.log('uniapi_windowWidth: ' + e.size.windowWidth + '     uniapi_windowHeight: ' + e.size.windowHeight);
-
+    uni.$re.unipluginLog('uniapi_windowWidth: ' + e.size.windowWidth + '     uniapi_windowHeight: ' + e.size.windowHeight);
     update_gridColumns();
 };
 

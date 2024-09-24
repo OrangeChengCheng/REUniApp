@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-27 17:04:55
- * @LastEditTime: 2024-08-27 19:15:24
+ * @LastEditTime: 2024-09-24 17:57:47
 -->
 <template>
     <div class="sup-custom-input-dialog" v-if="dialog_visible">
@@ -147,14 +147,14 @@ defineExpose({
     .content-box {
         position: relative;
         width: 90%;
-        height: 70%;
+        height: 500px;
         overflow-y: auto;
-        border-radius: 10rpx;
+        border-radius: 10px;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: flex-start;
-        padding: 40rpx 20rpx;
+        padding: 20px 10px;
         box-sizing: border-box;
         transition: opacity 0.5s ease-in-out;
         z-index: 99;
@@ -165,20 +165,20 @@ defineExpose({
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-bottom: 30rpx;
-            padding: 20rpx 20rpx;
+            margin-bottom: 15px;
+            padding: 10px 10px;
             box-sizing: border-box;
             width: 100%;
-            min-height: 100rpx;
+            min-height: 50px;
             overflow: hidden;
-            box-shadow: 0rpx 6rpx 12rpx rgba(93, 146, 219, 0.16);
-            border-radius: 8rpx;
+            box-shadow: 0px 3px 6px rgba(93, 146, 219, 0.16);
+            border-radius: 10px;
             background-color: var(--color-white);
 
             .modules-title {
                 position: relative;
                 width: 100%;
-                height: 50rpx;
+                height: 25px;
                 display: flex;
                 align-items: center;
             }
@@ -188,13 +188,13 @@ defineExpose({
                 width: 100%;
                 padding: 5px;
                 box-sizing: border-box;
-                min-height: 40rpx;
-                margin-top: 20rpx;
+                min-height: 20px;
+                margin-top: 10px;
                 border: 1px solid var(--color-main-bg);
-                border-radius: 8rpx;
-                font-size: 28rpx;
+                border-radius: 8px;
+                font-size: 14px;
                 color: var(--color-main-black);
-                line-height: 30rpx;
+                line-height: 15px;
             }
 
             .radio-group {
@@ -202,7 +202,7 @@ defineExpose({
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                margin-top: 20rpx;
+                margin-top: 10px;
                 width: 60%;
                 flex: 1;
             }
@@ -212,7 +212,7 @@ defineExpose({
                 justify-content: space-between;
                 width: 100%;
                 height: 50%;
-                margin-top: 20rpx;
+                margin-top: 10px;
 
                 .el-radio {
                     position: relative;
@@ -229,8 +229,8 @@ defineExpose({
         margin-top: auto;
         margin-bottom: 0;
         width: 100%;
-        height: 80rpx;
-        padding: 0 20rpx;
+        height: 40px;
+        padding: 0 10px;
         box-sizing: border-box;
         justify-content: flex-end;
         align-items: center;
