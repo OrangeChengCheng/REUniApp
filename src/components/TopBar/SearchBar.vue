@@ -1,13 +1,13 @@
 <template>
-    <view :class="`${topbar_isFixed ? 'sup-top-bar-fixed' : 'sup-top-bar'}`">
+    <view class="sup-search-bar">
         <view class="search-area">
+            <view class="back-area" @click.stop="back_area_click">
+                <icon-font name="nav_icon_back_default" size="40px" color="--color-main-black"></icon-font>
+            </view>
             <view class="border-view">
+                <input class="uni-input" v-model="search" confirm-type="done" placeholder="请输入搜索标题" />
                 <view class="search-area" @click.stop="search_area_click">
                     <icon-font name="searchbox_icon_search_default" size="24px" color="--color-main-black"></icon-font>
-                </view>
-                <view class="tip-area" @click.stop="houer_area_click">请输入分享链接</view>
-                <view class="scan-area" @click.stop="scan_area_click">
-                    <icon-font name="searchbox_icon_scan_default" size="24px" color="--color-main-black"></icon-font>
                 </view>
             </view>
         </view>
@@ -29,23 +29,11 @@
 import { ref, onMounted, watch, computed } from 'vue';
 
 const props = defineProps({
-    topbar_isFixed: {
-        type: Boolean,
-        default: false,
-    },
     topbar_tab_index: {
         type: Number,
         default: 0,
     },
-    topbar_houerArea_callback: {
-        type: Function,
-        default: () => {},
-    },
     topbar_tab_callback: {
-        type: Function,
-        default: () => {},
-    },
-    topbar_scan_callback: {
         type: Function,
         default: () => {},
     },
@@ -53,9 +41,14 @@ const props = defineProps({
         type: Function,
         default: () => {},
     },
+    topbar_back_callback: {
+        type: Function,
+        default: () => {},
+    },
 });
 
 const tab_index = ref(0); // 0：最近打开  1：收藏
+const search = ref('');
 
 watch([() => props.topbar_tab_index], () => {
     tab_index.value = props.topbar_tab_index;
@@ -69,14 +62,9 @@ onMounted(() => {
     tab_index.value = props.topbar_tab_index;
 });
 
-// MARK Click  占位区域点击
-const houer_area_click = () => {
-    props.topbar_houerArea_callback();
-};
-
-// MARK Click  搜索点击
-const search_area_click = () => {
-    props.topbar_search_callback();
+// MARK Click  返回点击
+const back_area_click = () => {
+    props.topbar_back_callback();
 };
 
 // MARK Click  tab切换
@@ -85,33 +73,21 @@ const tab_click = (index: number) => {
     props.topbar_tab_callback(index);
 };
 
-// MARK Click 扫码点击
-const scan_area_click = () => {
-    props.topbar_scan_callback();
+// MARK Click  搜索
+const search_area_click = () => {
+    props.topbar_search_callback(search.value);
 };
 </script>
 
 // MOD-- CSS
 <style lang="scss" scoped>
-.sup-top-bar {
+.sup-search-bar {
     position: relative;
     width: 100%;
     height: 130px;
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
-    background-color: var(--color-main-bg);
-}
-
-.sup-top-bar-fixed {
-    position: fixed;
-    top: 40px;
-    width: 100%;
-    height: 130px;
-    display: flex;
-    flex-direction: column;
-    flex-shrink: 0;
-    z-index: 1;
     background-color: var(--color-main-bg);
 }
 
@@ -122,35 +98,34 @@ const scan_area_click = () => {
     padding: 10px 12px;
     box-sizing: border-box;
 
+    .back-area {
+        position: relative;
+        width: 56px;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
     .border-view {
         position: relative;
-        width: 100%;
+        margin-left: 15px;
+        flex: 1;
         height: 56px;
         border-radius: 15px;
         border: 2px solid var(--color-main-black);
         display: flex;
         align-items: center;
+        padding-left: 16px;
+        box-sizing: border-box;
 
-        .search-area {
-            position: relative;
-            width: 56px;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-shrink: 0;
-        }
-
-        .tip-area {
+        .uni-input {
             position: relative;
             display: flex;
             flex: 1;
-            align-items: center;
-            font-size: 14px;
-            color: var(--color-main-gray);
-            line-height: 20px;
         }
-        .scan-area {
+
+        .search-area {
             position: relative;
             width: 56px;
             height: 100%;

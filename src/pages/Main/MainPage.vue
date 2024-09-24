@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-09-24 14:36:52
+ * @LastEditTime: 2024-09-24 17:16:25
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -13,18 +13,22 @@
                 :scroll-top="sw_contain_scrollTop"
                 @scroll="listen_contain_scroll">
                 <view class="banner">
-                    <view class="banner-box" @click="banner_click"> </view>
+                    <view class="banner-box" @click="banner_click">
+                        <image class="banner-image" src="https://demo.bjblackhole.com/BlackHole3.0/img/app_banner_1.png" mode="scaleToFill" />
+                    </view>
                 </view>
                 <view class="content">
                     <top-bar
                         :topbar_tab_index="tb_tab_index"
                         :topbar_houerArea_callback="topbar_houerArea_callback"
                         :topbar_scan_callback="topbar_scan_callback"
+                        :topbar_search_callback="topbar_search_callback"
                         :topbar_tab_callback="topbar_tab_callback"></top-bar>
                     <top-bar
                         v-if="tb_isFixed"
-                        :topbar_has_search="tb_isFixed"
+                        :topbar_isFixed="tb_isFixed"
                         :topbar_tab_index="tb_tab_index"
+                        :topbar_houerArea_callback="topbar_houerArea_callback"
                         :topbar_scan_callback="topbar_scan_callback"
                         :topbar_search_callback="topbar_search_callback"
                         :topbar_tab_callback="topbar_tab_callback"></top-bar>
@@ -201,9 +205,16 @@ const topbar_scan_callback = () => {
 };
 
 // MARK Topbar 搜索
-const topbar_search_callback = (e: any) => {
-    console.log('搜索内容: ' + JSON.stringify(e));
-    uni.$re.unipluginLog('搜索内容: ' + JSON.stringify(e));
+const topbar_search_callback = () => {
+    uni.navigateTo({
+        url: '/pages/Search/SearchPage',
+        success: (res) => {
+            uni.$re.unipluginLog('跳转到搜索页' + JSON.stringify(res));
+        },
+        fail: (err) => {
+            uni.$re.unipluginLog('跳转到搜索页失败' + JSON.stringify(err));
+        },
+    });
 };
 
 // MARK Click  卡片点击
@@ -513,7 +524,7 @@ const getDataSetIds_old = (sceneTree: any) => {
     height: 230px;
     justify-content: center;
     align-items: center;
-    padding: 20px 12px 30px 12px;
+    padding: 20px 12px 10px 12px;
     box-sizing: border-box;
     flex-shrink: 0;
 
@@ -523,8 +534,11 @@ const getDataSetIds_old = (sceneTree: any) => {
         width: 100%;
         height: 100%;
         border-radius: 16px;
-        // background-color: var(--color-main-bg);
-        background-color: beige;
+
+        .banner-image {
+            width: 100%;
+            height: 100%;
+        }
     }
 }
 
