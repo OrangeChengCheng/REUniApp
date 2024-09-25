@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-27 17:04:55
- * @LastEditTime: 2024-09-25 10:11:07
+ * @LastEditTime: 2024-09-25 14:53:15
 -->
 <template>
     <div class="sup-url-input-dialog" v-if="dialog_visible">
@@ -164,7 +164,7 @@ defineExpose({
         display: flex;
         flex-direction: column;
         justify-content: flex-start;
-        padding: 24px;
+        padding: 15px 24px;
         box-sizing: border-box;
         transition: opacity 0.5s ease-in-out;
         z-index: 99;
@@ -181,7 +181,7 @@ defineExpose({
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-top: 15px;
+            margin-top: 10px;
             width: 100%;
             overflow: hidden;
             background-color: var(--color-white);

@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-23 14:42:45
- * @LastEditTime: 2024-09-23 18:48:25
+ * @LastEditTime: 2024-09-25 15:00:24
  */
 interface ApiMethods {
     url_handle(url: string): any;
@@ -11,6 +11,8 @@ interface ApiMethods {
 const api: ApiMethods = {
     // MARK tool 处理分享链接
     url_handle: (url: string): any => {
+        url = url.trim();
+
         uni.$re.unipluginLog('url = ' + url);
         if (url.length <= 0) return null;
 
