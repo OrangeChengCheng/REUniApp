@@ -1,12 +1,17 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-24 17:34:32
- * @LastEditTime: 2024-09-25 17:37:15
+ * @LastEditTime: 2024-09-25 19:26:23
 -->
 <template>
     <div class="sup-banner-comp">
         <view class="banner-box" @click="banner_click">
-            <image class="banner-image" src="https://demo.bjblackhole.com/BlackHole3.0/app/img/app_banner_1.png" mode="scaleToFill" />
+            <image
+                class="banner-image"
+                src="https://demo.bjblackhole.com/BlackHole3.0/app/img/app_banner_1.png"
+                mode="scaleToFill"
+                @touchstart="bottom_area_touchstart"
+                @touchend="bottom_area_touchend" />
         </view>
     </div>
 </template>
@@ -20,10 +25,17 @@ const props = defineProps({
         type: Function,
         default: () => {},
     },
+    banner_re_longpress_callback: {
+        type: Function,
+        default: () => {},
+    },
 });
 
 const clickCount = ref(0);
 const timer = ref<number | null>(null);
+
+const touch_timer = ref<number | null>(null);
+const touch_longpress = 3000; // 长按时间阈值
 
 onUnmounted(() => {
     clickCount.value = 0;
@@ -42,6 +54,23 @@ const banner_click = () => {
             clickCount.value = 0;
             timer.value = null;
         }, 1000);
+    }
+};
+
+// MARK Click  开始点击
+const bottom_area_touchstart = () => {
+    // 设置定时器，如果触摸时间超过阈值，则认为是长按
+    touch_timer.value = setTimeout(() => {
+        props.banner_re_longpress_callback();
+    }, touch_longpress);
+};
+
+// MARK Click  结束点击
+const bottom_area_touchend = () => {
+    // 如果触摸结束，且定时器存在，则清除定时器
+    if (touch_timer.value !== null) {
+        clearTimeout(touch_timer.value);
+        touch_timer.value = null;
     }
 };
 </script>

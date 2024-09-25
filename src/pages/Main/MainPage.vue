@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-09-25 17:11:31
+ * @LastEditTime: 2024-09-25 19:34:25
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -12,7 +12,7 @@
                 :show-scrollbar="false"
                 :scroll-top="sw_contain_scrollTop"
                 @scroll="listen_contain_scroll">
-                <banner-comp :banner_re_callback="banner_re_callback"></banner-comp>
+                <banner-comp :banner_re_callback="banner_re_callback" :banner_re_longpress_callback="banner_re_longpress_callback"></banner-comp>
                 <view class="content">
                     <top-bar
                         :topbar_type="0"
@@ -30,7 +30,7 @@
                         :topbar_scan_callback="topbar_scan_callback"
                         :topbar_search_callback="topbar_search_callback"
                         :topbar_tab_callback="topbar_tab_callback"></top-bar>
-                    <view class="grid-container" :style="style_grid_computed">
+                    <view class="grid-container" :style="style_grid_computed" v-if="list_show.length > 0">
                         <view class="grid-item" v-for="(item, index) in list_show" :key="index">
                             <card
                                 :card_type="tb_tab_index"
@@ -41,6 +41,7 @@
                                 :card_collect_callback="card_collect_callback"></card>
                         </view>
                     </view>
+                    <view class="empty-area" v-else></view>
                 </view>
             </scroll-view>
         </view>
@@ -53,6 +54,7 @@
         :dialog_shareUrl_disabled="dialog_shareUrl_disabled"
         :dialog_UrlInputCallBack="dialog_UrlInputCallBack"></url-input-dialog>
     <custom-input-dialog ref="ref_customInput_dialog" :dialog_CustomInputCallBack="showResourceAddressRes"></custom-input-dialog>
+    <sample-input-dialog ref="ref_sampleInput_dialog" :dialog_SampleInputCallBack="dialog_SampleInputCallBack"></sample-input-dialog>
 </template>
 
 // MOD-- JavaScript
@@ -64,6 +66,7 @@ import TopBar from '@/components/TopBar/TopBar.vue';
 import Card from '@/components/Card/Card.vue';
 import UrlInputDialog from '@/components/Dialog/UrlInputDialog.vue';
 import CustomInputDialog from '@/components/Dialog/CustomInputDialog.vue';
+import SampleInputDialog from '@/components/Dialog/SampleInputDialog.vue';
 import {
     getSceneById,
     getSingleSceneTreeById,
@@ -98,6 +101,7 @@ const dialog_revise = ref(false); // 是否是修改
 const dialog_shareUrl_disabled = ref(true); // 分享链接无法输入
 
 const ref_customInput_dialog = ref<InstanceType<typeof CustomInputDialog> | null>(null);
+const ref_sampleInput_dialog = ref<InstanceType<typeof CustomInputDialog> | null>(null);
 
 const style_grid_computed = computed(() => {
     return {
@@ -141,6 +145,7 @@ const update_cardList = () => {
     } else {
         list_show.value = list_recently_viewed.value;
     }
+    // list_show.value = [];
     console.log('当前显示列表 = ', list_show.value);
 };
 
@@ -193,17 +198,19 @@ const uniapp_getClipboard = () => {
     });
 };
 
-// MARK uni-app  清空粘贴板
-const uniapp_clearClipboard = () => {
-    uni.setClipboardData({
-        data: '',
-        success: () => {},
-    });
-};
-
 // MARK Topbar banner区域连续点击
 const banner_re_callback = () => {
     ref_customInput_dialog.value?.show_dialog();
+};
+
+// MARK Topbar banner区域长按
+const banner_re_longpress_callback = () => {
+    ref_sampleInput_dialog.value?.show_dialog();
+};
+
+// MARK Topbar banner区域长按 回调
+const dialog_SampleInputCallBack = (e: any) => {
+    card_store.removeCard(e.dataSetId);
 };
 
 // MARK Topbar 占位区域点击
@@ -308,7 +315,6 @@ const dialog_UrlInputCallBack = (e: any) => {
     } else {
         if (shareParams) showShareUrlRes(shareParams);
     }
-    uniapp_clearClipboard();
 };
 
 // MARK 查看分享链接资源
@@ -467,12 +473,22 @@ const getDataSetList = (params: any): Promise<any> => {
             console.log(res);
             let dataSetList: any[] = [];
             res.data.forEach((item: any) => {
+                let dataSetCRS = '';
+                let dataSetCRSNorth = 0;
+                let dataSetSGContent = item.context ? item.context : '';
+                if (item.coordinatesConfig) {
+                    dataSetCRS = item.coordinatesConfig.coordinates ? item.coordinatesConfig.coordinates : '';
+                    dataSetCRSNorth = item.coordinatesConfig.northAngle ? Number(item.coordinatesConfig.northAngle) : 0;
+                }
                 dataSetList.push({
                     dataSetId: item.dataSetId,
                     resourcesAddress: item.resourcesAddress,
                     rotate: item.rotate?.split(' ').map(Number),
                     scale: item.scale?.split(' ').map(Number),
                     offset: item.translation?.split(' ').map(Number),
+                    dataSetCRS: dataSetCRS,
+                    dataSetCRSNorth: dataSetCRSNorth,
+                    dataSetSGContent: dataSetSGContent,
                 });
             });
             if (dataSetList.length > 0) {
@@ -491,12 +507,22 @@ const getDataSetList_old = (params: any): Promise<any> => {
             console.log(res);
             let dataSetList: any[] = [];
             res.data.forEach((item: any) => {
+                let dataSetCRS = '';
+                let dataSetCRSNorth = 0;
+                let dataSetSGContent = item.context ? item.context : '';
+                if (item.coordinatesConfig) {
+                    dataSetCRS = item.coordinatesConfig.coordinates ? item.coordinatesConfig.coordinates : '';
+                    dataSetCRSNorth = item.coordinatesConfig.northAngle ? Number(item.coordinatesConfig.northAngle) : 0;
+                }
                 dataSetList.push({
                     dataSetId: item.dataSetId,
                     resourcesAddress: item.resourcesAddress,
                     rotate: item.rotate?.split(' ').map(Number),
                     scale: item.scale?.split(' ').map(Number),
                     offset: item.translation?.split(' ').map(Number),
+                    dataSetCRS: dataSetCRS,
+                    dataSetCRSNorth: dataSetCRSNorth,
+                    dataSetSGContent: dataSetSGContent,
                 });
             });
             if (dataSetList.length > 0) {
@@ -619,6 +645,14 @@ const getDataSetIds_old = (sceneTree: any) => {
             justify-content: center;
             align-items: center;
         }
+    }
+
+    .empty-area {
+        position: relative;
+        width: 100%;
+        height: 300px;
+        display: flex;
+        background-color: red;
     }
 }
 </style>
