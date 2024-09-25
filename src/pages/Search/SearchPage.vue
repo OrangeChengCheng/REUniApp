@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-09-25 14:19:12
+ * @LastEditTime: 2024-09-25 19:50:52
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -13,7 +13,7 @@
                 :topbar_back_callback="topbar_back_callback"></search-bar>
             <scroll-view class="contain-scroll-view" scroll-y :show-scrollbar="false">
                 <view class="content">
-                    <view class="grid-container" :style="style_grid_computed">
+                    <view class="grid-container" :style="style_grid_computed" v-if="list_show.length > 0">
                         <view class="grid-item" v-for="(item, index) in list_show" :key="index">
                             <card
                                 :card_type="tb_tab_index"
@@ -23,6 +23,10 @@
                                 :card_longpress_callback="card_longpress_callback"
                                 :card_collect_callback="card_collect_callback"></card>
                         </view>
+                    </view>
+                    <view class="empty-area" v-else>
+                        <image class="empty-image" src="@/static/main/empty.png" mode="scaleToFill" />
+                        <text class="empty-text">这里空空如也</text>
                     </view>
                 </view>
             </scroll-view>
@@ -234,6 +238,27 @@ const dialog_UrlInputCallBack = (e: any) => {
             display: flex;
             justify-content: center;
             align-items: center;
+        }
+    }
+
+    .empty-area {
+        position: relative;
+        width: 100%;
+        height: 300px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        .empty-image {
+            position: relative;
+            width: 265px;
+            height: 220px;
+            margin-top: 50px;
+        }
+        .empty-text {
+            font-size: 16px;
+            color: #86909c;
+            line-height: 20px;
         }
     }
 }

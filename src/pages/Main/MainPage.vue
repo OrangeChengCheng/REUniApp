@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-09-25 19:34:25
+ * @LastEditTime: 2024-09-25 19:49:03
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -41,7 +41,10 @@
                                 :card_collect_callback="card_collect_callback"></card>
                         </view>
                     </view>
-                    <view class="empty-area" v-else></view>
+                    <view class="empty-area" v-else>
+                        <image class="empty-image" src="@/static/main/empty.png" mode="scaleToFill" />
+                        <text class="empty-text">这里空空如也</text>
+                    </view>
                 </view>
             </scroll-view>
         </view>
@@ -145,7 +148,6 @@ const update_cardList = () => {
     } else {
         list_show.value = list_recently_viewed.value;
     }
-    // list_show.value = [];
     console.log('当前显示列表 = ', list_show.value);
 };
 
@@ -652,7 +654,20 @@ const getDataSetIds_old = (sceneTree: any) => {
         width: 100%;
         height: 300px;
         display: flex;
-        background-color: red;
+        flex-direction: column;
+        align-items: center;
+
+        .empty-image {
+            position: relative;
+            width: 265px;
+            height: 220px;
+            margin-top: 50px;
+        }
+        .empty-text {
+            font-size: 16px;
+            color: #86909c;
+            line-height: 20px;
+        }
     }
 }
 </style>
