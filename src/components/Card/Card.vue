@@ -12,7 +12,7 @@
             <text class="bottom-title">{{ card_proj.projName }}</text>
             <text class="bottom-time"> {{ `${lastTime_computed}前 查看` }}</text>
         </view>
-        <view class="collect-area" @click.stop="collect_area_click">
+        <view v-if="card_type !== 2" class="collect-area" @click.stop="collect_area_click">
             <icon-font v-if="card_proj.collect" name="card_icon_like_pressed" size="24px" color="--color-main-blue"></icon-font>
             <icon-font v-else name="card_icon_like_default" size="24px" color="--color-white"></icon-font>
         </view>
@@ -26,6 +26,10 @@ import type { PropType } from 'vue';
 import { type Share } from '@/types/class';
 
 const props = defineProps({
+    card_type: {
+        type: Number,
+        default: 0,
+    },
     card_min: {
         type: Boolean,
         default: false,

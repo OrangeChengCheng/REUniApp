@@ -1,0 +1,121 @@
+[
+    {
+        "url": "https://engine3.bjblackhole.com/BlackHole/index.html#/dataSetShare/view/3a15346b-f7f6-cc2e-3497-bd8d349bbcf1/3a141f0f-f3f1-2cd7-f2fd-c262b50c9f6b/hk_dom.doezip?dataType=Rs&token=3586786C8AF8C18C08248F18D08B58BB8E987F8C8AD84B8",
+        "projName": "hk_dom.doezip",
+        "id": "3a141f0f-f3f1-2cd7-f2fd-c262b50c9f6b",
+        "lastTime": "2024-09-24T04:16:58.818Z",
+        "dataSetList": [
+            {
+                "dataSetId": "3a141f0f-f3f1-2cd7-f2fd-c262b50c9f6b",
+                "resourcesAddress": "https://engine3.bjblackhole.com/engineweb/api/autoconvert/EngineRes/RequestEngineRes?dir=url_res04&path=3a141f0ff3f12cd7f2fdc262b50c9f6b",
+                "rotate": [0, 0, 0, 1],
+                "scale": [1, 1, 1],
+                "offset": [0, 0, 0]
+            }
+        ],
+        "worldCRS": "",
+        "collect": true
+    },
+    {
+        "url": "https://engine3.bjblackhole.com/BlackHole/index.html#/dataSetShare/view/3a15346c-747f-3f09-2c36-98cee6a15393/3a142310-8361-1716-1a02-c22ada582bc6/Arcgis%E5%BD%B1%E5%83%8F%E5%9B%BE-Web%E5%A2%A8%E5%8D%A1%E6%89%98-%E6%96%B0?dataType=Wmts&token=2788F88285682D87B86385E8E48E08428C58A98398D48268",
+        "projName": "Arcgis影像图-Web墨卡托-新",
+        "id": "3a142310-8361-1716-1a02-c22ada582bc6",
+        "lastTime": "2024-09-24T04:17:30.337Z",
+        "dataSetList": [
+            {
+                "dataSetId": "3a142310-8361-1716-1a02-c22ada582bc6",
+                "resourcesAddress": "https://engine3.bjblackhole.com/engineweb/api/autoconvert/EngineRes/RequestEngineRes?dir=url_res04&path=3a142310836117161a02c22ada582bc6",
+                "rotate": [0, 0, 0, 1],
+                "scale": [1, 1, 1],
+                "offset": [0, 0, 0]
+            }
+        ],
+        "worldCRS": "",
+        "collect": true
+    },
+    {
+        "url": "https://engine3.bjblackhole.com/BlackHole/index.html#/dataSetShare/view/3a15346c-a6dc-c0ba-5703-a6839bec779c/3a142310-b14c-ab7b-820e-2fc1af93c5f6/%E5%A4%A9%E5%9C%B0%E5%9B%BE%E7%9F%A2%E9%87%8F%E5%BA%95%E5%9B%BE%E6%B3%A8%E8%AE%B0-Web%E5%A2%A8%E5%8D%A1%E6%89%98-%E6%96%B0?dataType=Wmts&token=8689E828385D8CB8BC87385F8A888984E8EE8FD84C81D8",
+        "projName": "天地图矢量底图注记-Web墨卡托-新",
+        "id": "3a142310-b14c-ab7b-820e-2fc1af93c5f6",
+        "lastTime": "2024-09-24T04:17:42.751Z",
+        "dataSetList": [
+            {
+                "dataSetId": "3a142310-b14c-ab7b-820e-2fc1af93c5f6",
+                "resourcesAddress": "https://engine3.bjblackhole.com/engineweb/api/autoconvert/EngineRes/RequestEngineRes?dir=url_res04&path=3a142310b14cab7b820e2fc1af93c5f6",
+                "rotate": [0, 0, 0, 1],
+                "scale": [1, 1, 1],
+                "offset": [0, 0, 0]
+            }
+        ],
+        "worldCRS": "",
+        "collect": true
+    },
+    {
+        "url": "https://engine3.bjblackhole.com/BlackHole/index.html#/dataSetShare/view/3a15346d-0dda-005e-2cd8-151167b5c838/3a1422ec-8221-9b33-ec5d-07ca4f592a07/hk.osgbzip?dataType=Osgb&token=D086A87E8918D289184C81283689D8468F08418798F78D58",
+        "projName": "hk.osgbzip",
+        "id": "3a1422ec-8221-9b33-ec5d-07ca4f592a07",
+        "lastTime": "2024-09-24T04:18:10.330Z",
+        "dataSetList": [
+            {
+                "dataSetId": "3a1422ec-8221-9b33-ec5d-07ca4f592a07",
+                "resourcesAddress": "https://engine3.bjblackhole.com/engineweb/api/autoconvert/EngineRes/RequestEngineRes?dir=url_res04&path=3a1422ec82219b33ec5d07ca4f592a07",
+                "rotate": [0, 0, 0, 1],
+                "scale": [1, 1, 1],
+                "offset": [0, 0, 0]
+            }
+        ],
+        "worldCRS": "",
+        "collect": true
+    },
+    {
+        "url": "https://engine3.bjblackhole.com/blackhole/index.html#/dataSetShare/view/3a153910-1840-5542-1c78-b991a0a432f6/3a141f05-35d3-758e-6f76-eae81ec844f5/%E6%B5%8B%E8%AF%95%E6%A8%A1%E5%9E%8B.fbx?dataType=Bim&token=728FC8578348BD8248E48438688298F08EF8828FD8B183B8",
+        "projName": "测试模型.fbx",
+        "id": "3a141f05-35d3-758e-6f76-eae81ec844f5",
+        "lastTime": "2024-09-25T02:40:55.240Z",
+        "dataSetList": [
+            {
+                "dataSetId": "3a141f05-35d3-758e-6f76-eae81ec844f5",
+                "resourcesAddress": "https://engine3.bjblackhole.com/engineweb/api/autoconvert/EngineRes/RequestEngineRes?dir=url_res04&path=3a141f0535d3758e6f76eae81ec844f5",
+                "rotate": [0, 0, 0, 1],
+                "scale": [1, 1, 1],
+                "offset": [0, 0, 0]
+            }
+        ],
+        "worldCRS": "",
+        "collect": true
+    },
+    {
+        "url": "https://engine3.bjblackhole.com/blackhole/index.html#/dataSetShare/view/3a153912-2e5a-e795-e9fd-8a0322ad0ecb/3a141f45-96ae-29b1-ce48-dd3fdca9d531/%E5%9D%90%E6%A0%87%E7%B3%BB?dataType=Bim&token=A98408BE88288F81984A83A888D88F883B89183A86B8F58",
+        "projName": "坐标系",
+        "id": "3a141f45-96ae-29b1-ce48-dd3fdca9d531",
+        "lastTime": "2024-09-25T02:41:05.505Z",
+        "dataSetList": [
+            {
+                "dataSetId": "3a141f45-96ae-29b1-ce48-dd3fdca9d531",
+                "resourcesAddress": "https://engine3.bjblackhole.com/engineweb/api/autoconvert/EngineRes/RequestEngineRes?dir=url_res04&path=3a141f4596ae29b1ce48dd3fdca9d531",
+                "rotate": [0, 0, 0, 1],
+                "scale": [1, 1, 1],
+                "offset": [0, 0, 0]
+            }
+        ],
+        "worldCRS": "",
+        "collect": true
+    },
+    {
+        "url": "https://engine3.bjblackhole.com/blackhole/index.html#/dataSetShare/view/3a15391d-0edb-bad6-a07e-06aaeabc4916/3a14a578-298a-2f8a-4eb4-f0d5860f39fd/earth_dem?dataType=Wmts&token=DB86382F82E8918B28F788C88E8388185184B8F68F48A58",
+        "projName": "1. earth_dem",
+        "id": "3a14a578-298a-2f8a-4eb4-f0d5860f39fd",
+        "lastTime": "2024-09-25T02:56:20.103Z",
+        "dataSetList": [
+            {
+                "dataSetId": "3a14a578-298a-2f8a-4eb4-f0d5860f39fd",
+                "resourcesAddress": "https://engine3.bjblackhole.com/engineweb/api/autoconvert/EngineRes/RequestEngineRes?dir=url_res04&path=3a14a578298a2f8a4eb4f0d5860f39fd",
+                "rotate": [0, 0, 0, 1],
+                "scale": [1, 1, 1],
+                "offset": [0, 0, 0]
+            }
+        ],
+        "worldCRS": "",
+        "collect": true
+    }
+]

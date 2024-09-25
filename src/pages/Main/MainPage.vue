@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-09-25 10:14:13
+ * @LastEditTime: 2024-09-25 11:36:46
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -31,6 +31,7 @@
                     <view class="grid-container" :style="style_grid_computed">
                         <view class="grid-item" v-for="(item, index) in list_show" :key="index">
                             <card
+                                :card_type="tb_tab_index"
                                 :card_min="grid_isMin"
                                 :card_proj="item"
                                 :card_callback="card_callback"
@@ -77,6 +78,7 @@ const TopBar_fixedSpace = 230;
 const list_show = ref<Share[]>([]); // 当前内容展示列表
 const list_recently_viewed = ref<Share[]>([]); // 最近浏览列表
 const list_collect = ref<Share[]>([]); // 收藏列表
+const list_saple = ref<Share[]>([]); // 模板示例列表
 const tb_isFixed = ref(false); // 顶部模块是否固定显示
 const tb_tab_index = ref(0); // 顶部模块是否固定显示
 const sw_contain_scrollTop = ref(0); // 设置滚动
@@ -129,11 +131,15 @@ onUnmounted(() => {
 const update_cardList = () => {
     list_recently_viewed.value = card_store.getCardList();
     list_collect.value = card_store.getCollectCardList();
+    list_saple.value = card_store.getSampleCardList();
     if (tb_tab_index.value == 1) {
         list_show.value = list_collect.value;
+    } else if (tb_tab_index.value == 2) {
+        list_show.value = list_saple.value;
     } else {
         list_show.value = list_recently_viewed.value;
     }
+    console.log('当前显示列表 = ', list_show.value);
 };
 
 // MARK Listen  屏幕变化
@@ -202,6 +208,8 @@ const banner_re_callback = () => {
 // MARK Topbar 占位区域点击
 const topbar_houerArea_callback = () => {
     dialog_shareUrl_disabled.value = false;
+    dialog_shareUrl.value = '';
+    dialog_projName.value = '';
     ref_urlInput_dialog.value?.show_dialog();
 };
 
@@ -257,8 +265,13 @@ const card_callback = (e: Share) => {
 
 // MARK Click  卡片长按
 const card_longpress_callback = (e: Share) => {
-    console.log('卡片长按', e);
+    console.log('卡片长按', JSON.stringify(e));
     uni.$re.unipluginLog('卡片长按' + JSON.stringify(e));
+
+    if (tb_tab_index.value === 2) {
+        uni.showToast({ title: '模板示例无法修改名称', icon: 'none' });
+        return;
+    }
 
     dialog_shareUrl.value = e.url;
     dialog_projName.value = e.projName;
@@ -275,12 +288,8 @@ const card_collect_callback = (e: Share) => {
 
 // MARK Topbar tab切换
 const topbar_tab_callback = (index: number) => {
-    if (index == 1) {
-        list_show.value = list_collect.value;
-    } else {
-        list_show.value = list_recently_viewed.value;
-    }
     tb_tab_index.value = index;
+    update_cardList();
     // 解决view层不同步的问题
     sw_contain_scrollTop.value = sw_contain_scrollTop_curr.value;
     nextTick(() => {
@@ -304,26 +313,26 @@ const dialog_UrlInputCallBack = (e: any) => {
 const showShareUrlRes = (params: any) => {
     uni.setStorageSync('RE_Token', params.token);
     if (params.shareType === 2) {
-        showSceneRes(params.id);
+        showSceneRes(params);
     } else {
-        showModelRes(params.id);
+        showModelRes(params);
     }
 };
 
 // MARK re-api 查看分享链接资源 -- 场景资源
-const showSceneRes = (sceneId: string) => {
+const showSceneRes = (params: any) => {
     uni.show_loading();
-    getSceneInfo_old(sceneId).then((res_1) => {
-        getSceneTree_old(sceneId).then((res_2) => {
+    getSceneInfo_old(params.id).then((res_1) => {
+        getSceneTree_old(params.id).then((res_2) => {
             let dataSetIdList = getDataSetIds_old(res_2);
-            getDataSetList_old({ dataSetIds: dataSetIdList, resourceId: sceneId }).then((res_3) => {
+            getDataSetList_old({ dataSetIds: dataSetIdList, resourceId: params.id }).then((res_3) => {
                 const dataSetList = handleDataSetTrans(res_3, res_1.dataSetPosition);
                 console.log('数据集：', dataSetList);
 
                 let shareData: Share = newShare({
-                    url: dialog_shareUrl.value,
-                    projName: dialog_projName.value,
-                    id: sceneId,
+                    url: params.url,
+                    projName: params.projName,
+                    id: params.id,
                     lastTime: new Date(),
                     dataSetList: dataSetList,
                     worldCRS: res_1.coordinates,
@@ -347,13 +356,13 @@ const showSceneRes = (sceneId: string) => {
 };
 
 // MARK re-api 查看分享链接资源 -- 模型资源
-const showModelRes = (dataSetId: string) => {
-    getDataSetList_old({ dataSetIds: [dataSetId], resourceId: dataSetId }).then((res) => {
+const showModelRes = (params: any) => {
+    getDataSetList_old({ dataSetIds: [params.id], resourceId: params.id }).then((res) => {
         console.log('数据集：', res);
         let shareData: Share = newShare({
-            url: dialog_shareUrl.value,
-            projName: dialog_projName.value,
-            id: dataSetId,
+            url: params.url,
+            projName: params.projName,
+            id: params.id,
             lastTime: new Date(),
             dataSetList: res,
         });

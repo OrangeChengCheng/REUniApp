@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-09-24 17:59:59
+ * @LastEditTime: 2024-09-25 11:34:39
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -16,6 +16,7 @@
                     <view class="grid-container" :style="style_grid_computed">
                         <view class="grid-item" v-for="(item, index) in list_show" :key="index">
                             <card
+                                :card_type="tb_tab_index"
                                 :card_proj="item"
                                 :card_callback="card_callback"
                                 :card_longpress_callback="card_longpress_callback"
@@ -50,9 +51,8 @@ const card_store = useCardStore();
 const list_show = ref<Share[]>([]); // 当前内容展示列表
 const list_recently_viewed = ref<Share[]>([]); // 最近浏览列表
 const list_collect = ref<Share[]>([]); // 收藏列表
-const list_search = ref<Share[]>([]); // 搜索列表
+const list_saple = ref<Share[]>([]); // 模板示例列表
 const tb_tab_index = ref(0); // 顶部模块是否固定显示
-const tb_tab_search = ref(''); // 搜索内容
 const uniapi_windowWidth = ref(0); // 屏幕宽度
 const uniapi_windowHeight = ref(0); // 屏幕高度
 const grid_columns = ref(2);
@@ -91,11 +91,15 @@ onUnmounted(() => {
 const update_cardList = (search?: string) => {
     list_recently_viewed.value = card_store.getCardList(search);
     list_collect.value = card_store.getCollectCardList(search);
+    list_saple.value = card_store.getSampleCardList(search);
     if (tb_tab_index.value == 1) {
         list_show.value = list_collect.value;
+    } else if (tb_tab_index.value == 2) {
+        list_show.value = list_saple.value;
     } else {
         list_show.value = list_recently_viewed.value;
     }
+    console.log('当前显示列表 = ', list_show.value);
 };
 
 // MARK Listen  屏幕变化
@@ -125,12 +129,8 @@ const topbar_back_callback = () => {
 
 // MARK Topbar tab切换
 const topbar_tab_callback = (index: number) => {
-    if (index == 1) {
-        list_show.value = list_collect.value;
-    } else {
-        list_show.value = list_recently_viewed.value;
-    }
     tb_tab_index.value = index;
+    update_cardList();
 };
 
 // MARK Click  卡片点击
@@ -158,6 +158,11 @@ const card_longpress_callback = (e: Share) => {
     console.log('卡片长按', e);
     uni.$re.unipluginLog('卡片长按' + JSON.stringify(e));
 
+    if (tb_tab_index.value === 2) {
+        uni.showToast({ title: '模板示例无法修改名称', icon: 'none' });
+        return;
+    }
+
     dialog_shareUrl.value = e.url;
     dialog_projName.value = e.projName;
     dialog_revise.value = true;
@@ -177,6 +182,7 @@ const dialog_UrlInputCallBack = (e: any) => {
     let shareParams: any = uni.$tool.url_handle(e.shareUrl);
     if (dialog_revise.value) {
         card_store.reviseProjName(shareParams, e.projName);
+        dialog_revise.value = false;
     }
 };
 </script>
