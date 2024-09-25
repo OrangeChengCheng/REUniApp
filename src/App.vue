@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-14 10:24:21
- * @LastEditTime: 2024-09-25 17:34:07
+ * @LastEditTime: 2024-09-25 17:47:24
 -->
 <script setup lang="ts">
 import { onLaunch, onShow, onHide } from '@dcloudio/uni-app';
@@ -9,13 +9,18 @@ import { useCardStore } from '@/stores/card';
 
 onLaunch(() => {
     console.log('App Launch');
-    fetch('https://demo.bjblackhole.com/BlackHole3.0/app/json/re_sample_res.json')
-        .then((response) => response.json())
-        .then((data) => {
+    uni.request({
+        url: 'https://demo.bjblackhole.com/BlackHole3.0/app/json/re_sample_res.json',
+        success: (res) => {
             const card_store = useCardStore();
-            card_store.updateSample(data);
-        })
-        .catch((error) => console.error('服务端示例数据获取失败！', error));
+            card_store.updateSample(res.data);
+            uni.$re.unipluginLog('服务端示例数据获取成功！ ' + JSON.stringify(res));
+        },
+        fail: (err) => {
+            console.error('服务端示例数据获取失败！', err);
+            uni.$re.unipluginLog('服务端示例数据获取失败！ ' + JSON.stringify(err));
+        },
+    });
 });
 onShow(() => {
     console.log('App Show');
