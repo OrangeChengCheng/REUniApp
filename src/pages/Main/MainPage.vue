@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-09-25 11:36:46
+ * @LastEditTime: 2024-09-25 14:32:52
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -15,6 +15,7 @@
                 <banner-comp :banner_re_callback="banner_re_callback"></banner-comp>
                 <view class="content">
                     <top-bar
+                        :topbar_type="0"
                         :topbar_tab_index="tb_tab_index"
                         :topbar_houerArea_callback="topbar_houerArea_callback"
                         :topbar_scan_callback="topbar_scan_callback"
@@ -22,6 +23,7 @@
                         :topbar_tab_callback="topbar_tab_callback"></top-bar>
                     <top-bar
                         v-if="tb_isFixed"
+                        :topbar_type="1"
                         :topbar_isFixed="tb_isFixed"
                         :topbar_tab_index="tb_tab_index"
                         :topbar_houerArea_callback="topbar_houerArea_callback"

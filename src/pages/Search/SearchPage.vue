@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-09-25 11:34:39
+ * @LastEditTime: 2024-09-25 14:19:12
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -17,6 +17,7 @@
                         <view class="grid-item" v-for="(item, index) in list_show" :key="index">
                             <card
                                 :card_type="tb_tab_index"
+                                :card_min="grid_isMin"
                                 :card_proj="item"
                                 :card_callback="card_callback"
                                 :card_longpress_callback="card_longpress_callback"
@@ -56,6 +57,8 @@ const tb_tab_index = ref(0); // 顶部模块是否固定显示
 const uniapi_windowWidth = ref(0); // 屏幕宽度
 const uniapi_windowHeight = ref(0); // 屏幕高度
 const grid_columns = ref(2);
+const grid_columnWidth = ref(180 + 20);
+const grid_isMin = ref(false);
 
 const ref_urlInput_dialog = ref<InstanceType<typeof UrlInputDialog> | null>(null);
 const dialog_projName = ref(''); // 分享项目名称
@@ -113,8 +116,13 @@ const listen_windoeResize = (e: any) => {
 
 // MARK Listen 更新 Grid 比例
 const update_gridColumns = () => {
-    const columnWidth = 180 + 20; // item 宽度 + 间距
-    grid_columns.value = Math.floor(uniapi_windowWidth.value / columnWidth);
+    if (uniapi_windowWidth.value / 2 < grid_columnWidth.value) {
+        grid_isMin.value = true;
+        grid_columns.value = 2;
+    } else {
+        grid_isMin.value = false;
+        grid_columns.value = Math.floor(uniapi_windowWidth.value / grid_columnWidth.value);
+    }
 };
 
 // MARK Topbar 搜索
@@ -215,6 +223,7 @@ const dialog_UrlInputCallBack = (e: any) => {
 
     .grid-container {
         position: relative;
+        width: 100%;
         display: grid;
         gap: 10px;
         padding: 10px 12px;

@@ -1,15 +1,15 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-22 11:31:42
- * @LastEditTime: 2024-09-24 19:16:32
+ * @LastEditTime: 2024-09-25 14:33:43
 -->
 <template>
     <view class="sup-card" :style="`${card_min ? 'width: 150px;' : 'width: 180px'}`" @click="card_click">
         <view class="top-area">
             <image src="../../static/Main/card_bg.png" class="top-area-bg" />
         </view>
-        <view class="bottom-area" @touchstart="bottom_area_touchstart" @touchend="bottom_area_touchend">
-            <text class="bottom-title">{{ card_proj.projName }}</text>
+        <view class="bottom-area">
+            <text class="bottom-title" @touchstart="bottom_area_touchstart" @touchend="bottom_area_touchend">{{ card_proj.projName }}</text>
             <text class="bottom-time"> {{ `${lastTime_computed}前 查看` }}</text>
         </view>
         <view v-if="card_type !== 2" class="collect-area" @click.stop="collect_area_click">
@@ -129,6 +129,7 @@ const bottom_area_touchend = () => {
 
     .bottom-title {
         position: relative;
+        width: 100%;
         font-size: 15px;
         font-weight: bold;
         color: var(--color-main-black);

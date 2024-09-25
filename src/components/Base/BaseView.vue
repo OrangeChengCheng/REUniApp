@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-22 10:11:39
- * @LastEditTime: 2024-09-21 21:30:48
+ * @LastEditTime: 2024-09-25 14:35:22
 -->
 <template>
     <view class="sup-base-view">
@@ -78,13 +78,13 @@ const nav_bar_item_callback = (type) => {
     display: flex;
     width: 100%;
     height: calc(100% - 40px);
-    height: calc(100% - calc(40px + constant(safe-area-inset-top)));
-    height: calc(100% - calc(40px + env(safe-area-inset-top)));
+    // height: calc(100% - calc(40px + constant(safe-area-inset-top)));
+    // height: calc(100% - calc(40px + env(safe-area-inset-top)));
     overflow: hidden;
 }
 .base-solt-nav-bar {
     height: calc(100% - 84px);
-    height: calc(100% - calc(84px + constant(safe-area-inset-top)));
-    height: calc(100% - calc(84px + env(safe-area-inset-top)));
+    // height: calc(100% - calc(84px + constant(safe-area-inset-top)));
+    // height: calc(100% - calc(84px + env(safe-area-inset-top)));
 }
 </style>

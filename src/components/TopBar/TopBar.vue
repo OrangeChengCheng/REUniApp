@@ -1,5 +1,5 @@
 <template>
-    <view :class="`${topbar_isFixed ? 'sup-top-bar-fixed' : 'sup-top-bar'}`">
+    <view :class="`${topbar_type === 1 ? 'sup-top-bar-fixed' : 'sup-top-bar'}`">
         <view class="search-area">
             <view class="border-view">
                 <view class="search-area" @click.stop="search_area_click">
@@ -25,6 +25,7 @@
                 <icon-font v-if="tab_index == 2" class="icon_tabSel" name="tab_bg_selected" size="10px" color="--color-main-blue"></icon-font>
             </view>
         </view>
+        <view class="space-area" v-if="topbar_isFixed && topbar_type === 0"></view>
     </view>
 </template>
 
@@ -36,6 +37,10 @@ const props = defineProps({
     topbar_isFixed: {
         type: Boolean,
         default: false,
+    },
+    topbar_type: {
+        type: Number,
+        default: 0,
     },
     topbar_tab_index: {
         type: Number,
@@ -105,6 +110,15 @@ const scan_area_click = () => {
     flex-direction: column;
     flex-shrink: 0;
     background-color: var(--color-main-bg);
+
+    .space-area {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: red;
+    }
 }
 
 .sup-top-bar-fixed {

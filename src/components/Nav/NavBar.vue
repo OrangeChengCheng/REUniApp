@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-22 11:05:25
- * @LastEditTime: 2024-09-21 17:09:28
+ * @LastEditTime: 2024-09-25 14:35:36
 -->
 <template>
     <view class="sup-nav-bar" :style="`background-color:var(${nav_bar_color})`">
@@ -81,8 +81,8 @@ const navBarItemAction = (type) => {
     position: relative;
     width: 100%;
     height: calc(40px);
-    height: calc(40px + constant(safe-area-inset-top));
-    height: calc(40px + env(safe-area-inset-top));
+    // height: calc(40px + constant(safe-area-inset-top));
+    // height: calc(40px + env(safe-area-inset-top));
 }
 .nav-bar {
     position: relative;

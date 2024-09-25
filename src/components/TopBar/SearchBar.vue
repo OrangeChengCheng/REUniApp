@@ -20,6 +20,10 @@
                 收藏
                 <icon-font v-if="tab_index == 1" class="icon_tabSel" name="tab_bg_selected" size="10px" color="--color-main-blue"></icon-font>
             </view>
+            <view :class="`${tab_index_computed(2)}`" @click.stop="tab_click(2)">
+                模板示例
+                <icon-font v-if="tab_index == 2" class="icon_tabSel" name="tab_bg_selected" size="10px" color="--color-main-blue"></icon-font>
+            </view>
         </view>
     </view>
 </template>
@@ -47,7 +51,7 @@ const props = defineProps({
     },
 });
 
-const tab_index = ref(0); // 0：最近打开  1：收藏
+const tab_index = ref(0); // 0：最近打开  1：收藏  2: 模板示例
 const search = ref('');
 
 watch([() => props.topbar_tab_index], () => {
