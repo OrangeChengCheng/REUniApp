@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-09-25 19:50:52
+ * @LastEditTime: 2024-09-25 19:59:45
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -25,7 +25,7 @@
                         </view>
                     </view>
                     <view class="empty-area" v-else>
-                        <image class="empty-image" src="@/static/main/empty.png" mode="scaleToFill" />
+                        <image class="empty-image" src="../../static/Empty/empty_bg.png" mode="scaleToFill" />
                         <text class="empty-text">这里空空如也</text>
                     </view>
                 </view>

@@ -42,7 +42,7 @@
                         </view>
                     </view>
                     <view class="empty-area" v-else>
-                        <image class="empty-image" src="@/static/main/empty.png" mode="scaleToFill" />
+                        <image class="empty-image" src="../../static/Empty/empty_bg.png" mode="scaleToFill" />
                         <text class="empty-text">这里空空如也</text>
                     </view>
                 </view>
