@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-27 17:04:55
- * @LastEditTime: 2024-09-24 13:53:13
+ * @LastEditTime: 2024-09-25 10:11:07
 -->
 <template>
     <div class="sup-url-input-dialog" v-if="dialog_visible">
@@ -31,16 +31,6 @@
                         :maxlength="-1"
                         auto-height />
                 </view>
-                <!-- <view class="modules-item" v-if="dialog_needResource">
-                    <text class="modules-title">模型资源链接</text>
-                    <textarea
-                        class="modules-textarea"
-                        :value="resourcesAddress"
-                        placeholder="请输入模型资源链接"
-                        @blur="resourcesAddress_textarea_blur"
-                        :maxlength="-1"
-                        auto-height />
-                </view> -->
                 <view class="btn-group">
                     <el-button class="cancel" @click="bg_click">取消</el-button>
                     <el-button class="confirm" type="primary" @click="confirm_click">{{ `${dialog_revise ? '确认修改' : '查看模型'}` }}</el-button>
@@ -68,10 +58,6 @@ const props = defineProps({
         default: true,
     },
     dialog_revise: {
-        type: Boolean,
-        default: false,
-    },
-    dialog_needResource: {
         type: Boolean,
         default: false,
     },
@@ -120,6 +106,12 @@ const bg_click = () => {
 // MARK Textarea 失去焦点 分享地址
 const shareUrl_textarea_blur = (e: any) => {
     shareUrl.value = e.detail.value;
+    if (shareUrl.value.length > 0 && !props.dialog_shareUrl_disabled && projName.value.length <= 0) {
+        const urlData = uni.$tool.url_handle(shareUrl.value);
+        if (urlData) {
+            projName.value = urlData.projName;
+        }
+    }
 };
 
 // MARK Textarea 失去焦点 项目名称
@@ -129,11 +121,11 @@ const projName_textarea_blur = (e: any) => {
 
 // MARK Click 确定
 const confirm_click = () => {
-    if (!projName.value.length) {
+    if (projName.value.length <= 0) {
         uni.showToast({ title: '请填写项目名称', icon: 'none' });
         return;
     }
-    if (!shareUrl.value.length) {
+    if (shareUrl.value.length <= 0) {
         uni.showToast({ title: '请填写分享链接', icon: 'none' });
         return;
     }

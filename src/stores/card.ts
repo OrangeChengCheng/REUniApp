@@ -1,16 +1,17 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-13 15:14:00
- * @LastEditTime: 2024-09-24 15:59:54
+ * @LastEditTime: 2024-09-24 19:56:44
  */
 import { defineStore } from 'pinia'
 import { type Share } from '@/types/class';
 
 
 export const useCardStore = defineStore('card', {
-    state: (): { cardList: Share[], collect_cardList: Share[] } => ({
+    state: (): { cardList: Share[], collect_cardList: Share[], sample_cardList: Share[] } => ({
         cardList: JSON.parse(uni.getStorageSync('RE_cardList') || '[]') || [],
         collect_cardList: [],
+        sample_cardList: [],
     }),
     actions: {
         addCard(shareData: Share) {

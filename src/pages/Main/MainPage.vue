@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-09-24 19:15:47
+ * @LastEditTime: 2024-09-25 10:14:13
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -180,6 +180,9 @@ const uniapp_getClipboard = () => {
                 }, 500);
             }
         },
+        fail: (err) => {
+            console.log(err);
+        },
     });
 };
 
@@ -291,6 +294,7 @@ const dialog_UrlInputCallBack = (e: any) => {
     let shareParams: any = uni.$tool.url_handle(e.shareUrl);
     if (dialog_revise.value) {
         card_store.reviseProjName(shareParams, e.projName);
+        dialog_revise.value = false;
     } else {
         if (shareParams) showShareUrlRes(shareParams);
     }
