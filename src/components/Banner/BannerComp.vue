@@ -1,12 +1,12 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-24 17:34:32
- * @LastEditTime: 2024-09-24 17:46:51
+ * @LastEditTime: 2024-09-25 17:37:15
 -->
 <template>
     <div class="sup-banner-comp">
         <view class="banner-box" @click="banner_click">
-            <image class="banner-image" src="https://demo.bjblackhole.com/BlackHole3.0/img/app_banner_1.png" mode="scaleToFill" />
+            <image class="banner-image" src="https://demo.bjblackhole.com/BlackHole3.0/app/img/app_banner_1.png" mode="scaleToFill" />
         </view>
     </div>
 </template>

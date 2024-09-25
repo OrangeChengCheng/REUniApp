@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-27 17:04:55
- * @LastEditTime: 2024-09-25 14:53:15
+ * @LastEditTime: 2024-09-25 17:13:41
 -->
 <template>
     <div class="sup-url-input-dialog" v-if="dialog_visible">
@@ -82,6 +82,14 @@ onMounted(() => {
     shareUrl.value = props.dialog_shareUrl;
 });
 
+// MARK uni-app  清空粘贴板
+const uniapp_clearClipboard = () => {
+    uni.setClipboardData({
+        data: '',
+        success: () => {},
+    });
+};
+
 // MARK Expose 隐藏
 const show_dialog = () => {
     dialog_visible.value = true;
@@ -95,6 +103,7 @@ const hide_dialog = () => {
     content_box_visible.value = false;
     setTimeout(() => {
         dialog_visible.value = false;
+        uniapp_clearClipboard();
     }, 200);
 };
 

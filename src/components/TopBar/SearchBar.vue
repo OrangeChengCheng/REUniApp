@@ -20,8 +20,8 @@
                 收藏
                 <icon-font v-if="tab_index == 1" class="icon_tabSel" name="tab_bg_selected" size="10px" color="--color-main-blue"></icon-font>
             </view>
-            <view :class="`${tab_index_computed(2)}`" @click.stop="tab_click(2)">
-                模板示例
+            <view :class="`tab-bar-sample ${tab_index_computed(2)}`" @click.stop="tab_click(2)">
+                示例
                 <icon-font v-if="tab_index == 2" class="icon_tabSel" name="tab_bg_selected" size="10px" color="--color-main-blue"></icon-font>
             </view>
         </view>
@@ -178,6 +178,10 @@ const search_area_click = () => {
         }
     }
     .tab-bar-collect {
+        width: 52px;
+    }
+
+    .tab-bar-sample {
         width: 52px;
     }
 }

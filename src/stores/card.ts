@@ -1,17 +1,16 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-13 15:14:00
- * @LastEditTime: 2024-09-25 11:33:44
+ * @LastEditTime: 2024-09-25 17:36:39
  */
 import { defineStore } from 'pinia'
 import { type Share } from '@/types/class';
-import sampleCardList from '@/static/sampleCard.json'
 
 
 export const useCardStore = defineStore('card', {
-    state: (): { cardList: Share[], collect_cardList: Share[] } => ({
+    state: (): { cardList: Share[], sample_cardList: Share[] } => ({
         cardList: JSON.parse(uni.getStorageSync('RE_cardList') || '[]') || [],
-        collect_cardList: [],
+        sample_cardList: JSON.parse(uni.getStorageSync('RE_sample_cardList') || '[]') || [],
     }),
     actions: {
         addCard(shareData: Share) {
@@ -68,13 +67,17 @@ export const useCardStore = defineStore('card', {
             }
         },
         getSampleCardList(search?: string) {
-            let sampleCardList_json = JSON.stringify(sampleCardList);
-            let sampleCardList_obj = JSON.parse(sampleCardList_json);
             if (search) {
-                return sampleCardList_obj.filter((e: Share) => e.projName.includes(search));
+                return this.sample_cardList.filter((e: Share) => e.projName.includes(search));
             } else {
-                return sampleCardList_obj;
+                return this.sample_cardList;
             }
+        },
+        updateSample(e: any) {
+            let sampleCardList_json = JSON.stringify(e);
+            let sampleCardList_obj = JSON.parse(sampleCardList_json);
+            this.sample_cardList = sampleCardList_obj;
+            uni.setStorageSync('RE_sample_cardList', JSON.stringify(this.sample_cardList));
         },
 
         // MARK 重复校验

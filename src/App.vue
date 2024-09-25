@@ -1,12 +1,21 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-14 10:24:21
- * @LastEditTime: 2024-09-24 11:43:39
+ * @LastEditTime: 2024-09-25 17:34:07
 -->
 <script setup lang="ts">
 import { onLaunch, onShow, onHide } from '@dcloudio/uni-app';
+import { useCardStore } from '@/stores/card';
+
 onLaunch(() => {
     console.log('App Launch');
+    fetch('https://demo.bjblackhole.com/BlackHole3.0/app/json/re_sample_res.json')
+        .then((response) => response.json())
+        .then((data) => {
+            const card_store = useCardStore();
+            card_store.updateSample(data);
+        })
+        .catch((error) => console.error('服务端示例数据获取失败！', error));
 });
 onShow(() => {
     console.log('App Show');
@@ -49,9 +58,9 @@ body {
 :root {
     --color-white: #ffffff;
     --color-main-bg: #ffffff;
-    --color-main-blue: #0E6BFE;
-    --color-main-black: #1D2129;
-    --color-main-gray: #86909C;
+    --color-main-blue: #0e6bfe;
+    --color-main-black: #1d2129;
+    --color-main-gray: #86909c;
     --animation-transform-style: transform 0.3s linear;
     --animation-opacity-style: opacity 0.5s ease-in-out;
 }

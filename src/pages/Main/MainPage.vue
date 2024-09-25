@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-09-25 14:32:52
+ * @LastEditTime: 2024-09-25 17:11:31
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -184,7 +184,6 @@ const uniapp_getClipboard = () => {
                     dialog_projName.value = urlData.projName;
                     dialog_shareUrl_disabled.value = true;
                     ref_urlInput_dialog.value?.show_dialog();
-                    uniapp_clearClipboard();
                 }, 500);
             }
         },
@@ -309,6 +308,7 @@ const dialog_UrlInputCallBack = (e: any) => {
     } else {
         if (shareParams) showShareUrlRes(shareParams);
     }
+    uniapp_clearClipboard();
 };
 
 // MARK 查看分享链接资源
