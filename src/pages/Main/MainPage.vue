@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-09-26 16:10:17
+ * @LastEditTime: 2024-09-26 18:01:53
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -642,11 +642,13 @@ const getDataSetIds_old = (sceneTree: any) => {
             width: 265px;
             height: 220px;
             margin-top: 50px;
+            margin-right: 10px;
         }
         .empty-text {
             font-size: 16px;
             color: #86909c;
             line-height: 20px;
+            margin-right: 10px;
         }
     }
 }
