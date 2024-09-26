@@ -97,7 +97,7 @@ const api: ApiMethods = {
                     resolve(res.result);
                 },
                 fail: (err) => {
-                    uni.showToast({ title: err.errMsg, icon: 'none' });
+                    uni.showToast({ title: "扫码取消", icon: 'none' });
                     uni.$re.unipluginLog(JSON.stringify(err));
                     reject(err);
                 },
