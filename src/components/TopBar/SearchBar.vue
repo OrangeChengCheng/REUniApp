@@ -127,6 +127,7 @@ const search_area_click = () => {
             position: relative;
             display: flex;
             flex: 1;
+            color: var(--color-main-black);
         }
 
         .search-area {
