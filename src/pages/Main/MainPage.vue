@@ -130,7 +130,7 @@ onMounted(() => {
     });
     // 获取应用到前台状态
     uni.onAppShow((e: any) => {
-        uni.$re.unipluginLog('应用到前台 ' + JSON.stringify(e));
+        uni.$re.unipluginLog('uni.onAppShow ' + JSON.stringify(e));
         uniapp_getClipboard();
     });
     uniapp_getClipboard();
@@ -153,7 +153,7 @@ const update_cardList = () => {
     } else {
         list_show.value = list_recently_viewed.value;
     }
-    console.log('当前显示列表 = ', list_show.value);
+    //console.log('当前显示列表 = ', list_show.value);
 };
 
 // MARK Listen  屏幕变化
@@ -191,7 +191,7 @@ const uniapp_getClipboard = () => {
                 uni.show_loading();
                 setTimeout(() => {
                     uni.hide_loading();
-                    uni.$re.unipluginLog('粘贴板内容 ' + JSON.stringify(res));
+                    uni.$re.unipluginLog('uni.getClipboardData: ' + JSON.stringify(res));
                     dialog_shareUrl.value = urlData.url;
                     dialog_projName.value = urlData.projName;
                     dialog_shareUrl_disabled.value = true;
@@ -250,10 +250,10 @@ const topbar_search_callback = () => {
     uni.navigateTo({
         url: '/pages/Search/SearchPage',
         success: (res) => {
-            uni.$re.unipluginLog('跳转到搜索页' + JSON.stringify(res));
+            uni.$re.unipluginLog('uni.navigateTo: ' + JSON.stringify(res));
         },
         fail: (err) => {
-            uni.$re.unipluginLog('跳转到搜索页失败' + JSON.stringify(err));
+            uni.$re.unipluginLog('uni.navigateTo:' + JSON.stringify(err));
         },
     });
 };
@@ -261,7 +261,7 @@ const topbar_search_callback = () => {
 // MARK Click  卡片点击
 const card_callback = (e: Share) => {
     console.log('卡片点击', JSON.stringify(e));
-    uni.$re.unipluginLog('卡片点击' + JSON.stringify(e.dataSetList));
+    uni.$re.unipluginLog('card_callback: ' + JSON.stringify(e.dataSetList));
 
     // 不知道什么原因导致ts的数组到安卓中变成JSONObject导致解析崩溃，这样操作可以重置属性，避免ts的属性带入
     let dataSetListJson = JSON.stringify(e.dataSetList);
@@ -281,7 +281,7 @@ const card_callback = (e: Share) => {
 // MARK Click  卡片长按
 const card_longpress_callback = (e: Share) => {
     console.log('卡片长按', JSON.stringify(e));
-    uni.$re.unipluginLog('卡片长按' + JSON.stringify(e));
+    uni.$re.unipluginLog('card_longpress_callback: ' + JSON.stringify(e));
 
     if (tb_tab_index.value === 2) {
         uni.showToast({ title: '模板示例无法修改名称', icon: 'none' });
@@ -342,7 +342,7 @@ const showSceneRes = (params: any) => {
             let dataSetIdList = getDataSetIds_old(res_2);
             getDataSetList_old({ dataSetIds: dataSetIdList, resourceId: params.id }).then((res_3) => {
                 const dataSetList = handleDataSetTrans(res_3, res_1.dataSetPosition);
-                console.log('数据集：', dataSetList);
+                //console.log('数据集：', dataSetList);
 
                 let shareData: Share = newShare({
                     url: params.url,
@@ -373,7 +373,7 @@ const showSceneRes = (params: any) => {
 // MARK re-api 查看分享链接资源 -- 模型资源
 const showModelRes = (params: any) => {
     getDataSetList_old({ dataSetIds: [params.id], resourceId: params.id }).then((res) => {
-        console.log('数据集：', res);
+        //console.log('数据集：', res);
         let shareData: Share = newShare({
             url: params.url,
             projName: params.projName,

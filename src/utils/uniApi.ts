@@ -95,7 +95,7 @@ const api: ApiMethods = {
             // 扫二维码
             uni.scanCode({
                 success: (res) => {
-                    uni.$re.unipluginLog('扫码内容： ' + JSON.stringify(res));
+                    uni.$re.unipluginLog('scan_QRCode: ' + JSON.stringify(res));
                     resolve(res.result);
                 },
                 fail: (err) => {
@@ -123,13 +123,13 @@ const api: ApiMethods = {
     get_deviceInfo: () => {
         uni.getSystemInfo({
             success: (res) => {
-                console.log("设备信息获取成功：", res);
+                //console.log("设备信息获取成功：", res);
                 const device_store = useDeviceStore();
                 device_store.update_deviceInfo(res);
             },
             fail: (err) => {
                 console.log(err);
-                uni.$re.unipluginLog('设备信息获取失败： ' + JSON.stringify(err));
+                uni.$re.unipluginLog('uni.getSystemInfo: ' + JSON.stringify(err));
             },
         });
     },

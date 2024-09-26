@@ -147,8 +147,8 @@ const topbar_tab_callback = (index: number) => {
 
 // MARK Click  卡片点击
 const card_callback = (e: Share) => {
-    console.log('卡片点击', JSON.stringify(e));
-    uni.$re.unipluginLog('卡片点击' + JSON.stringify(e.dataSetList));
+    //console.log('卡片点击', JSON.stringify(e));
+    uni.$re.unipluginLog('card_callback: ' + JSON.stringify(e.dataSetList));
 
     // 不知道什么原因导致ts的数组到安卓中变成JSONObject导致解析崩溃，这样操作可以重置属性，避免ts的属性带入
     let dataSetListJson = JSON.stringify(e.dataSetList);
@@ -168,7 +168,7 @@ const card_callback = (e: Share) => {
 // MARK Click  卡片长按
 const card_longpress_callback = (e: Share) => {
     console.log('卡片长按', e);
-    uni.$re.unipluginLog('卡片长按' + JSON.stringify(e));
+    uni.$re.unipluginLog('card_longpress_callback: ' + JSON.stringify(e));
 
     if (tb_tab_index.value === 2) {
         uni.showToast({ title: '模板示例无法修改名称', icon: 'none' });

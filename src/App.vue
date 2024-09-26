@@ -15,11 +15,11 @@ onLaunch(() => {
         success: (res) => {
             const card_store = useCardStore();
             card_store.updateSample(res.data);
-            uni.$re.unipluginLog('服务端示例数据获取成功！ ' + JSON.stringify(res));
+            uni.$re.unipluginLog('getSampleList: ' + JSON.stringify(res));
         },
         fail: (err) => {
-            console.error('服务端示例数据获取失败！', err);
-            uni.$re.unipluginLog('服务端示例数据获取失败！ ' + JSON.stringify(err));
+            //console.error('getSampleList: ', err);
+            uni.$re.unipluginLog('getSampleList: ' + JSON.stringify(err));
         },
     });
     uniApi.get_deviceInfo();
