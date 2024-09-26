@@ -1,14 +1,18 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-24 17:34:32
- * @LastEditTime: 2024-09-25 19:26:23
+ * @LastEditTime: 2024-09-26 16:11:05
 -->
 <template>
     <div class="sup-banner-comp">
         <view class="banner-box" @click="banner_click">
             <image
                 class="banner-image"
-                src="https://demo.bjblackhole.com/BlackHole3.0/app/img/app_banner_1.png"
+                :src="`${
+                    device_store.deviceInfo.deviceModel === 'iPad' || device_store.deviceInfo.deviceModel === 'pad'
+                        ? 'https://demo.bjblackhole.com/BlackHole3.0/app/img/app_banner_1_pad.png'
+                        : 'https://demo.bjblackhole.com/BlackHole3.0/app/img/app_banner_1.png'
+                }`"
                 mode="scaleToFill"
                 @touchstart="bottom_area_touchstart"
                 @touchend="bottom_area_touchend" />
@@ -19,6 +23,9 @@
 // MOD-- JavaScript
 <script setup lang="ts">
 import { ref, onUnmounted } from 'vue';
+
+import { useDeviceStore } from '@/stores/device';
+const device_store = useDeviceStore();
 
 const props = defineProps({
     banner_re_callback: {

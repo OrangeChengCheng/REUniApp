@@ -8,6 +8,7 @@ interface ApiMethods {
     scan_QRCode(): Promise<any>;
     show_loading(): void;
     hide_loading(): void;
+    get_deviceInfo(): void;
 }
 
 const api: ApiMethods = {
@@ -16,6 +17,7 @@ const api: ApiMethods = {
         return new Promise<any>((resolve, reject) => {
             const permissionType: number = api.scan_checkPermission();
             const device_store = useDeviceStore();
+            uni.$re.unipluginLog(JSON.stringify(device_store.deviceInfo));
             if (permissionType == 0) {
                 if (device_store.deviceInfo.osName === 'ios') {
                     // iOS需要直接启动相机，不然无法找到权限，设置中也找不到权限
@@ -115,6 +117,21 @@ const api: ApiMethods = {
     // MARK uni-app  隐藏loading
     hide_loading: () => {
         uni.hideLoading();
+    },
+
+    // MARK uni-app  获取设备信息
+    get_deviceInfo: () => {
+        uni.getSystemInfo({
+            success: (res) => {
+                console.log("设备信息获取成功：", res);
+                const device_store = useDeviceStore();
+                device_store.update_deviceInfo(res);
+            },
+            fail: (err) => {
+                console.log(err);
+                uni.$re.unipluginLog('设备信息获取失败： ' + JSON.stringify(err));
+            },
+        });
     },
 
 }

@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-09-25 19:49:03
+ * @LastEditTime: 2024-09-26 16:10:17
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -12,7 +12,10 @@
                 :show-scrollbar="false"
                 :scroll-top="sw_contain_scrollTop"
                 @scroll="listen_contain_scroll">
-                <banner-comp :banner_re_callback="banner_re_callback" :banner_re_longpress_callback="banner_re_longpress_callback"></banner-comp>
+                <banner-comp
+                    :style="`height: ${TopBar_fixedSpace}px`"
+                    :banner_re_callback="banner_re_callback"
+                    :banner_re_longpress_callback="banner_re_longpress_callback"></banner-comp>
                 <view class="content">
                     <top-bar
                         :topbar_type="0"
@@ -80,9 +83,11 @@ import {
 } from '@/service/interface';
 import { newShare, type Share } from '@/types/class';
 import { useCardStore } from '@/stores/card';
+import { useDeviceStore } from '@/stores/device';
 
+const device_store = useDeviceStore();
 const card_store = useCardStore();
-const TopBar_fixedSpace = 230;
+const TopBar_fixedSpace = ref(230);
 const list_show = ref<Share[]>([]); // 当前内容展示列表
 const list_recently_viewed = ref<Share[]>([]); // 最近浏览列表
 const list_collect = ref<Share[]>([]); // 收藏列表
@@ -114,7 +119,7 @@ const style_grid_computed = computed(() => {
 
 onMounted(() => {
     update_cardList();
-
+    TopBar_fixedSpace.value = device_store.deviceInfo.deviceModel === 'iPad' || device_store.deviceInfo.deviceModel === 'pad' ? 300 : 230;
     // 获取屏幕信息
     uni.getSystemInfo({
         success: function (res) {
@@ -162,7 +167,7 @@ const listen_windoeResize = (e: any) => {
 
 // MARK Listen  内容滚动监听
 const listen_contain_scroll = (e: any) => {
-    tb_isFixed.value = e.detail.scrollTop >= TopBar_fixedSpace;
+    tb_isFixed.value = e.detail.scrollTop >= TopBar_fixedSpace.value;
     sw_contain_scrollTop_curr.value = e.detail.scrollTop;
 };
 
@@ -303,7 +308,7 @@ const topbar_tab_callback = (index: number) => {
     // 解决view层不同步的问题
     sw_contain_scrollTop.value = sw_contain_scrollTop_curr.value;
     nextTick(() => {
-        sw_contain_scrollTop.value = TopBar_fixedSpace;
+        sw_contain_scrollTop.value = TopBar_fixedSpace.value;
     });
 };
 
@@ -600,31 +605,6 @@ const getDataSetIds_old = (sceneTree: any) => {
     flex: 1;
     display: flex;
     flex-direction: column;
-}
-
-.banner {
-    position: relative;
-    display: flex;
-    width: 100%;
-    height: 230px;
-    justify-content: center;
-    align-items: center;
-    padding: 20px 12px 10px 12px;
-    box-sizing: border-box;
-    flex-shrink: 0;
-
-    .banner-box {
-        position: relative;
-        display: flex;
-        width: 100%;
-        height: 100%;
-        border-radius: 16px;
-
-        .banner-image {
-            width: 100%;
-            height: 100%;
-        }
-    }
 }
 
 .content {
