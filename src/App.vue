@@ -1,11 +1,12 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-14 10:24:21
- * @LastEditTime: 2024-09-25 17:47:24
+ * @LastEditTime: 2024-09-26 15:30:54
 -->
 <script setup lang="ts">
 import { onLaunch, onShow, onHide } from '@dcloudio/uni-app';
 import { useCardStore } from '@/stores/card';
+import { useDeviceStore } from '@/stores/device';
 
 onLaunch(() => {
     console.log('App Launch');
@@ -21,6 +22,8 @@ onLaunch(() => {
             uni.$re.unipluginLog('服务端示例数据获取失败！ ' + JSON.stringify(err));
         },
     });
+    const device_store = useDeviceStore();
+    device_store.get_deviceInfo();
 });
 onShow(() => {
     console.log('App Show');

@@ -1,3 +1,6 @@
+import { useDeviceStore } from '@/stores/device';
+
+
 interface ApiMethods {
     scan_code(): Promise<any>;
     scan_checkPermission(): number;
@@ -12,12 +15,20 @@ const api: ApiMethods = {
     scan_code: (): Promise<any> => {
         return new Promise<any>((resolve, reject) => {
             const permissionType: number = api.scan_checkPermission();
+            const device_store = useDeviceStore();
             if (permissionType == 0) {
-                api.scan_authorize().then((e: any) => {
+                if (device_store.deviceInfo.osName === 'ios') {
+                    // iOS需要直接启动相机，不然无法找到权限，设置中也找不到权限
                     api.scan_QRCode().then((res) => {
                         resolve(res);
                     }).catch(reject);
-                }).catch(reject);
+                } else {
+                    api.scan_authorize().then((e: any) => {
+                        api.scan_QRCode().then((res) => {
+                            resolve(res);
+                        }).catch(reject);
+                    }).catch(reject);
+                }
             } else if (permissionType == 2) {
                 api.scan_QRCode().then((res) => {
                     resolve(res);
