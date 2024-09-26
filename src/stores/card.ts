@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-13 15:14:00
- * @LastEditTime: 2024-09-25 17:36:39
+ * @LastEditTime: 2024-09-26 17:48:58
  */
 import { defineStore } from 'pinia'
 import { type Share } from '@/types/class';
@@ -15,11 +15,20 @@ export const useCardStore = defineStore('card', {
     actions: {
         addCard(shareData: Share) {
             if (this.checkRepeat(shareData)) {
-                console.log("已有，不在重复添加");
+                console.log("已覆盖原有数据");
+                this.updateCard(shareData);
                 return;
             }
             this.cardList.push(shareData);
             this.saveToLocalStorage();
+        },
+        updateCard(shareData: Share) {
+            let find = this.cardList.find((e: Share) => e.id === shareData.id);
+            if (find) {
+                find.dataSetList = shareData.dataSetList;
+                find.worldCRS = shareData.worldCRS;
+                this.saveToLocalStorage();
+            }
         },
         getCardList(search?: string) {
             if (search) {
