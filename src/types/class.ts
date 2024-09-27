@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-23 16:54:42
- * @LastEditTime: 2024-09-24 11:12:27
+ * @LastEditTime: 2024-09-27 10:33:59
  */
 
 
@@ -13,6 +13,8 @@ export interface Share {
     dataSetList: any;
     worldCRS: string;
     collect: boolean;
+    shareType: number; // 0：无 1：模型 2：场景
+    camDefaultDataSetId: string;
 }
 
 export const newShare = (overrides?: Partial<Share>): Share => {
@@ -24,6 +26,8 @@ export const newShare = (overrides?: Partial<Share>): Share => {
         dataSetList: [],
         worldCRS: "",
         collect: false,
+        shareType: 0,
+        camDefaultDataSetId: "",
         ...overrides
     };
 };

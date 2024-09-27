@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-09-26 18:01:53
+ * @LastEditTime: 2024-09-27 11:38:46
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -40,7 +40,8 @@
                                 :card_min="grid_isMin"
                                 :card_proj="item"
                                 :card_callback="card_callback"
-                                :card_longpress_callback="card_longpress_callback"
+                                :card_title_longpress_callback="card_title_longpress_callback"
+                                :card_img_longpress_callback="card_img_longpress_callback"
                                 :card_collect_callback="card_collect_callback"></card>
                         </view>
                     </view>
@@ -153,7 +154,7 @@ const update_cardList = () => {
     } else {
         list_show.value = list_recently_viewed.value;
     }
-    //console.log('当前显示列表 = ', list_show.value);
+    console.log('当前显示列表 = ', list_show.value);
 };
 
 // MARK Listen  屏幕变化
@@ -212,7 +213,7 @@ const banner_re_callback = () => {
 
 // MARK Topbar banner区域长按
 const banner_re_longpress_callback = () => {
-    ref_sampleInput_dialog.value?.show_dialog();
+    // ref_sampleInput_dialog.value?.show_dialog();
 };
 
 // MARK Topbar banner区域长按 回调
@@ -271,6 +272,8 @@ const card_callback = (e: Share) => {
             name: 'uni-app',
             worldCRS: e.worldCRS,
             dataSetList: dataSetList,
+            shareType: e.shareType,
+            camDefaultDataSetId: e.camDefaultDataSetId,
         })
         .then((result) => {
             console.log(result);
@@ -278,10 +281,10 @@ const card_callback = (e: Share) => {
         });
 };
 
-// MARK Click  卡片长按
-const card_longpress_callback = (e: Share) => {
-    console.log('卡片长按', JSON.stringify(e));
-    uni.$re.unipluginLog('card_longpress_callback: ' + JSON.stringify(e));
+// MARK Click  卡片名称长按
+const card_title_longpress_callback = (e: Share) => {
+    console.log('卡片名称长按', JSON.stringify(e));
+    uni.$re.unipluginLog('card_title_longpress_callback: ' + JSON.stringify(e));
 
     if (tb_tab_index.value === 2) {
         uni.showToast({ title: '模板示例无法修改名称', icon: 'none' });
@@ -293,6 +296,25 @@ const card_longpress_callback = (e: Share) => {
     dialog_revise.value = true;
     dialog_shareUrl_disabled.value = true;
     ref_urlInput_dialog.value?.show_dialog();
+};
+
+// MARK Click  卡片图片长按
+const card_img_longpress_callback = (e: Share) => {
+    console.log('卡片图片长按', JSON.stringify(e));
+    uni.$re.unipluginLog('card_title_longpress_callback: ' + JSON.stringify(e));
+
+    if (tb_tab_index.value !== 0) {
+        return;
+    }
+    uni.showModal({
+        title: '提示',
+        content: '是否删除卡片',
+        success: function (res) {
+            if (res.confirm) {
+                card_store.removeCard(e.id);
+            }
+        },
+    });
 };
 
 // MARK Click  收藏
@@ -344,6 +366,7 @@ const showSceneRes = (params: any) => {
                 const dataSetList = handleDataSetTrans(res_3, res_1.dataSetPosition);
                 //console.log('数据集：', dataSetList);
 
+                let cam_dataSetId = uni.$tool.cam_defauleDataSet(dataSetList);
                 let shareData: Share = newShare({
                     url: params.url,
                     projName: params.projName,
@@ -351,6 +374,8 @@ const showSceneRes = (params: any) => {
                     lastTime: new Date(),
                     dataSetList: dataSetList,
                     worldCRS: res_1.coordinates,
+                    shareType: 2,
+                    camDefaultDataSetId: cam_dataSetId,
                 });
                 card_store.addCard(shareData);
 
@@ -380,6 +405,7 @@ const showModelRes = (params: any) => {
             id: params.id,
             lastTime: new Date(),
             dataSetList: res,
+            shareType: 1,
         });
         card_store.addCard(shareData);
 
@@ -496,6 +522,7 @@ const getDataSetList = (params: any): Promise<any> => {
                     dataSetCRS: dataSetCRS,
                     dataSetCRSNorth: dataSetCRSNorth,
                     dataSetSGContent: dataSetSGContent,
+                    dataSetType: item.dataSetType,
                 });
             });
             if (dataSetList.length > 0) {
@@ -530,6 +557,7 @@ const getDataSetList_old = (params: any): Promise<any> => {
                     dataSetCRS: dataSetCRS,
                     dataSetCRSNorth: dataSetCRSNorth,
                     dataSetSGContent: dataSetSGContent,
+                    dataSetType: item.dataSetType,
                 });
             });
             if (dataSetList.length > 0) {

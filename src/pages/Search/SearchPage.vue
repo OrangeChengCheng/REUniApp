@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-09-25 19:59:45
+ * @LastEditTime: 2024-09-27 11:39:48
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -20,7 +20,8 @@
                                 :card_min="grid_isMin"
                                 :card_proj="item"
                                 :card_callback="card_callback"
-                                :card_longpress_callback="card_longpress_callback"
+                                :card_title_longpress_callback="card_title_longpress_callback"
+                                :card_img_longpress_callback="card_img_longpress_callback"
                                 :card_collect_callback="card_collect_callback"></card>
                         </view>
                     </view>
@@ -158,6 +159,8 @@ const card_callback = (e: Share) => {
             name: 'uni-app',
             worldCRS: e.worldCRS,
             dataSetList: dataSetList,
+            shareType: e.shareType,
+            camDefaultDataSetId: e.camDefaultDataSetId,
         })
         .then((result) => {
             console.log(result);
@@ -165,10 +168,10 @@ const card_callback = (e: Share) => {
         });
 };
 
-// MARK Click  卡片长按
-const card_longpress_callback = (e: Share) => {
-    console.log('卡片长按', e);
-    uni.$re.unipluginLog('card_longpress_callback: ' + JSON.stringify(e));
+// MARK Click  卡片名称长按
+const card_title_longpress_callback = (e: Share) => {
+    console.log('卡片名称长按', e);
+    uni.$re.unipluginLog('card_title_longpress_callback: ' + JSON.stringify(e));
 
     if (tb_tab_index.value === 2) {
         uni.showToast({ title: '模板示例无法修改名称', icon: 'none' });
@@ -180,6 +183,25 @@ const card_longpress_callback = (e: Share) => {
     dialog_revise.value = true;
     dialog_shareUrl_disabled.value = true;
     ref_urlInput_dialog.value?.show_dialog();
+};
+
+// MARK Click  卡片图片长按
+const card_img_longpress_callback = (e: Share) => {
+    console.log('卡片图片长按', JSON.stringify(e));
+    uni.$re.unipluginLog('card_title_longpress_callback: ' + JSON.stringify(e));
+
+    if (tb_tab_index.value !== 0) {
+        return;
+    }
+    uni.showModal({
+        title: '提示',
+        content: '是否删除卡片',
+        success: function (res) {
+            if (res.confirm) {
+                card_store.removeCard(e.id);
+            }
+        },
+    });
 };
 
 // MARK Click  收藏

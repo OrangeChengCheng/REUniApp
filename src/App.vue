@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-14 10:24:21
- * @LastEditTime: 2024-09-26 16:02:49
+ * @LastEditTime: 2024-09-27 11:13:45
 -->
 <script setup lang="ts">
 import { onLaunch, onShow, onHide } from '@dcloudio/uni-app';
@@ -15,7 +15,7 @@ onLaunch(() => {
         success: (res) => {
             const card_store = useCardStore();
             card_store.updateSample(res.data);
-            uni.$re.unipluginLog('getSampleList: ' + JSON.stringify(res));
+            uni.$re.unipluginLog('getSampleList: ' + JSON.stringify(res.data));
         },
         fail: (err) => {
             //console.error('getSampleList: ', err);

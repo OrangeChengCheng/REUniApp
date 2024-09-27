@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-13 15:14:00
- * @LastEditTime: 2024-09-26 17:48:58
+ * @LastEditTime: 2024-09-27 11:08:07
  */
 import { defineStore } from 'pinia'
 import { type Share } from '@/types/class';
@@ -27,6 +27,8 @@ export const useCardStore = defineStore('card', {
             if (find) {
                 find.dataSetList = shareData.dataSetList;
                 find.worldCRS = shareData.worldCRS;
+                find.camDefaultDataSetId = shareData.camDefaultDataSetId;
+                find.shareType = shareData.shareType;
                 this.saveToLocalStorage();
             }
         },
@@ -83,6 +85,9 @@ export const useCardStore = defineStore('card', {
             }
         },
         updateSample(e: any) {
+            this.sample_cardList = [];
+            uni.setStorageSync('RE_sample_cardList', JSON.stringify(this.sample_cardList));
+            
             let sampleCardList_json = JSON.stringify(e);
             let sampleCardList_obj = JSON.parse(sampleCardList_json);
             this.sample_cardList = sampleCardList_obj;

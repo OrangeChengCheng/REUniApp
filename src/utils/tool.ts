@@ -1,11 +1,14 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-23 14:42:45
- * @LastEditTime: 2024-09-25 15:00:24
+ * @LastEditTime: 2024-09-27 10:30:58
  */
+
+
 interface ApiMethods {
     url_handle(url: string): any;
     time_compare(frontTime: Date, backTime: Date): string;
+    cam_defauleDataSet(dataSetList: any): string;
 }
 
 const api: ApiMethods = {
@@ -60,7 +63,18 @@ const api: ApiMethods = {
         } else {
             return `${minutes}分钟`;
         }
-    }
+    },
+
+    // MARK tool 获取默认相机定位目标
+    cam_defauleDataSet: (dataSetList: any): string => {
+        let find = dataSetList.find((e: any) => e.dataSetType === 0);
+        if (find) {
+            return find.dataSetId;
+        } else {
+            return '';
+        }
+    },
+
 
 }
 

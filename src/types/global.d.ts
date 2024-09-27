@@ -30,6 +30,7 @@ declare global {
         $tool: {
             url_handle(utl: string): any;
             time_compare(frontTime: Date, backTime: Date): string;
+            cam_defauleDataSet(dataSetList: any): string;
         };
         scan_code(): Promise<any>;
         show_loading(): void;

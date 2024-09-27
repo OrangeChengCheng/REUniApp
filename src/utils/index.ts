@@ -41,6 +41,7 @@ export default {
         uni.$tool = {
             url_handle: tool.url_handle,
             time_compare: tool.time_compare,
+            cam_defauleDataSet: tool.cam_defauleDataSet,
         };
         uni.scan_code = uniApi.scan_code;
         uni.show_loading = uniApi.show_loading;
