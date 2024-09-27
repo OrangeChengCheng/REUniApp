@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-09-27 11:38:46
+ * @LastEditTime: 2024-09-27 11:43:52
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -385,6 +385,8 @@ const showSceneRes = (params: any) => {
                         name: 'uni-app',
                         worldCRS: res_1.coordinates,
                         dataSetList: dataSetList,
+                        shareType: 2,
+                        camDefaultDataSetId: cam_dataSetId,
                     })
                     .then((result) => {
                         console.log(result);
@@ -413,6 +415,7 @@ const showModelRes = (params: any) => {
             .realEngineRender({
                 name: 'uni-app',
                 dataSetList: res,
+                shareType: 1,
             })
             .then((result) => {
                 uni.$re.unipluginLog(JSON.stringify(result));
