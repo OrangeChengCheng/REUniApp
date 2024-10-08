@@ -19,7 +19,7 @@ const api: ApiMethods = {
             const device_store = useDeviceStore();
             uni.$re.unipluginLog(JSON.stringify(device_store.deviceInfo));
             if (permissionType == 0) {
-                if (device_store.deviceInfo.osName === 'ios') {
+                if (!device_store.deviceInfo || !device_store.deviceInfo.osName || device_store.deviceInfo.osName === 'ios') {
                     // iOS需要直接启动相机，不然无法找到权限，设置中也找不到权限
                     api.scan_QRCode().then((res) => {
                         resolve(res);
