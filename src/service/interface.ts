@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-04-19 12:22:25
- * @LastEditTime: 2024-09-20 18:47:36
+ * @LastEditTime: 2024-10-14 17:03:07
  */
 import { requestPost, requestGet } from '@/service/request';
 
@@ -44,6 +44,12 @@ export function getProjectModel_old(data: any) {
     return requestPost('/sharedAccess/v3/viewDatasetModel', data);
 }
 
+
+// MOD-- CAD 相关
+// 获取数据集下的文件列表
+export function getCadDatasetFiles(data: any) {
+    return requestPost('/cadTree/v3/file/list', data);
+}
 
 
 // MOD-- 用户 相关

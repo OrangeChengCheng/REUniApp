@@ -94,6 +94,7 @@ const api: ApiMethods = {
             }
             // 扫二维码
             uni.scanCode({
+                autoZoom: false,
                 success: (res) => {
                     uni.$re.unipluginLog('scan_QRCode: ' + JSON.stringify(res));
                     resolve(res.result);

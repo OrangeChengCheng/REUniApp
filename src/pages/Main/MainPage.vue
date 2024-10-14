@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-09-27 11:43:52
+ * @LastEditTime: 2024-10-14 17:46:46
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -78,6 +78,7 @@ import {
     getSceneById,
     getSingleSceneTreeById,
     getProjectModel,
+    getCadDatasetFiles,
     getSceneById_old,
     getSingleSceneTreeById_old,
     getProjectModel_old,
@@ -274,6 +275,8 @@ const card_callback = (e: Share) => {
             dataSetList: dataSetList,
             shareType: e.shareType,
             camDefaultDataSetId: e.camDefaultDataSetId,
+            shareViewMode: e.shareViewMode,
+            shareDataType: e.shareDataType,
         })
         .then((result) => {
             console.log(result);
@@ -359,10 +362,10 @@ const showShareUrlRes = (params: any) => {
 // MARK re-api 查看分享链接资源 -- 场景资源
 const showSceneRes = (params: any) => {
     uni.show_loading();
-    getSceneInfo_old(params.id).then((res_1) => {
-        getSceneTree_old(params.id).then((res_2) => {
-            let dataSetIdList = getDataSetIds_old(res_2);
-            getDataSetList_old({ dataSetIds: dataSetIdList, resourceId: params.id }).then((res_3) => {
+    getSceneInfo(params.id).then((res_1) => {
+        getSceneTree({ sceneId: params.id }).then((res_2) => {
+            let dataSetIdList = getDataSetIds(res_2);
+            getDataSetList({ dataSetIds: dataSetIdList }).then((res_3) => {
                 const dataSetList = handleDataSetTrans(res_3, res_1.dataSetPosition);
                 //console.log('数据集：', dataSetList);
 
@@ -376,6 +379,7 @@ const showSceneRes = (params: any) => {
                     worldCRS: res_1.coordinates,
                     shareType: 2,
                     camDefaultDataSetId: cam_dataSetId,
+                    shareViewMode: params.shareViewMode,
                 });
                 card_store.addCard(shareData);
 
@@ -387,6 +391,7 @@ const showSceneRes = (params: any) => {
                         dataSetList: dataSetList,
                         shareType: 2,
                         camDefaultDataSetId: cam_dataSetId,
+                        shareViewMode: params.shareViewMode,
                     })
                     .then((result) => {
                         console.log(result);
@@ -399,8 +404,26 @@ const showSceneRes = (params: any) => {
 
 // MARK re-api 查看分享链接资源 -- 模型资源
 const showModelRes = (params: any) => {
-    getDataSetList_old({ dataSetIds: [params.id], resourceId: params.id }).then((res) => {
-        //console.log('数据集：', res);
+    switch (params.shareDataType) {
+        case 'Bim':
+        case 'Rs':
+        case 'Wmts':
+        case 'Osgb':
+        case 'PointCloud':
+            showModelTypeRes(params);
+            break;
+        case 'Cad':
+            showCadTypeRes(params);
+            break;
+        default:
+            uni.showToast({ title: '暂不支持该数据类型', icon: 'none' });
+            break;
+    }
+};
+
+// MARK re-api 查看模型类型数据
+const showModelTypeRes = (params: any) => {
+    getDataSetList({ dataSetIds: [params.id] }).then((res) => {
         let shareData: Share = newShare({
             url: params.url,
             projName: params.projName,
@@ -408,6 +431,7 @@ const showModelRes = (params: any) => {
             lastTime: new Date(),
             dataSetList: res,
             shareType: 1,
+            shareDataType: params.shareDataType,
         });
         card_store.addCard(shareData);
 
@@ -416,6 +440,34 @@ const showModelRes = (params: any) => {
                 name: 'uni-app',
                 dataSetList: res,
                 shareType: 1,
+                shareViewMode: params.shareViewMode,
+            })
+            .then((result) => {
+                uni.$re.unipluginLog(JSON.stringify(result));
+            });
+    });
+};
+
+// MARK re-api 查看CAD类型数据
+const showCadTypeRes = (params: any) => {
+    getCadDataSetList({ dataSetId: params.id }).then((res) => {
+        let shareData: Share = newShare({
+            url: params.url,
+            projName: params.projName,
+            id: params.id,
+            lastTime: new Date(),
+            dataSetList: res,
+            shareType: 1,
+            shareDataType: params.shareDataType,
+        });
+        card_store.addCard(shareData);
+
+        uni.$re
+            .realEngineRender({
+                name: 'uni-app',
+                dataSetList: res,
+                shareType: 1,
+                shareViewMode: params.shareViewMode,
             })
             .then((result) => {
                 uni.$re.unipluginLog(JSON.stringify(result));
@@ -506,7 +558,6 @@ const getSceneTree_old = (paran: any): Promise<any> => {
 const getDataSetList = (params: any): Promise<any> => {
     return new Promise<any>((resolve, reject) => {
         getProjectModel(params).then((res) => {
-            console.log(res);
             let dataSetList: any[] = [];
             res.data.forEach((item: any) => {
                 let dataSetCRS = '';
@@ -528,6 +579,37 @@ const getDataSetList = (params: any): Promise<any> => {
                     dataSetType: item.dataSetType,
                 });
             });
+            if (dataSetList.length > 0) {
+                resolve(dataSetList);
+            } else {
+                reject(new Error('资源地址获取失败！'));
+            }
+        });
+    });
+};
+
+// MARK Service 获取数据集下CAD资源地址
+const getCadDataSetList = (params: any): Promise<any> => {
+    return new Promise<any>((resolve, reject) => {
+        getCadDatasetFiles(params).then((res) => {
+            let dataSetList: any[] = [];
+            if (res.data.items && res.data.items.length > 0) {
+                let cad_file = res.data.items[0];
+                const cadUnitMap: any = {
+                    Meter: 'CAD_UNIT_Meter',
+                    Centimeter: 'CAD_UNIT_Centimeter',
+                    Millimeter: 'CAD_UNIT_Millimeter',
+                    Kilometer: 'CAD_UNIT_Kilometer',
+                    Inch: 'CAD_UNIT_Inch',
+                    Foot: 'CAD_UNIT_Foot',
+                    Mile: 'CAD_UNIT_Mile',
+                };
+                dataSetList.push({
+                    dataSetId: 're_cad',
+                    resourcesAddress: cad_file.resourcesAddress,
+                    unit: cadUnitMap[cad_file.unit || 'Meter'],
+                });
+            }
             if (dataSetList.length > 0) {
                 resolve(dataSetList);
             } else {

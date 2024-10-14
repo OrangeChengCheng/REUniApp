@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-23 14:42:45
- * @LastEditTime: 2024-09-27 10:30:58
+ * @LastEditTime: 2024-10-14 17:11:40
  */
 
 
@@ -44,7 +44,22 @@ const api: ApiMethods = {
         let tokenEndIndex = url.indexOf('&', tokenStartIndex); // 如果URL中有其他查询参数，找到"&"字符的位置，作为token的结束位置
         let _token = tokenEndIndex !== -1 ? url.substring(tokenStartIndex, tokenEndIndex) : url.substring(tokenStartIndex); // 截取并输出token的
 
-        let params = { url: url, shareType: shareType, projName: _projName, id: _id, token: _token };
+        // 解析viewMode和dataType
+        let viewModeIndex = url.indexOf('viewMode=');
+        let dataTypeIndex = url.indexOf('dataType=');
+        let _viewMode = "", _dataType = "";
+
+        if (viewModeIndex !== -1) {
+            let viewModeEndIndex = url.indexOf('&', viewModeIndex + 'viewMode='.length);
+            _viewMode = viewModeEndIndex !== -1 ? url.substring(viewModeIndex + 'viewMode='.length, viewModeEndIndex) : url.substring(viewModeIndex + 'viewMode='.length);
+        }
+
+        if (dataTypeIndex !== -1) {
+            let dataTypeEndIndex = url.indexOf('&', dataTypeIndex + 'dataType='.length);
+            _dataType = dataTypeEndIndex !== -1 ? url.substring(dataTypeIndex + 'dataType='.length, dataTypeEndIndex) : url.substring(dataTypeIndex + 'dataType='.length);
+        }
+
+        let params = { url: url, shareType: shareType, projName: _projName, id: _id, token: _token, shareViewMode: _viewMode, shareDataType: _dataType };
         uni.$re.unipluginLog('params = ' + JSON.stringify(params));
         return params;
     },
