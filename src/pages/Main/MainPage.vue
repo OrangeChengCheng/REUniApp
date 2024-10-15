@@ -467,7 +467,7 @@ const showCadTypeRes = (params: any) => {
                 name: 'uni-app',
                 dataSetList: res,
                 shareType: 1,
-                shareViewMode: params.shareViewMode,
+                shareDataType: params.shareDataType,
             })
             .then((result) => {
                 uni.$re.unipluginLog(JSON.stringify(result));
