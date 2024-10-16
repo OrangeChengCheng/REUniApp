@@ -149,7 +149,9 @@ const update_cardList = () => {
     list_collect.value = card_store.getCollectCardList();
     if (card_store.getSampleCardList().length <= 0) {
         card_store.updateSample().then((res) => {
-            list_saple.value = card_store.getSampleCardList();
+            nextTick(() => {
+                list_saple.value = card_store.getSampleCardList();
+            });
         });
     } else {
         list_saple.value = card_store.getSampleCardList();
