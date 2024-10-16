@@ -1,31 +1,32 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-14 10:24:21
- * @LastEditTime: 2024-09-27 11:13:45
+ * @LastEditTime: 2024-10-16 11:33:58
 -->
 <script setup lang="ts">
 import { onLaunch, onShow, onHide } from '@dcloudio/uni-app';
 import { useCardStore } from '@/stores/card';
+import { useDeviceStore } from '@/stores/device';
 import uniApi from '@/utils/uniApi';
 
 onLaunch(() => {
     console.log('App Launch');
-    uni.request({
-        url: 'https://demo.bjblackhole.com/BlackHole3.0/app/json/re_sample_res.json',
-        success: (res) => {
-            const card_store = useCardStore();
-            card_store.updateSample(res.data);
-            uni.$re.unipluginLog('getSampleList: ' + JSON.stringify(res.data));
-        },
-        fail: (err) => {
-            //console.error('getSampleList: ', err);
-            uni.$re.unipluginLog('getSampleList: ' + JSON.stringify(err));
-        },
+    uni.onNetworkStatusChange(function (res) {
+        const device_store = useDeviceStore();
+        device_store.update_networkInfo(res);
     });
+    const card_store = useCardStore();
+    card_store.updateSample();
     uniApi.get_deviceInfo();
 });
 onShow(() => {
     console.log('App Show');
+    uni.getNetworkType({
+        success: function (res) {
+            const device_store = useDeviceStore();
+            device_store.update_networkInfo(res);
+        },
+    });
 });
 onHide(() => {
     console.log('App Hide');

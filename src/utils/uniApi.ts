@@ -124,7 +124,6 @@ const api: ApiMethods = {
     get_deviceInfo: () => {
         uni.getSystemInfo({
             success: (res) => {
-                //console.log("设备信息获取成功：", res);
                 const device_store = useDeviceStore();
                 device_store.update_deviceInfo(res);
             },

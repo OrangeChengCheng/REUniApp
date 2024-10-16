@@ -1,18 +1,14 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-24 17:34:32
- * @LastEditTime: 2024-09-26 16:11:05
+ * @LastEditTime: 2024-10-16 10:48:55
 -->
 <template>
     <div class="sup-banner-comp">
         <view class="banner-box" @click="banner_click">
-            <image
+            <image v-if="device_store.isConnected"
                 class="banner-image"
-                :src="`${
-                    device_store.deviceInfo.deviceModel === 'iPad' || device_store.deviceInfo.deviceModel === 'pad'
-                        ? 'https://demo.bjblackhole.com/BlackHole3.0/app/img/app_banner_1_pad.png'
-                        : 'https://demo.bjblackhole.com/BlackHole3.0/app/img/app_banner_1.png'
-                }`"
+                :src="bannerUrl_computed"
                 mode="scaleToFill"
                 @touchstart="bottom_area_touchstart"
                 @touchend="bottom_area_touchend" />
@@ -22,7 +18,7 @@
 
 // MOD-- JavaScript
 <script setup lang="ts">
-import { ref, onUnmounted } from 'vue';
+import { ref, onUnmounted, computed } from 'vue';
 
 import { useDeviceStore } from '@/stores/device';
 const device_store = useDeviceStore();
@@ -43,6 +39,14 @@ const timer = ref<number | null>(null);
 
 const touch_timer = ref<number | null>(null);
 const touch_longpress = 3000; // 长按时间阈值
+
+const bannerUrl_computed = computed(() => {
+    return `${
+        device_store.deviceInfo.deviceModel === 'iPad' || device_store.deviceInfo.deviceModel === 'pad'
+            ? 'https://demo.bjblackhole.com/BlackHole3.0/app/img/app_banner_1_pad.png'
+            : 'https://demo.bjblackhole.com/BlackHole3.0/app/img/app_banner_1.png'
+    }`;
+});
 
 onUnmounted(() => {
     clickCount.value = 0;

@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-10-14 17:46:46
+ * @LastEditTime: 2024-10-16 11:32:50
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -147,7 +147,14 @@ onUnmounted(() => {
 const update_cardList = () => {
     list_recently_viewed.value = card_store.getCardList();
     list_collect.value = card_store.getCollectCardList();
-    list_saple.value = card_store.getSampleCardList();
+    if (card_store.getSampleCardList().length <= 0) {
+        card_store.updateSample().then((res) => {
+            list_saple.value = card_store.getSampleCardList();
+        });
+    } else {
+        list_saple.value = card_store.getSampleCardList();
+    }
+
     if (tb_tab_index.value == 1) {
         list_show.value = list_collect.value;
     } else if (tb_tab_index.value == 2) {
@@ -155,7 +162,6 @@ const update_cardList = () => {
     } else {
         list_show.value = list_recently_viewed.value;
     }
-    console.log('当前显示列表 = ', list_show.value);
 };
 
 // MARK Listen  屏幕变化

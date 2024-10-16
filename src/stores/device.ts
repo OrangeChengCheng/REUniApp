@@ -14,12 +14,16 @@ interface Device {
 
 
 export const useDeviceStore = defineStore('device', {
-    state: (): { deviceInfo: Device } => ({
+    state: (): { deviceInfo: Device, isConnected: Boolean, networkType: String } => ({
         deviceInfo: JSON.parse(uni.getStorageSync('RE_device') || '{}') || {} as Device,
+        isConnected: true,
+        networkType: "",
     }),
     actions: {
         // MARK uni-app  更新设备信息
-        update_deviceInfo: (e: any) => {
+        update_deviceInfo(e: any) {
+            this.deviceInfo = {} as Device;
+
             let device_tamp: Device = {} as Device;
             device_tamp.deviceType = e.deviceType || "";
             device_tamp.deviceBrand = e.deviceBrand || "";
@@ -30,7 +34,28 @@ export const useDeviceStore = defineStore('device', {
             device_tamp.romName = e.romName || "";
             device_tamp.romVersion = e.romVersion || "";
 
-            uni.setStorageSync('RE_device', JSON.stringify(device_tamp));
+            this.deviceInfo = device_tamp;
+            uni.setStorageSync('RE_device', JSON.stringify(this.deviceInfo));
+        },
+
+        // MARK uni-app  更新网络信息
+        update_networkInfo(e: any) {
+            if (!e.hasOwnProperty('isConnected') || e.isConnected === null || e.isConnected === undefined) {
+                if (e.networkType !== "none") {
+                    this.isConnected = true;
+                } else {
+                    this.isConnected = false;
+                }
+            } else {
+                this.isConnected = e.isConnected;
+                if (e.networkType === "2g") {
+                    this.isConnected = false;
+                }
+            }
+            this.networkType = e.networkType;
+            console.log(e);
+            console.log(this.isConnected);
+
         },
     },
 });

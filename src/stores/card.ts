@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-13 15:14:00
- * @LastEditTime: 2024-09-27 11:08:07
+ * @LastEditTime: 2024-10-16 11:30:30
  */
 import { defineStore } from 'pinia'
 import { type Share } from '@/types/class';
@@ -84,14 +84,27 @@ export const useCardStore = defineStore('card', {
                 return this.sample_cardList;
             }
         },
-        updateSample(e: any) {
-            this.sample_cardList = [];
-            uni.setStorageSync('RE_sample_cardList', JSON.stringify(this.sample_cardList));
-            
-            let sampleCardList_json = JSON.stringify(e);
-            let sampleCardList_obj = JSON.parse(sampleCardList_json);
-            this.sample_cardList = sampleCardList_obj;
-            uni.setStorageSync('RE_sample_cardList', JSON.stringify(this.sample_cardList));
+        updateSample(): Promise<any> {
+            return new Promise<any>((resolve, reject) => {
+                this.sample_cardList = [];
+                uni.setStorageSync('RE_sample_cardList', JSON.stringify(this.sample_cardList));
+
+                uni.request({
+                    url: 'https://demo.bjblackhole.com/BlackHole3.0/app/json/re_sample_res.json',
+                    success: (res) => {
+                        let sampleCardList_json = JSON.stringify(res.data);
+                        let sampleCardList_obj = JSON.parse(sampleCardList_json);
+                        this.sample_cardList = sampleCardList_obj;
+                        uni.setStorageSync('RE_sample_cardList', JSON.stringify(this.sample_cardList));
+                        uni.$re.unipluginLog('getSampleList: ' + JSON.stringify(res.data));
+                        resolve("示例获取成功");
+                    },
+                    fail: (err) => {
+                        uni.$re.unipluginLog('getSampleList: ' + JSON.stringify(err));
+                        reject(new Error("示例获取失败"));
+                    },
+                });
+            });
         },
 
         // MARK 重复校验
