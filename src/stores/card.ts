@@ -86,12 +86,11 @@ export const useCardStore = defineStore('card', {
         },
         updateSample(): Promise<any> {
             return new Promise<any>((resolve, reject) => {
-                this.sample_cardList = [];
-                uni.setStorageSync('RE_sample_cardList', JSON.stringify(this.sample_cardList));
-
                 uni.request({
                     url: 'https://demo.bjblackhole.com/BlackHole3.0/app/json/re_sample_res.json',
                     success: (res) => {
+						this.sample_cardList = [];
+						uni.setStorageSync('RE_sample_cardList', JSON.stringify(this.sample_cardList));
                         let sampleCardList_json = JSON.stringify(res.data);
                         let sampleCardList_obj = JSON.parse(sampleCardList_json);
                         this.sample_cardList = sampleCardList_obj;
