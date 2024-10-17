@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-10-16 11:32:50
+ * @LastEditTime: 2024-10-17 17:21:10
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -276,6 +276,12 @@ const card_callback = (e: Share) => {
     // 不知道什么原因导致ts的数组到安卓中变成JSONObject导致解析崩溃，这样操作可以重置属性，避免ts的属性带入
     let dataSetListJson = JSON.stringify(e.dataSetList);
     let dataSetList = JSON.parse(dataSetListJson);
+    // 默认相机信息
+    let defaultCamLoc = null;
+    if (e.defaultCamLoc) {
+        let defaultCamLocJson = JSON.stringify(e.defaultCamLoc);
+        defaultCamLoc = JSON.parse(defaultCamLocJson);
+    }
     uni.$re
         .realEngineRender({
             name: 'uni-app',
@@ -285,6 +291,7 @@ const card_callback = (e: Share) => {
             camDefaultDataSetId: e.camDefaultDataSetId,
             shareViewMode: e.shareViewMode,
             shareDataType: e.shareDataType,
+            defaultCamLoc: defaultCamLoc,
         })
         .then((result) => {
             console.log(result);
@@ -448,7 +455,7 @@ const showModelTypeRes = (params: any) => {
                 name: 'uni-app',
                 dataSetList: res,
                 shareType: 1,
-                shareViewMode: params.shareViewMode,
+                shareDataType: params.shareDataType,
             })
             .then((result) => {
                 uni.$re.unipluginLog(JSON.stringify(result));
