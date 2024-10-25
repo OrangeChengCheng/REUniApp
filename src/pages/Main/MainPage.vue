@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-10-17 17:21:10
+ * @LastEditTime: 2024-10-25 16:58:47
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -285,6 +285,7 @@ const card_callback = (e: Share) => {
     uni.$re
         .realEngineRender({
             name: 'uni-app',
+            shareUrl: e.url,
             worldCRS: e.worldCRS,
             dataSetList: dataSetList,
             shareType: e.shareType,
@@ -402,6 +403,7 @@ const showSceneRes = (params: any) => {
                 uni.$re
                     .realEngineRender({
                         name: 'uni-app',
+                        shareUrl: params.url,
                         worldCRS: res_1.coordinates,
                         dataSetList: dataSetList,
                         shareType: 2,
@@ -453,6 +455,7 @@ const showModelTypeRes = (params: any) => {
         uni.$re
             .realEngineRender({
                 name: 'uni-app',
+                shareUrl: params.url,
                 dataSetList: res,
                 shareType: 1,
                 shareDataType: params.shareDataType,
@@ -480,6 +483,7 @@ const showCadTypeRes = (params: any) => {
         uni.$re
             .realEngineRender({
                 name: 'uni-app',
+                shareUrl: params.url,
                 dataSetList: res,
                 shareType: 1,
                 shareDataType: params.shareDataType,
@@ -685,9 +689,10 @@ const handleDataSetTrans = (dataSetList: any, dataSetTrans: any): any => {
 // MARK Service 递归获取数据集标识集合
 const getDataSetIds = (sceneTree: any) => {
     let dataSetIdList: string[] = [];
+    let entityTypes: Number[] = [17, 18, 19];
     if (sceneTree && sceneTree.length > 0) {
         sceneTree.forEach((item: any) => {
-            if (item.nodeType && item.nodeType == 2 && item.viewStatus !== 2) {
+            if (item.nodeType && item.nodeType == 2 && item.viewStatus !== 2 && !entityTypes.includes(item.dataSetType)) {
                 dataSetIdList.push(item.dataSetId);
             }
             if (item.subNodes && item.subNodes.length > 0) {
