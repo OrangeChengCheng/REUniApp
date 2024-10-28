@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-09-27 11:39:48
+ * @LastEditTime: 2024-10-28 14:48:30
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -44,7 +44,7 @@
 
 // MOD-- JavaScript
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import BaseView from '@/components/Base/BaseView.vue';
 import SearchBar from '@/components/TopBar/SearchBar.vue';
 import Card from '@/components/Card/Card.vue';
@@ -148,19 +148,24 @@ const topbar_tab_callback = (index: number) => {
 
 // MARK Click  卡片点击
 const card_callback = (e: Share) => {
-    //console.log('卡片点击', JSON.stringify(e));
     uni.$re.unipluginLog('card_callback: ' + JSON.stringify(e.dataSetList));
-
+    
     // 不知道什么原因导致ts的数组到安卓中变成JSONObject导致解析崩溃，这样操作可以重置属性，避免ts的属性带入
     let dataSetListJson = JSON.stringify(e.dataSetList);
     let dataSetList = JSON.parse(dataSetListJson);
     uni.$re
         .realEngineRender({
             name: 'uni-app',
+            shareUrl: e.url,
+            projName: e.projName,
             worldCRS: e.worldCRS,
             dataSetList: dataSetList,
+            collect: e.collect,
             shareType: e.shareType,
             camDefaultDataSetId: e.camDefaultDataSetId,
+            shareViewMode: e.shareViewMode,
+            shareDataType: e.shareDataType,
+            defaultCamLoc: e.defaultCamLoc,
         })
         .then((result) => {
             console.log(result);

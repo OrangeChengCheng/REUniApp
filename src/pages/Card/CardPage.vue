@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-09-23 17:58:11
+ * @LastEditTime: 2024-10-28 14:42:00
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_item_back="false" :nav_bar_color="`--color-main-bg`">
@@ -28,9 +28,6 @@ import {
     getSceneById,
     getSingleSceneTreeById,
     getProjectModel,
-    getSceneById_old,
-    getSingleSceneTreeById_old,
-    getProjectModel_old,
 } from '@/service/interface';
 
 const ref_projInput_dialog = ref<InstanceType<typeof ProjInputDialog> | null>(null);
@@ -160,10 +157,10 @@ const showShareUrlRes = (params: any) => {
 
 // MARK re-api 查看分享链接资源 -- 场景资源
 const showSceneRes = (sceneId: string) => {
-    getSceneInfo_old(sceneId).then((res_1) => {
-        getSceneTree_old(sceneId).then((res_2) => {
-            let dataSetIdList = getDataSetIds_old(res_2);
-            getDataSetList_old({ dataSetIds: dataSetIdList, resourceId: sceneId }).then((res_3) => {
+    getSceneInfo(sceneId).then((res_1) => {
+        getSceneTree({ sceneId: sceneId, isPublished: true }).then((res_2) => {
+            let dataSetIdList = getDataSetIds(res_2);
+            getDataSetList({ dataSetIds: dataSetIdList }).then((res_3) => {
                 const dataSetList = handleDataSetTrans(res_3, res_1.dataSetPosition);
                 uni.$re
                     .realEngineRender({
@@ -234,20 +231,6 @@ const getSceneInfo = (paran: any): Promise<any> => {
     });
 };
 
-// MARK Service 获取场景信息（old）
-const getSceneInfo_old = (paran: any): Promise<any> => {
-    return new Promise<any>((resolve, reject) => {
-        getSceneById_old(paran).then((res) => {
-            if (res.data) {
-                let info = { coordinates: res.data.coordinates, dataSetPosition: res.data.dataSetPosition };
-                resolve(info);
-            } else {
-                reject(new Error('位置偏移信息获取失败！'));
-            }
-        });
-    });
-};
-
 // MARK Service 获取场景目录树
 const getSceneTree = (paran: any): Promise<any> => {
     return new Promise<any>((resolve, reject) => {
@@ -261,47 +244,11 @@ const getSceneTree = (paran: any): Promise<any> => {
     });
 };
 
-// MARK Service 获取场景目录树（old）
-const getSceneTree_old = (paran: any): Promise<any> => {
-    return new Promise<any>((resolve, reject) => {
-        getSingleSceneTreeById_old(paran).then((res) => {
-            if (res.data) {
-                resolve(res.data);
-            } else {
-                reject(new Error('场景目录树获取失败！'));
-            }
-        });
-    });
-};
 
 // MARK Service 获取数据集资源地址
 const getDataSetList = (params: any): Promise<any> => {
     return new Promise<any>((resolve, reject) => {
         getProjectModel(params).then((res) => {
-            console.log(res);
-            let dataSetList: any[] = [];
-            res.data.forEach((item: any) => {
-                dataSetList.push({
-                    dataSetId: item.dataSetId,
-                    resourcesAddress: item.resourcesAddress,
-                    rotate: item.rotate?.split(' ').map(Number),
-                    scale: item.scale?.split(' ').map(Number),
-                    offset: item.translation?.split(' ').map(Number),
-                });
-            });
-            if (dataSetList.length > 0) {
-                resolve(dataSetList);
-            } else {
-                reject(new Error('资源地址获取失败！'));
-            }
-        });
-    });
-};
-
-// MARK Service 获取数据集资源地址（old）
-const getDataSetList_old = (params: any): Promise<any> => {
-    return new Promise<any>((resolve, reject) => {
-        getProjectModel_old(params).then((res) => {
             console.log(res);
             let dataSetList: any[] = [];
             res.data.forEach((item: any) => {
@@ -351,22 +298,7 @@ const getDataSetIds = (sceneTree: any) => {
     }
     return dataSetIdList;
 };
-// MARK Service 递归获取数据集标识集合（old）
-const getDataSetIds_old = (sceneTree: any) => {
-    let dataSetIdList: string[] = [];
-    if (sceneTree.subNodes && sceneTree.subNodes.length > 0) {
-        sceneTree.subNodes.forEach((item: any) => {
-            if (item.nodeType && item.nodeType == 2 && item.viewStatus !== 2) {
-                dataSetIdList.push(item.dataSetId);
-            }
-            if (item.subNodes && item.subNodes.length > 0) {
-                let childrenDataSetList = getDataSetIds(item.subNodes);
-                dataSetIdList = dataSetIdList.concat(childrenDataSetList);
-            }
-        });
-    }
-    return dataSetIdList;
-};
+
 </script>
 
 // MOD-- CSS
