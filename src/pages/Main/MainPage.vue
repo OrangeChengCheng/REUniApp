@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-10-28 14:30:19
+ * @LastEditTime: 2024-10-28 15:02:04
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -198,12 +198,12 @@ const uniapp_getClipboard = () => {
                     dialog_shareUrl_disabled.value = true;
                     ref_urlInput_dialog.value?.show_dialog();
                 })
-                .catch((error) => {
+                .catch((errMsg) => {
                     uni.hide_loading();
-                    uni.showToast({ title: error.data, icon: 'none' });
                 });
         },
         fail: (err) => {
+            uni.hide_loading();
             console.log(err);
         },
     });
@@ -225,7 +225,7 @@ const tool_handleUrl = (e: any): Promise<any> => {
                     resolve(urlData);
                 });
         } else {
-            reject(new Error('Url解析失败'));
+            reject(null);
         }
     });
 };
