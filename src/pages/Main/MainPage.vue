@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-10-25 16:58:47
+ * @LastEditTime: 2024-10-28 14:30:19
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -74,15 +74,7 @@ import Card from '@/components/Card/Card.vue';
 import UrlInputDialog from '@/components/Dialog/UrlInputDialog.vue';
 import CustomInputDialog from '@/components/Dialog/CustomInputDialog.vue';
 import SampleInputDialog from '@/components/Dialog/SampleInputDialog.vue';
-import {
-    getSceneById,
-    getSingleSceneTreeById,
-    getProjectModel,
-    getCadDatasetFiles,
-    getSceneById_old,
-    getSingleSceneTreeById_old,
-    getProjectModel_old,
-} from '@/service/interface';
+import { getSceneById, getSingleSceneTreeById, getProjectModel, getCadDatasetFiles, getProjectTree } from '@/service/interface';
 import { newShare, type Share } from '@/types/class';
 import { useCardStore } from '@/stores/card';
 import { useDeviceStore } from '@/stores/device';
@@ -194,24 +186,47 @@ const update_gridColumns = () => {
 
 // MARK uniapp 获取粘贴板内容
 const uniapp_getClipboard = () => {
+    uni.show_loading();
     uni.getClipboardData({
         success: function (res) {
-            const urlData = uni.$tool.url_handle(res.data);
-            if (urlData) {
-                uni.show_loading();
-                setTimeout(() => {
+            uni.$re.unipluginLog('uni.getClipboardData: ' + JSON.stringify(res));
+            tool_handleUrl(res.data)
+                .then((result) => {
                     uni.hide_loading();
-                    uni.$re.unipluginLog('uni.getClipboardData: ' + JSON.stringify(res));
-                    dialog_shareUrl.value = urlData.url;
-                    dialog_projName.value = urlData.projName;
+                    dialog_shareUrl.value = result.url;
+                    dialog_projName.value = result.projName;
                     dialog_shareUrl_disabled.value = true;
                     ref_urlInput_dialog.value?.show_dialog();
-                }, 500);
-            }
+                })
+                .catch((error) => {
+                    uni.hide_loading();
+                    uni.showToast({ title: error.data, icon: 'none' });
+                });
         },
         fail: (err) => {
             console.log(err);
         },
+    });
+};
+
+// MARK uniapp 处理url内容
+const tool_handleUrl = (e: any): Promise<any> => {
+    return new Promise<any>((resolve, reject) => {
+        let urlData = uni.$tool.url_handle(e);
+        if (urlData) {
+            uni.setStorageSync('RE_Token', urlData.token);
+            // 获取项目名称
+            getProjName(urlData)
+                .then((res) => {
+                    urlData.projName = res || '';
+                    resolve(urlData);
+                })
+                .catch((err) => {
+                    resolve(urlData);
+                });
+        } else {
+            reject(new Error('Url解析失败'));
+        }
     });
 };
 
@@ -242,15 +257,18 @@ const topbar_houerArea_callback = () => {
 const topbar_scan_callback = () => {
     uni.scan_code()
         .then((res: any) => {
-            const urlData = uni.$tool.url_handle(res);
-            if (urlData) {
-                dialog_shareUrl.value = urlData.url;
-                dialog_projName.value = urlData.projName;
-                dialog_shareUrl_disabled.value = true;
-                ref_urlInput_dialog.value?.show_dialog();
-            } else {
-                uni.showToast({ title: '无效二维码', icon: 'none' });
-            }
+            tool_handleUrl(res)
+                .then((result) => {
+                    uni.hide_loading();
+                    dialog_shareUrl.value = result.url;
+                    dialog_projName.value = result.projName;
+                    dialog_shareUrl_disabled.value = true;
+                    ref_urlInput_dialog.value?.show_dialog();
+                })
+                .catch((error) => {
+                    uni.hide_loading();
+                    uni.showToast({ title: '无效二维码', icon: 'none' });
+                });
         })
         .catch((err: any) => {});
 };
@@ -286,8 +304,10 @@ const card_callback = (e: Share) => {
         .realEngineRender({
             name: 'uni-app',
             shareUrl: e.url,
+            projName: e.projName,
             worldCRS: e.worldCRS,
             dataSetList: dataSetList,
+            collect: e.collect,
             shareType: e.shareType,
             camDefaultDataSetId: e.camDefaultDataSetId,
             shareViewMode: e.shareViewMode,
@@ -361,6 +381,7 @@ const dialog_UrlInputCallBack = (e: any) => {
         card_store.reviseProjName(shareParams, e.projName);
         dialog_revise.value = false;
     } else {
+        shareParams.projName = e.projName;
         if (shareParams) showShareUrlRes(shareParams);
     }
 };
@@ -379,7 +400,7 @@ const showShareUrlRes = (params: any) => {
 const showSceneRes = (params: any) => {
     uni.show_loading();
     getSceneInfo(params.id).then((res_1) => {
-        getSceneTree({ sceneId: params.id }).then((res_2) => {
+        getSceneTree({ sceneId: params.id, isPublished: true }).then((res_2) => {
             let dataSetIdList = getDataSetIds(res_2);
             getDataSetList({ dataSetIds: dataSetIdList }).then((res_3) => {
                 const dataSetList = handleDataSetTrans(res_3, res_1.dataSetPosition);
@@ -404,11 +425,14 @@ const showSceneRes = (params: any) => {
                     .realEngineRender({
                         name: 'uni-app',
                         shareUrl: params.url,
+                        projName: params.projName,
+                        collect: shareData.collect,
                         worldCRS: res_1.coordinates,
                         dataSetList: dataSetList,
                         shareType: 2,
                         camDefaultDataSetId: cam_dataSetId,
                         shareViewMode: params.shareViewMode,
+                        defaultCamLoc: shareData.defaultCamLoc,
                     })
                     .then((result) => {
                         console.log(result);
@@ -433,7 +457,10 @@ const showModelRes = (params: any) => {
             showCadTypeRes(params);
             break;
         default:
-            uni.showToast({ title: '暂不支持该数据类型', icon: 'none' });
+            // 使用延时解决弹窗关闭后的提示显示异常的问题，因为弹窗关闭有200的延迟
+            setTimeout(() => {
+                uni.showToast({ title: '暂不支持该数据类型', icon: 'none' });
+            }, 210);
             break;
     }
 };
@@ -456,9 +483,12 @@ const showModelTypeRes = (params: any) => {
             .realEngineRender({
                 name: 'uni-app',
                 shareUrl: params.url,
+                projName: params.projName,
                 dataSetList: res,
+                collect: shareData.collect,
                 shareType: 1,
                 shareDataType: params.shareDataType,
+                defaultCamLoc: shareData.defaultCamLoc,
             })
             .then((result) => {
                 uni.$re.unipluginLog(JSON.stringify(result));
@@ -484,7 +514,9 @@ const showCadTypeRes = (params: any) => {
             .realEngineRender({
                 name: 'uni-app',
                 shareUrl: params.url,
+                projName: params.projName,
                 dataSetList: res,
+                collect: shareData.collect,
                 shareType: 1,
                 shareDataType: params.shareDataType,
             })
@@ -524,21 +556,7 @@ const getSceneInfo = (paran: any): Promise<any> => {
     return new Promise<any>((resolve, reject) => {
         getSceneById(paran).then((res) => {
             if (res.data) {
-                let info = { coordinates: res.data.coordinates, dataSetPosition: res.data.dataSetPosition };
-                resolve(info);
-            } else {
-                reject(new Error('位置偏移信息获取失败！'));
-            }
-        });
-    });
-};
-
-// MARK Service 获取场景信息（old）
-const getSceneInfo_old = (paran: any): Promise<any> => {
-    return new Promise<any>((resolve, reject) => {
-        getSceneById_old(paran).then((res) => {
-            if (res.data) {
-                let info = { coordinates: res.data.coordinates, dataSetPosition: res.data.dataSetPosition };
+                let info = { coordinates: res.data.coordinates, dataSetPosition: res.data.dataSetPosition, sceneName: res.data.sceneName };
                 resolve(info);
             } else {
                 reject(new Error('位置偏移信息获取失败！'));
@@ -560,14 +578,14 @@ const getSceneTree = (paran: any): Promise<any> => {
     });
 };
 
-// MARK Service 获取场景目录树（old）
-const getSceneTree_old = (paran: any): Promise<any> => {
+// MARK Service 获取模型目录树
+const getModelTree = (paran: any): Promise<any> => {
     return new Promise<any>((resolve, reject) => {
-        getSingleSceneTreeById_old(paran).then((res) => {
+        getProjectTree(paran).then((res) => {
             if (res.data) {
                 resolve(res.data);
             } else {
-                reject(new Error('场景目录树获取失败！'));
+                reject(new Error('模型目录树获取失败！'));
             }
         });
     });
@@ -607,6 +625,34 @@ const getDataSetList = (params: any): Promise<any> => {
     });
 };
 
+// MARK Service 获取项目名称
+const getProjName = (params: any): Promise<any> => {
+    return new Promise<any>((resolve, reject) => {
+        if (params.shareType === 2) {
+            getSceneInfo(params.id)
+                .then((res) => {
+                    resolve(res?.sceneName);
+                })
+                .catch((err) => {
+                    reject(err);
+                });
+        } else {
+            getModelTree({ dataSetId: params.id })
+                .then((res) => {
+                    let find_obj = res?.find((item: any) => item.dataSetId === params.id);
+                    if (find_obj) {
+                        resolve(find_obj.dataSetName);
+                    } else {
+                        reject('项目查询失败');
+                    }
+                })
+                .catch((err) => {
+                    reject(err);
+                });
+        }
+    });
+};
+
 // MARK Service 获取数据集下CAD资源地址
 const getCadDataSetList = (params: any): Promise<any> => {
     return new Promise<any>((resolve, reject) => {
@@ -638,41 +684,6 @@ const getCadDataSetList = (params: any): Promise<any> => {
     });
 };
 
-// MARK Service 获取数据集资源地址（old）
-const getDataSetList_old = (params: any): Promise<any> => {
-    return new Promise<any>((resolve, reject) => {
-        getProjectModel_old(params).then((res) => {
-            console.log(res);
-            let dataSetList: any[] = [];
-            res.data.forEach((item: any) => {
-                let dataSetCRS = '';
-                let dataSetCRSNorth = 0;
-                let dataSetSGContent = item.context ? item.context : '';
-                if (item.coordinatesConfig) {
-                    dataSetCRS = item.coordinatesConfig.coordinates ? item.coordinatesConfig.coordinates : '';
-                    dataSetCRSNorth = item.coordinatesConfig.northAngle ? Number(item.coordinatesConfig.northAngle) : 0;
-                }
-                dataSetList.push({
-                    dataSetId: item.dataSetId,
-                    resourcesAddress: item.resourcesAddress,
-                    rotate: item.rotate?.split(' ').map(Number),
-                    scale: item.scale?.split(' ').map(Number),
-                    offset: item.translation?.split(' ').map(Number),
-                    dataSetCRS: dataSetCRS,
-                    dataSetCRSNorth: dataSetCRSNorth,
-                    dataSetSGContent: dataSetSGContent,
-                    dataSetType: item.dataSetType,
-                });
-            });
-            if (dataSetList.length > 0) {
-                resolve(dataSetList);
-            } else {
-                reject(new Error('资源地址获取失败！'));
-            }
-        });
-    });
-};
-
 // MARK Service 处理数据集偏移信息
 const handleDataSetTrans = (dataSetList: any, dataSetTrans: any): any => {
     dataSetList.forEach((dataSet: any) => {
@@ -693,23 +704,6 @@ const getDataSetIds = (sceneTree: any) => {
     if (sceneTree && sceneTree.length > 0) {
         sceneTree.forEach((item: any) => {
             if (item.nodeType && item.nodeType == 2 && item.viewStatus !== 2 && !entityTypes.includes(item.dataSetType)) {
-                dataSetIdList.push(item.dataSetId);
-            }
-            if (item.subNodes && item.subNodes.length > 0) {
-                let childrenDataSetList = getDataSetIds(item.subNodes);
-                dataSetIdList = dataSetIdList.concat(childrenDataSetList);
-            }
-        });
-    }
-    return dataSetIdList;
-};
-
-// MARK Service 递归获取数据集标识集合（old）
-const getDataSetIds_old = (sceneTree: any) => {
-    let dataSetIdList: string[] = [];
-    if (sceneTree.subNodes && sceneTree.subNodes.length > 0) {
-        sceneTree.subNodes.forEach((item: any) => {
-            if (item.nodeType && item.nodeType == 2 && item.viewStatus !== 2) {
                 dataSetIdList.push(item.dataSetId);
             }
             if (item.subNodes && item.subNodes.length > 0) {

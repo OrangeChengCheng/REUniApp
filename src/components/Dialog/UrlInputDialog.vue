@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-27 17:04:55
- * @LastEditTime: 2024-09-26 09:55:34
+ * @LastEditTime: 2024-10-28 11:48:44
 -->
 <template>
     <div class="sup-url-input-dialog" v-if="dialog_visible">
@@ -86,8 +86,9 @@ onMounted(() => {
 const uniapp_clearClipboard = () => {
     uni.setClipboardData({
         data: '',
+        showToast: false,
         success: () => {
-            uni.hideToast();
+            // uni.hideToast();
             // uni.showToast({ title: '粘贴板已清除', icon: 'none' });
         },
     });

@@ -1,9 +1,10 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-23 14:42:45
- * @LastEditTime: 2024-10-14 17:11:40
+ * @LastEditTime: 2024-10-28 12:05:15
  */
 
+import { getSceneById, getProjectTree } from '@/service/interface';
 
 interface ApiMethods {
     url_handle(url: string): any;
@@ -32,13 +33,14 @@ const api: ApiMethods = {
         let searchType = shareType === 2 ? '#/sceneShare/view' : '#/dataSetShare/view';
         let startIndex = url.indexOf(searchType) + searchType.length; // 找到 searchType 在URL中的位置
         let valueStartIndex = url.indexOf('/', startIndex + 1) + 1; // 计算所需值的起始位置（即第二个"/"之后的位置）
-        let valueEndIndex = url.indexOf('/', valueStartIndex); // 计算所需值的结束位置（即第三个"/"之前的位置）
+        // let valueEndIndex = url.indexOf('/', valueStartIndex); // 计算所需值的结束位置（即第三个"/"之前的位置）
+        let valueEndIndex = url.indexOf('?', valueStartIndex + 1);
         let _id = url.substring(valueStartIndex, valueEndIndex); // 截取所需的值
 
-        let projNameStartIndex = valueEndIndex + 1;
-        let projNameEndIndex = url.indexOf('?', projNameStartIndex);
-        let _projNameCode = url.substring(projNameStartIndex, projNameEndIndex); // 截取所需的值
-        let _projName = decodeURIComponent(_projNameCode);
+        // let projNameStartIndex = valueEndIndex + 1;
+        // let projNameEndIndex = url.indexOf('?', projNameStartIndex);
+        // let _projNameCode = url.substring(projNameStartIndex, projNameEndIndex); // 截取所需的值
+        // let _projName = decodeURIComponent(_projNameCode);
 
         let tokenStartIndex = url.indexOf('token=') + 'token='.length; // 计算token的起始位置（即"token="之后的位置）
         let tokenEndIndex = url.indexOf('&', tokenStartIndex); // 如果URL中有其他查询参数，找到"&"字符的位置，作为token的结束位置
@@ -59,7 +61,7 @@ const api: ApiMethods = {
             _dataType = dataTypeEndIndex !== -1 ? url.substring(dataTypeIndex + 'dataType='.length, dataTypeEndIndex) : url.substring(dataTypeIndex + 'dataType='.length);
         }
 
-        let params = { url: url, shareType: shareType, projName: _projName, id: _id, token: _token, shareViewMode: _viewMode, shareDataType: _dataType };
+        let params = { url: url, shareType: shareType, projName: "", id: _id, token: _token, shareViewMode: _viewMode, shareDataType: _dataType };        
         uni.$re.unipluginLog('params = ' + JSON.stringify(params));
         return params;
     },
@@ -90,7 +92,61 @@ const api: ApiMethods = {
         }
     },
 
-
 }
+
+
+// MARK Service 获取项目名称
+const getProjName = (params: any): Promise<any> => {
+    return new Promise<any>((resolve, reject) => {
+        if (params.shareType === 2) {
+            getSceneInfo(params.id)
+                .then((res) => {
+                    resolve(res?.sceneName);
+                })
+                .catch((err) => {
+                    reject(err);
+                });
+        } else {
+            getModelTree({ dataSetId: params.id })
+                .then((res) => {
+                    let find_obj = res?.find((item: any) => item.dataSetId === params.id);
+                    if (find_obj) {
+                        resolve(find_obj.dataSetName);
+                    } else {
+                        reject('项目查询失败');
+                    }
+                })
+                .catch((err) => {
+                    reject(err);
+                });
+        }
+    });
+};
+
+// MARK Service 获取模型目录树
+const getModelTree = (paran: any): Promise<any> => {
+    return new Promise<any>((resolve, reject) => {
+        getProjectTree(paran).then((res) => {
+            if (res.data) {
+                resolve(res.data);
+            } else {
+                reject(new Error('模型目录树获取失败！'));
+            }
+        });
+    });
+};
+
+// MARK Service 获取场景信息
+const getSceneInfo = (paran: any): Promise<any> => {
+    return new Promise<any>((resolve, reject) => {
+        getSceneById(paran).then((res) => {
+            if (res.data) {
+                resolve(res.data);
+            } else {
+                reject(new Error('场景目录树获取失败！'));
+            }
+        });
+    });
+};
 
 export default api;
