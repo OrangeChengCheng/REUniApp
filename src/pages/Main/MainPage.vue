@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-10-28 15:02:04
+ * @LastEditTime: 2024-10-31 16:40:45
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -399,48 +399,63 @@ const showShareUrlRes = (params: any) => {
 // MARK re-api 查看分享链接资源 -- 场景资源
 const showSceneRes = (params: any) => {
     uni.show_loading();
-    getSceneInfo(params.id).then((res_1) => {
-        getSceneTree({ sceneId: params.id, isPublished: true }).then((res_2) => {
-            let dataSetIdList = getDataSetIds(res_2);
-            getDataSetList({ dataSetIds: dataSetIdList }).then((res_3) => {
-                const dataSetList = handleDataSetTrans(res_3, res_1.dataSetPosition);
-                //console.log('数据集：', dataSetList);
+    getSceneInfo(params.id)
+        .then((res_1) => {
+            getSceneTree({ sceneId: params.id, isPublished: true })
+                .then((res_2) => {
+                    let dataSetIdList = getDataSetIds(res_2);
+                    getDataSetList({ dataSetIds: dataSetIdList })
+                        .then((res_3) => {
+                            const dataSetList = handleDataSetTrans(res_3, res_1.dataSetPosition);
+                            //console.log('数据集：', dataSetList);
 
-                let cam_dataSetId = uni.$tool.cam_defauleDataSet(dataSetList);
-                let shareData: Share = newShare({
-                    url: params.url,
-                    projName: params.projName,
-                    id: params.id,
-                    lastTime: new Date(),
-                    dataSetList: dataSetList,
-                    worldCRS: res_1.coordinates,
-                    shareType: 2,
-                    camDefaultDataSetId: cam_dataSetId,
-                    shareViewMode: params.shareViewMode,
+                            let cam_dataSetId = uni.$tool.cam_defauleDataSet(dataSetList);
+                            let shareData: Share = newShare({
+                                url: params.url,
+                                projName: params.projName,
+                                id: params.id,
+                                lastTime: new Date(),
+                                dataSetList: dataSetList,
+                                worldCRS: res_1.coordinates,
+                                shareType: 2,
+                                camDefaultDataSetId: cam_dataSetId,
+                                shareViewMode: params.shareViewMode,
+                            });
+                            card_store.addCard(shareData);
+
+                            uni.hide_loading();
+                            uni.$re
+                                .realEngineRender({
+                                    name: 'uni-app',
+                                    shareUrl: params.url,
+                                    projName: params.projName,
+                                    collect: shareData.collect,
+                                    worldCRS: res_1.coordinates,
+                                    dataSetList: dataSetList,
+                                    shareType: 2,
+                                    camDefaultDataSetId: cam_dataSetId,
+                                    shareViewMode: params.shareViewMode,
+                                    defaultCamLoc: shareData.defaultCamLoc,
+                                })
+                                .then((result) => {
+                                    console.log(result);
+                                    uni.$re.unipluginLog(JSON.stringify(result));
+                                });
+                        })
+                        .catch((err_3) => {
+                            uni.hide_loading();
+                            uni.showToast({ title: err_3, icon: 'none' });
+                        });
+                })
+                .catch((err_2) => {
+                    uni.hide_loading();
+                    uni.showToast({ title: err_2, icon: 'none' });
                 });
-                card_store.addCard(shareData);
-
-                uni.hide_loading();
-                uni.$re
-                    .realEngineRender({
-                        name: 'uni-app',
-                        shareUrl: params.url,
-                        projName: params.projName,
-                        collect: shareData.collect,
-                        worldCRS: res_1.coordinates,
-                        dataSetList: dataSetList,
-                        shareType: 2,
-                        camDefaultDataSetId: cam_dataSetId,
-                        shareViewMode: params.shareViewMode,
-                        defaultCamLoc: shareData.defaultCamLoc,
-                    })
-                    .then((result) => {
-                        console.log(result);
-                        uni.$re.unipluginLog(JSON.stringify(result));
-                    });
-            });
+        })
+        .catch((err_1) => {
+            uni.hide_loading();
+            uni.showToast({ title: err_1, icon: 'none' });
         });
-    });
 };
 
 // MARK re-api 查看分享链接资源 -- 模型资源
@@ -467,63 +482,77 @@ const showModelRes = (params: any) => {
 
 // MARK re-api 查看模型类型数据
 const showModelTypeRes = (params: any) => {
-    getDataSetList({ dataSetIds: [params.id] }).then((res) => {
-        let shareData: Share = newShare({
-            url: params.url,
-            projName: params.projName,
-            id: params.id,
-            lastTime: new Date(),
-            dataSetList: res,
-            shareType: 1,
-            shareDataType: params.shareDataType,
-        });
-        card_store.addCard(shareData);
-
-        uni.$re
-            .realEngineRender({
-                name: 'uni-app',
-                shareUrl: params.url,
+    uni.show_loading();
+    getDataSetList({ dataSetIds: [params.id] })
+        .then((res) => {
+            uni.hide_loading();
+            let shareData: Share = newShare({
+                url: params.url,
                 projName: params.projName,
+                id: params.id,
+                lastTime: new Date(),
                 dataSetList: res,
-                collect: shareData.collect,
                 shareType: 1,
                 shareDataType: params.shareDataType,
-                defaultCamLoc: shareData.defaultCamLoc,
-            })
-            .then((result) => {
-                uni.$re.unipluginLog(JSON.stringify(result));
             });
-    });
+            card_store.addCard(shareData);
+
+            uni.$re
+                .realEngineRender({
+                    name: 'uni-app',
+                    shareUrl: params.url,
+                    projName: params.projName,
+                    dataSetList: res,
+                    collect: shareData.collect,
+                    shareType: 1,
+                    shareDataType: params.shareDataType,
+                    defaultCamLoc: shareData.defaultCamLoc,
+                })
+                .then((result) => {
+                    uni.$re.unipluginLog(JSON.stringify(result));
+                });
+        })
+        .catch((err) => {
+            uni.hide_loading();
+            uni.showToast({ title: err, icon: 'none' });
+        });
 };
 
 // MARK re-api 查看CAD类型数据
 const showCadTypeRes = (params: any) => {
-    getCadDataSetList({ dataSetId: params.id }).then((res) => {
-        let shareData: Share = newShare({
-            url: params.url,
-            projName: params.projName,
-            id: params.id,
-            lastTime: new Date(),
-            dataSetList: res,
-            shareType: 1,
-            shareDataType: params.shareDataType,
-        });
-        card_store.addCard(shareData);
-
-        uni.$re
-            .realEngineRender({
-                name: 'uni-app',
-                shareUrl: params.url,
+    uni.show_loading();
+    getCadDataSetList({ dataSetId: params.id })
+        .then((res) => {
+            uni.hide_loading();
+            let shareData: Share = newShare({
+                url: params.url,
                 projName: params.projName,
+                id: params.id,
+                lastTime: new Date(),
                 dataSetList: res,
-                collect: shareData.collect,
                 shareType: 1,
                 shareDataType: params.shareDataType,
-            })
-            .then((result) => {
-                uni.$re.unipluginLog(JSON.stringify(result));
             });
-    });
+            card_store.addCard(shareData);
+
+            uni.$re
+                .realEngineRender({
+                    name: 'uni-app',
+                    shareUrl: params.url,
+                    projName: params.projName,
+                    dataSetList: res,
+                    collect: shareData.collect,
+                    shareType: 1,
+                    shareDataType: params.shareDataType,
+                })
+                .then((result) => {
+                    uni.$re.unipluginLog(JSON.stringify(result));
+                });
+        })
+        .catch((err) => {
+            uni.hide_loading();
+            uni.showToast({ title: err, icon: 'none' });
+        });
 };
 
 // MARK re-api 查看模型资源链接
@@ -559,7 +588,7 @@ const getSceneInfo = (paran: any): Promise<any> => {
                 let info = { coordinates: res.data.coordinates, dataSetPosition: res.data.dataSetPosition, sceneName: res.data.sceneName };
                 resolve(info);
             } else {
-                reject(new Error('位置偏移信息获取失败！'));
+                reject('位置偏移信息获取失败！');
             }
         });
     });
@@ -572,7 +601,7 @@ const getSceneTree = (paran: any): Promise<any> => {
             if (res.data) {
                 resolve(res.data);
             } else {
-                reject(new Error('场景目录树获取失败！'));
+                reject('场景目录树获取失败！');
             }
         });
     });
@@ -585,7 +614,7 @@ const getModelTree = (paran: any): Promise<any> => {
             if (res.data) {
                 resolve(res.data);
             } else {
-                reject(new Error('模型目录树获取失败！'));
+                reject('模型目录树获取失败！');
             }
         });
     });
@@ -619,7 +648,7 @@ const getDataSetList = (params: any): Promise<any> => {
             if (dataSetList.length > 0) {
                 resolve(dataSetList);
             } else {
-                reject(new Error('资源地址获取失败！'));
+                reject('资源地址获取失败！');
             }
         });
     });
@@ -678,7 +707,7 @@ const getCadDataSetList = (params: any): Promise<any> => {
             if (dataSetList.length > 0) {
                 resolve(dataSetList);
             } else {
-                reject(new Error('资源地址获取失败！'));
+                reject('资源地址获取失败！');
             }
         });
     });
