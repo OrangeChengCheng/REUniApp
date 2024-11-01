@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-10-31 16:40:45
+ * @LastEditTime: 2024-11-01 11:55:23
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -79,6 +79,7 @@ import { newShare, type Share } from '@/types/class';
 import { useCardStore } from '@/stores/card';
 import { useDeviceStore } from '@/stores/device';
 
+const SETCRS_DATA_TYPE = [0, 11, 15]; // 需要设置坐标系和基点的数据类型
 const device_store = useDeviceStore();
 const card_store = useCardStore();
 const TopBar_fixedSpace = ref(230);
@@ -407,7 +408,6 @@ const showSceneRes = (params: any) => {
                     getDataSetList({ dataSetIds: dataSetIdList })
                         .then((res_3) => {
                             const dataSetList = handleDataSetTrans(res_3, res_1.dataSetPosition);
-                            //console.log('数据集：', dataSetList);
 
                             let cam_dataSetId = uni.$tool.cam_defauleDataSet(dataSetList);
                             let shareData: Share = newShare({
@@ -626,13 +626,10 @@ const getDataSetList = (params: any): Promise<any> => {
         getProjectModel(params).then((res) => {
             let dataSetList: any[] = [];
             res.data.forEach((item: any) => {
-                let dataSetCRS = '';
-                let dataSetCRSNorth = 0;
+                let dataSetCRS = handleDataSetCRS(item);
+                let dataSetCRSNorth = handleDataSetCRSNorth(item);
+                let engineOrigin = handleEngineOrigin(item);
                 let dataSetSGContent = item.context ? item.context : '';
-                if (item.coordinatesConfig) {
-                    dataSetCRS = item.coordinatesConfig.coordinates ? item.coordinatesConfig.coordinates : '';
-                    dataSetCRSNorth = item.coordinatesConfig.northAngle ? Number(item.coordinatesConfig.northAngle) : 0;
-                }
                 dataSetList.push({
                     dataSetId: item.dataSetId,
                     resourcesAddress: item.resourcesAddress,
@@ -641,6 +638,7 @@ const getDataSetList = (params: any): Promise<any> => {
                     offset: item.translation?.split(' ').map(Number),
                     dataSetCRS: dataSetCRS,
                     dataSetCRSNorth: dataSetCRSNorth,
+                    engineOrigin: engineOrigin,
                     dataSetSGContent: dataSetSGContent,
                     dataSetType: item.dataSetType,
                 });
@@ -724,6 +722,75 @@ const handleDataSetTrans = (dataSetList: any, dataSetTrans: any): any => {
         }
     });
     return dataSetList;
+};
+
+// MARK Service 处理数据集--坐标系标识符
+const handleDataSetCRS = (dataSetInfo: any) => {
+    if (!SETCRS_DATA_TYPE.includes(dataSetInfo.dataSetType)) return "";
+
+    let crsConfig = dataSetInfo.coordinatesConfig;
+    if (crsConfig.coordinatesType === 'None') return "";
+
+    if (crsConfig.coordinatesType === 'CalibrationPoint') {
+        let crsPoint = crsConfig.coordinatesPoint;
+        let crs = `ENU:${crsPoint.latitude},${crsPoint.longitude}`;
+        return crs;
+    } else {
+        return crsConfig.coordinates;
+    }
+};
+
+// MARK Service 处理数据集--基点坐标
+const handleEngineOrigin = (dataSetInfo: any) => {
+    if (!SETCRS_DATA_TYPE.includes(dataSetInfo.dataSetType)) return [0, 0, 0];
+
+    let engineOrigin = [];
+    let crsConfig = dataSetInfo.coordinatesConfig;
+
+    let origin = crsConfig.basePoint;
+    let originArray = [];
+    if (origin) {
+        originArray = origin.split(',').map(Number);
+    }
+
+    if (crsConfig.coordinatesType === 'CalibrationPoint') {
+        let crsPoint = crsConfig.coordinatesPoint;
+        let point = crsPoint.coordinates;
+        let pointArray = [];
+        if (point) {
+            pointArray = point.split(',').map(Number);
+        } else {
+            pointArray = [0, 0, 0];
+        }
+
+        if (originArray.length) {
+            originArray.forEach((item: any, index: any) => {
+                let result = item - pointArray[index];
+                engineOrigin.push(result);
+            });
+        } else {
+            engineOrigin = pointArray;
+        }
+    } else {
+        engineOrigin = originArray;
+    }
+
+    if (engineOrigin.length) {
+        return engineOrigin;
+    } else {
+        return [0, 0, 0];
+    }
+};
+
+// MARK Service 处理数据集--正北夹角
+const handleDataSetCRSNorth = (dataSetInfo: any) => {
+    if (!SETCRS_DATA_TYPE.includes(dataSetInfo.dataSetType)) return 0;
+    let crsConfig = dataSetInfo.coordinatesConfig;
+    if (crsConfig.northAngle) {
+        return Number(crsConfig.northAngle);
+    } else {
+        return 0;
+    }
 };
 
 // MARK Service 递归获取数据集标识集合
