@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-11-01 11:55:23
+ * @LastEditTime: 2024-11-04 10:44:18
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -404,10 +404,12 @@ const showSceneRes = (params: any) => {
         .then((res_1) => {
             getSceneTree({ sceneId: params.id, isPublished: true })
                 .then((res_2) => {
-                    let dataSetIdList = getDataSetIds(res_2);
+                    const dataSetIdList = getDataSetIds(res_2);
+                    const terrainList = getTerrainDataSetList(res_2, 2);
                     getDataSetList({ dataSetIds: dataSetIdList })
                         .then((res_3) => {
-                            const dataSetList = handleDataSetTrans(res_3, res_1.dataSetPosition);
+                            const dataSetList_temp1: any[] = handleDataSetTrans(res_3, res_1.dataSetPosition);
+                            const dataSetList = handleTerrainLayerLev(dataSetList_temp1, terrainList);
 
                             let cam_dataSetId = uni.$tool.cam_defauleDataSet(dataSetList);
                             let shareData: Share = newShare({
@@ -726,10 +728,10 @@ const handleDataSetTrans = (dataSetList: any, dataSetTrans: any): any => {
 
 // MARK Service 处理数据集--坐标系标识符
 const handleDataSetCRS = (dataSetInfo: any) => {
-    if (!SETCRS_DATA_TYPE.includes(dataSetInfo.dataSetType)) return "";
+    if (!SETCRS_DATA_TYPE.includes(dataSetInfo.dataSetType)) return '';
 
     let crsConfig = dataSetInfo.coordinatesConfig;
-    if (crsConfig.coordinatesType === 'None') return "";
+    if (crsConfig.coordinatesType === 'None') return '';
 
     if (crsConfig.coordinatesType === 'CalibrationPoint') {
         let crsPoint = crsConfig.coordinatesPoint;
@@ -793,6 +795,19 @@ const handleDataSetCRSNorth = (dataSetInfo: any) => {
     }
 };
 
+// MARK Service 处理数据集--地形层级
+const handleTerrainLayerLev = (dataSetList: any, dataSetTerrain: any) => {
+    dataSetList.forEach((dataSet: any) => {
+        let dataSetTranData = dataSetTerrain.find((obj: any) => obj.dataSetId == dataSet.dataSetId);
+        if (dataSetTranData) {
+            dataSet.terrainLayerLev = dataSetTranData.sortNum;
+        } else {
+            dataSet.terrainLayerLev = 0;
+        }
+    });
+    return dataSetList;
+};
+
 // MARK Service 递归获取数据集标识集合
 const getDataSetIds = (sceneTree: any) => {
     let dataSetIdList: string[] = [];
@@ -809,6 +824,30 @@ const getDataSetIds = (sceneTree: any) => {
         });
     }
     return dataSetIdList;
+};
+
+// MARK Service 递归获取地形数据集合
+const getTerrainDataSetList = (sceneTree: any, nodeType: Number) => {
+    const array: any[] = [];
+    const traverse = (item: any) => {
+        if (item.nodeType === nodeType) {
+            array.push(item);
+        }
+        if (item.subNodes && item.subNodes.length) {
+            item.subNodes.forEach((subNode: any) => {
+                traverse(subNode);
+            });
+        }
+    };
+
+    sceneTree.forEach((item: any) => {
+        traverse(item);
+    });
+
+    var allDataSets = array.filter((el) => el.viewStatus !== 2);
+    const terrainType = [10, 13, 21, 22];
+    let terrainDataSets = allDataSets.filter((el) => terrainType.includes(el.dataSetType));
+    return terrainDataSets;
 };
 </script>
 
