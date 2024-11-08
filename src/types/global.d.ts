@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-13 18:01:53
- * @LastEditTime: 2024-09-23 18:39:46
+ * @LastEditTime: 2024-11-08 12:28:36
  */
 
 
@@ -18,6 +18,8 @@ declare global {
         $re: {
             unipluginLog(log: string): void;
             realEngineRender(data: any): Promise<any>;
+            reAppToUniMessageHandler(onMessage: (message: any) => void): Promise<void>;
+            reUniPostData(data: any): void;
         }
         $window: {
             serverBaseUrl: string;

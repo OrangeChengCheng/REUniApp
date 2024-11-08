@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-14 10:05:14
- * @LastEditTime: 2024-09-23 10:58:22
+ * @LastEditTime: 2024-11-08 14:31:12
  */
 import config from './config'
 import reApi from './reApi'
@@ -37,6 +37,8 @@ export default {
         uni.$re = {
             unipluginLog: reApi.unipluginLog,
             realEngineRender: reApi.realEngineRender,
+            reAppToUniMessageHandler: reApi.reAppToUniMessageHandler,
+            reUniPostData: reApi.reUniPostData,
         };
         uni.$tool = {
             url_handle: tool.url_handle,

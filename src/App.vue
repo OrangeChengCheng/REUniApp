@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-14 10:24:21
- * @LastEditTime: 2024-10-16 11:33:58
+ * @LastEditTime: 2024-11-08 14:32:19
 -->
 <script setup lang="ts">
 import { onLaunch, onShow, onHide } from '@dcloudio/uni-app';
@@ -18,6 +18,20 @@ onLaunch(() => {
     const card_store = useCardStore();
     card_store.updateSample();
     uniApi.get_deviceInfo();
+    uni.$re
+        .reAppToUniMessageHandler((msg) => {
+            console.log('receive message:', msg);
+            uni.$re.unipluginLog('reMessageHandler++++++++++: ' + JSON.stringify(msg));
+            setTimeout(() => {
+                let postData = { data: { key: '666', value: [1, 2, 3, 4, 5] }, msg: '-----' };
+                uni.$re.unipluginLog('reUniPostData: ' + JSON.stringify(postData));
+                uni.$re.reUniPostData(postData);
+            }, 2000);
+        })
+        .then((res) => {
+            console.log('receive message:', res);
+            uni.$re.unipluginLog('reMessageHandler: ' + JSON.stringify(res));
+        });
 });
 onShow(() => {
     console.log('App Show');
