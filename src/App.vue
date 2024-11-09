@@ -1,10 +1,10 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-14 10:24:21
- * @LastEditTime: 2024-11-08 14:32:19
+ * @LastEditTime: 2024-11-09 12:25:30
 -->
 <script setup lang="ts">
-import { onLaunch, onShow, onHide } from '@dcloudio/uni-app';
+import { onLaunch, onShow, onHide, onExit } from '@dcloudio/uni-app';
 import { useCardStore } from '@/stores/card';
 import { useDeviceStore } from '@/stores/device';
 import uniApi from '@/utils/uniApi';
@@ -18,23 +18,17 @@ onLaunch(() => {
     const card_store = useCardStore();
     card_store.updateSample();
     uniApi.get_deviceInfo();
-    uni.$re
-        .reAppToUniMessageHandler((msg) => {
-            console.log('receive message:', msg);
-            uni.$re.unipluginLog('reMessageHandler++++++++++: ' + JSON.stringify(msg));
-            setTimeout(() => {
-                let postData = { data: { key: '666', value: [1, 2, 3, 4, 5] }, msg: '-----' };
-                uni.$re.unipluginLog('reUniPostData: ' + JSON.stringify(postData));
-                uni.$re.reUniPostData(postData);
-            }, 2000);
-        })
-        .then((res) => {
-            console.log('receive message:', res);
-            uni.$re.unipluginLog('reMessageHandler: ' + JSON.stringify(res));
-        });
+    uni.$re.reAppToUniMessageHandler((data) => {
+        setTimeout(() => {
+            let postData = { data: { key: '666', value: [1, 2, 3, 4, 5] }, msg: '---', item: data };
+            uni.$re.unipluginLog('reUniPostData: ' + JSON.stringify(postData));
+            uni.$re.reUniPostData(postData);
+        }, 2000);
+    });
 });
 onShow(() => {
     console.log('App Show');
+    uni.$re.unipluginLog('onShow');
     uni.getNetworkType({
         success: function (res) {
             const device_store = useDeviceStore();
@@ -44,6 +38,11 @@ onShow(() => {
 });
 onHide(() => {
     console.log('App Hide');
+    uni.$re.unipluginLog('onHide');
+});
+onExit(() => {
+    console.log('App Exit');
+    uni.$re.unipluginLog('onExit');
 });
 </script>
 <style lang="scss">

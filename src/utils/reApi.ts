@@ -1,15 +1,16 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-14 14:22:08
- * @LastEditTime: 2024-11-08 14:27:25
+ * @LastEditTime: 2024-11-09 12:21:17
  */
+
 
 
 interface ApiMethods {
     unipluginLog(log: string): void;
     realEngineRender(data: any): Promise<any>;
     getREModule(): any;
-    reAppToUniMessageHandler(onMessage: (message: any) => void): Promise<void>; // 添加一个回调参数来处理每条消息
+    reAppToUniMessageHandler(onCallBack: (data: any) => void): Promise<void>; // 添加一个回调参数来处理每条消息
     reUniPostData(data: any): void;
 }
 
@@ -17,10 +18,8 @@ const api: ApiMethods = {
     // MARK re-api 获取插件对象
     getREModule: (): any => {
         if (Object.prototype.hasOwnProperty.call(uni, 'requireNativePlugin')) {
-            // const reModule = uni.requireNativePlugin('REUniPlugin-REModule');
             return uni.requireNativePlugin('REUniPlugin-REModule');
         } else {
-            // uni.showToast({ title: '加载插件失败', icon: 'none' });
             return null;
         }
     },
@@ -41,39 +40,16 @@ const api: ApiMethods = {
     },
 
     // MARK re-api 原生&uni-app通信
-    reAppToUniMessageHandler: async (onMessage: (message: any) => void): Promise<void> => {
-        let shouldContinue = true; // 停止条件的变量
-
-        // 定义一个递归的async函数来处理回调和继续监听
-        const listenForMessages = async (): Promise<void> => {
-            if (!shouldContinue) {
-                return; // 停止条件满足，退出递归
-            }
-
-            const reModule = api.getREModule();
-            if (reModule && reModule.reAppToUniMessageHandler) {
-                // 调用插件的reMessageHandler方法并等待回调
-                await new Promise<void>((resolve) => {
-                    reModule.reAppToUniMessageHandler((ret: any) => {
-                        // 处理回调返回的数据（如果需要的话）
-                        onMessage(ret);
-                        // 递归调用listenForMessages来继续监听
-                        resolve();
-                    });
-                });
-
-                // 如果仍然需要继续监听，再次调用listenForMessages
-                if (shouldContinue) {
-                    await listenForMessages();
-                }
-            } else {
-                // 插件未加载或reMessageHandler方法不存在，退出递归
-                shouldContinue = false;
-            }
-        };
-
-        // 开始递归监听消息
-        await listenForMessages();
+    reAppToUniMessageHandler: async (onCallBack: (data: any) => void): Promise<void> => {
+        const reModule = api.getREModule();
+        if (reModule && reModule.reAppToUniMessageHandler) {
+            reModule.reAppToUniMessageHandler((res: any) => {
+                // 不能使用promise的resolve进行返回，要使用传递回调进行处理，不然resolve执行后函数就结束，无法再次执行resolve，需要保持函数一直在，使用参数的回调
+                onCallBack(res);
+            });
+        } else {
+            api.unipluginLog('reAppToUniMessageHandler: 消息监听机制加载失败');
+        }
     },
 
     // MARK re-api 向app发送数据
