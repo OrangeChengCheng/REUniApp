@@ -1,12 +1,13 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-14 10:24:21
- * @LastEditTime: 2024-11-09 12:25:30
+ * @LastEditTime: 2024-11-09 12:59:21
 -->
 <script setup lang="ts">
 import { onLaunch, onShow, onHide, onExit } from '@dcloudio/uni-app';
 import { useCardStore } from '@/stores/card';
 import { useDeviceStore } from '@/stores/device';
+import { useMessageStore } from '@/stores/message';
 import uniApi from '@/utils/uniApi';
 
 onLaunch(() => {
@@ -19,11 +20,13 @@ onLaunch(() => {
     card_store.updateSample();
     uniApi.get_deviceInfo();
     uni.$re.reAppToUniMessageHandler((data) => {
-        setTimeout(() => {
-            let postData = { data: { key: '666', value: [1, 2, 3, 4, 5] }, msg: '---', item: data };
-            uni.$re.unipluginLog('reUniPostData: ' + JSON.stringify(postData));
-            uni.$re.reUniPostData(postData);
-        }, 2000);
+        const message_store = useMessageStore();
+        message_store.sendMessage(message_store.M_AppToUni, data);
+        // setTimeout(() => {
+        //     let postData = { data: { key: '666', value: [1, 2, 3, 4, 5] }, msg: '---', item: data };
+        //     uni.$re.unipluginLog('reUniPostData: ' + JSON.stringify(postData));
+        //     uni.$re.reUniPostData(postData);
+        // }, 2000);
     });
 });
 onShow(() => {

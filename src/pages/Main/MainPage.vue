@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-11-04 10:44:18
+ * @LastEditTime: 2024-11-09 13:01:25
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -78,10 +78,12 @@ import { getSceneById, getSingleSceneTreeById, getProjectModel, getCadDatasetFil
 import { newShare, type Share } from '@/types/class';
 import { useCardStore } from '@/stores/card';
 import { useDeviceStore } from '@/stores/device';
+import { useMessageStore } from '@/stores/message';
 
 const SETCRS_DATA_TYPE = [0, 11, 15]; // 需要设置坐标系和基点的数据类型
 const device_store = useDeviceStore();
 const card_store = useCardStore();
+const message_store = useMessageStore();
 const TopBar_fixedSpace = ref(230);
 const list_show = ref<Share[]>([]); // 当前内容展示列表
 const list_recently_viewed = ref<Share[]>([]); // 最近浏览列表
@@ -130,11 +132,22 @@ onMounted(() => {
     });
     uniapp_getClipboard();
     uni.onWindowResize(listen_windoeResize); // 监听屏幕变化
+    message_store.addMessageHandler(message_store.M_AppToUni, appToUni);
 });
 
 onUnmounted(() => {
     uni.offWindowResize(listen_windoeResize); // 监听屏幕变化
+    message_store.removeMessageHandler(message_store.M_AppToUni, appToUni);
 });
+
+const appToUni = (e:any) => {
+    uni.$re.unipluginLog('---===--- : ' + JSON.stringify(e));
+    setTimeout(() => {
+        let postData = { data: { key: '666', value: [1, 2, 3, 4, 5] }, msg: '---', item: e };
+        uni.$re.unipluginLog('reUniPostData: ' + JSON.stringify(postData));
+        uni.$re.reUniPostData(postData);
+    }, 2000);
+};
 
 // MARK 更新数据
 const update_cardList = () => {
