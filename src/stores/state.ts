@@ -1,11 +1,42 @@
+/*
+ * @Author: Lemon C
+ * @Date: 2024-11-09 10:46:29
+ * @LastEditTime: 2024-11-13 10:08:32
+ */
 import { defineStore } from 'pinia'
+
+/**
+    0 BIM模型
+    13 遥感影像
+    10 WMTS地图服务
+    11 倾斜摄影
+    14 360全景图
+    15 点云
+    16 二维图纸
+    17 公共构件
+    18 我的构件
+    19 发布后的构件(场景发布)
+    20 矢量
+    21 场景CAD
+    22 场景矢量
+*/
+
+interface StateMold {
+    allDataSetType: Array<Number>,
+    entityDataSetType: Array<Number>,
+    sceneDataSetType: Array<Number>,
+    appSupportDataSetType: Array<Number>,
+}
 
 
 export const useStateStore = defineStore('state', {
-    state: () => ({
-        reAppToUniMessageHandler_continue: true,
+    state: (): StateMold => ({
+        allDataSetType: [0, 13, 10, 11, 14, 15, 16, 17, 18, 19, 20, 21, 22],
+        entityDataSetType: [17, 18, 19],
+        sceneDataSetType: [0, 13, 10, 11, 14, 15, 17, 18, 19, 21, 22],
+        appSupportDataSetType: [0, 13, 10, 11, 14, 15, 16, 20, 21, 22],
     }),
     actions: {
-        
+
     }
 });

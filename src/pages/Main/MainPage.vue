@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-11-09 13:01:25
+ * @LastEditTime: 2024-11-13 10:13:26
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -79,11 +79,13 @@ import { newShare, type Share } from '@/types/class';
 import { useCardStore } from '@/stores/card';
 import { useDeviceStore } from '@/stores/device';
 import { useMessageStore } from '@/stores/message';
+import { useStateStore } from '@/stores/state';
 
 const SETCRS_DATA_TYPE = [0, 11, 15]; // 需要设置坐标系和基点的数据类型
 const device_store = useDeviceStore();
 const card_store = useCardStore();
 const message_store = useMessageStore();
+const state_store = useStateStore();
 const TopBar_fixedSpace = ref(230);
 const list_show = ref<Share[]>([]); // 当前内容展示列表
 const list_recently_viewed = ref<Share[]>([]); // 最近浏览列表
@@ -140,7 +142,7 @@ onUnmounted(() => {
     message_store.removeMessageHandler(message_store.M_AppToUni, appToUni);
 });
 
-const appToUni = (e:any) => {
+const appToUni = (e: any) => {
     uni.$re.unipluginLog('---===--- : ' + JSON.stringify(e));
     setTimeout(() => {
         let postData = { data: { key: '666', value: [1, 2, 3, 4, 5] }, msg: '---', item: e };
@@ -824,10 +826,14 @@ const handleTerrainLayerLev = (dataSetList: any, dataSetTerrain: any) => {
 // MARK Service 递归获取数据集标识集合
 const getDataSetIds = (sceneTree: any) => {
     let dataSetIdList: string[] = [];
-    let entityTypes: Number[] = [17, 18, 19];
     if (sceneTree && sceneTree.length > 0) {
         sceneTree.forEach((item: any) => {
-            if (item.nodeType && item.nodeType == 2 && item.viewStatus !== 2 && !entityTypes.includes(item.dataSetType)) {
+            if (
+                item.nodeType == 2 &&
+                item.viewStatus !== 2 &&
+                state_store.sceneDataSetType.includes(item.dataSetType) &&
+                state_store.appSupportDataSetType.includes(item.dataSetType)
+            ) {
                 dataSetIdList.push(item.dataSetId);
             }
             if (item.subNodes && item.subNodes.length > 0) {
