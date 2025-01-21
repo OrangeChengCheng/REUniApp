@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-11-09 10:46:29
- * @LastEditTime: 2024-11-13 10:08:32
+ * @LastEditTime: 2025-01-20 11:59:45
  */
 import { defineStore } from 'pinia'
 
@@ -26,6 +26,8 @@ interface StateMold {
     entityDataSetType: Array<Number>,
     sceneDataSetType: Array<Number>,
     appSupportDataSetType: Array<Number>,
+    launchOnce: Boolean,
+    agreePolicy: Boolean,
 }
 
 
@@ -35,8 +37,22 @@ export const useStateStore = defineStore('state', {
         entityDataSetType: [17, 18, 19],
         sceneDataSetType: [0, 13, 10, 11, 14, 15, 17, 18, 19, 21, 22],
         appSupportDataSetType: [0, 13, 10, 11, 14, 15, 16, 20, 21, 22],
+        launchOnce: JSON.parse(uni.getStorageSync('RE_launchOnce') || "false") || false, // 首次启动标记，避免多次创建store
+        agreePolicy: JSON.parse(uni.getStorageSync('RE_agreePolicy') || "false") || false,
     }),
     actions: {
+        appLaunchOnceUpdate() {
+            this.launchOnce = true;
+            uni.setStorageSync('RE_launchOnce', JSON.stringify(true));
+        },
 
+        agreePolicyUpdate(agree: boolean) {
+            this.agreePolicy = agree;
+            uni.setStorageSync('RE_agreePolicy', JSON.stringify(agree));
+        },
+        clearAgree() {
+            this.agreePolicy = false;
+            uni.setStorageSync('RE_agreePolicy', JSON.stringify(false));
+        }
     }
 });

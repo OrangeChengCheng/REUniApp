@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-11-13 10:13:26
+ * @LastEditTime: 2025-01-20 18:55:39
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -144,11 +144,15 @@ onUnmounted(() => {
 
 const appToUni = (e: any) => {
     uni.$re.unipluginLog('---===--- : ' + JSON.stringify(e));
-    setTimeout(() => {
-        let postData = { data: { key: '666', value: [1, 2, 3, 4, 5] }, msg: '---', item: e };
-        uni.$re.unipluginLog('reUniPostData: ' + JSON.stringify(postData));
-        uni.$re.reUniPostData(postData);
-    }, 2000);
+
+    if (e.code == 'error') {
+        uni.showToast({ title: e.msg, icon: 'none' });
+    }
+    // setTimeout(() => {
+    //     let postData = { data: { key: '666', value: [1, 2, 3, 4, 5] }, msg: '---', item: e };
+    //     uni.$re.unipluginLog('reUniPostData: ' + JSON.stringify(postData));
+    //     uni.$re.reUniPostData(postData);
+    // }, 2000);
 };
 
 // MARK 更新数据
