@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-01-20 18:55:39
+ * @LastEditTime: 2025-01-21 12:21:24
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -206,24 +206,24 @@ const update_gridColumns = () => {
 
 // MARK uniapp 获取粘贴板内容
 const uniapp_getClipboard = () => {
-    uni.show_loading();
+    // uni.show_loading();
     uni.getClipboardData({
         success: function (res) {
             uni.$re.unipluginLog('uni.getClipboardData: ' + JSON.stringify(res));
             tool_handleUrl(res.data)
                 .then((result) => {
-                    uni.hide_loading();
+                    // uni.hide_loading();
                     dialog_shareUrl.value = result.url;
                     dialog_projName.value = result.projName;
                     dialog_shareUrl_disabled.value = true;
                     ref_urlInput_dialog.value?.show_dialog();
                 })
                 .catch((errMsg) => {
-                    uni.hide_loading();
+                    // uni.hide_loading();
                 });
         },
         fail: (err) => {
-            uni.hide_loading();
+            // uni.hide_loading();
             console.log(err);
         },
     });
