@@ -4,7 +4,7 @@
  * @LastEditTime: 2025-02-13 15:42:06
 -->
 <template>
-    <base-view :nav_bar="true" :nav_bar_title="`项目首页`" :nav_bar_color="`--color-main-bg`">
+    <base-view :nav_bar="true" :nav_bar_title="`搜索`" :nav_bar_color="`--color-main-bg`">
         <view class="sup-main-page">
             <search-bar
                 :topbar_tab_index="tb_tab_index"

@@ -18,7 +18,12 @@
                 "enablePullDownRefresh": false
             }
         },
-
+        {
+            "path": "pages/WebView/WebViewPage",
+            "style": {
+                "enablePullDownRefresh": false
+            }
+        },
         {
             "path": "pages/Card/CardPage",
             "style": {

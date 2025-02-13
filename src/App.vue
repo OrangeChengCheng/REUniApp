@@ -82,7 +82,7 @@ body {
 :root {
     --color-white: #ffffff;
     --color-main-bg: #F9F9F9;
-    --color-main-blue: #0e6bfe;
+    --color-main-blue: #0052D9;
     --color-main-black: #1d2129;
     --color-main-gray: #86909c;
     --animation-transform-style: transform 0.3s linear;

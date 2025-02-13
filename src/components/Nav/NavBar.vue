@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-22 11:05:25
- * @LastEditTime: 2025-02-13 15:53:35
+ * @LastEditTime: 2025-02-13 16:23:14
 -->
 <template>
     <view class="sup-nav-bar" :style="`background-color:var(${nav_bar_color})`">
@@ -12,6 +12,10 @@
             <view class="nav-bar-item" v-if="nav_bar_item_back">
                 <icon-font class="nav-bar-item-btn-text" name="nav_icon_back_default" size="24px" color="--color-main-black"></icon-font>
                 <button class="nav-bar-item-btn" @click="navBarItemAction('nav-bar-item-back')"></button>
+            </view>
+            <view class="nav-bar-item" v-else>
+                <text class="nav-bar-item-btn-text"></text>
+                <button class="nav-bar-item-btn" @click="navBarItemAction('')"></button>
             </view>
             <view class="nav-bar-item" v-if="nav_bar_item_setting">
                 <text class="nav-bar-item-btn-text">输入</text>
