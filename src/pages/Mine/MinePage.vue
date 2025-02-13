@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2025-02-13 10:55:26
- * @LastEditTime: 2025-02-13 17:23:31
+ * @LastEditTime: 2025-02-13 17:45:40
 -->
 <template>
     <base-view :nav_bar="true" :nav_bar_item_back="false" :nav_bar_title="`我的`" :nav_bar_color="`--color-white`">
@@ -11,7 +11,7 @@
                     <icon-font :name="item.icon" size="24px" color="--color-main-blue"></icon-font>
                     <text class="item-name">{{ item.name }}</text>
                     <text class="item-detail" v-if="item.detailText && item.detail.length > 0">{{ item.detail }}</text>
-                    <icon-font class="rotate-180" v-if="item.detailJump" name="nav_icon_back_default" size="24px" color="#86909C"></icon-font>
+                    <icon-font class="item-jump-icon" v-if="item.detailJump" name="nav_icon_back_default" size="24px" color="#86909C"></icon-font>
                 </view>
             </view>
         </view>
@@ -40,7 +40,7 @@ const type_list = ref([
         detailJumpUrl: 'https://demo.bjblackhole.com/PrivacyPolicy.html',
         detailText: false,
     },
-    { name: '应用版本', icon: 'a-personalpage_icon_updateinformation', detail: '1.0.5', detailJump: false, detailJumpUrl: '', detailText: true },
+    { name: '应用版本', icon: 'a-personalpage_icon_updateinformation', detail: '1.0.6', detailJump: false, detailJumpUrl: '', detailText: true },
 ]);
 
 const handleItemClick = (item: any) => {
@@ -95,14 +95,16 @@ const handleItemClick = (item: any) => {
                 color: #86909c;
             }
 
+            .item-jump-icon {
+                position: relative;
+                margin-left: 5px;
+                transform: rotate(180deg);
+            }
+
             &:last-child {
                 border-bottom: 1px solid transparent;
             }
         }
     }
-}
-
-.rotate-180 {
-    transform: rotate(180deg);
 }
 </style>
