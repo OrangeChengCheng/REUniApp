@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-14 10:24:21
- * @LastEditTime: 2024-11-09 12:59:21
+ * @LastEditTime: 2025-02-13 11:53:14
 -->
 <script setup lang="ts">
 import { onLaunch, onShow, onHide, onExit } from '@dcloudio/uni-app';
@@ -81,7 +81,7 @@ body {
 }
 :root {
     --color-white: #ffffff;
-    --color-main-bg: #ffffff;
+    --color-main-bg: #F9F9F9;
     --color-main-blue: #0e6bfe;
     --color-main-black: #1d2129;
     --color-main-gray: #86909c;

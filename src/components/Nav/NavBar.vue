@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-22 11:05:25
- * @LastEditTime: 2024-09-25 14:35:36
+ * @LastEditTime: 2025-02-13 15:53:35
 -->
 <template>
     <view class="sup-nav-bar" :style="`background-color:var(${nav_bar_color})`">
@@ -10,7 +10,7 @@
         <!-- 导航栏 -->
         <view class="nav-bar" v-if="nav_bar" :style="`background-color:var(${nav_bar_color})`">
             <view class="nav-bar-item" v-if="nav_bar_item_back">
-                <text class="nav-bar-item-btn-text">返回</text>
+                <icon-font class="nav-bar-item-btn-text" name="nav_icon_back_default" size="24px" color="--color-main-black"></icon-font>
                 <button class="nav-bar-item-btn" @click="navBarItemAction('nav-bar-item-back')"></button>
             </view>
             <view class="nav-bar-item" v-if="nav_bar_item_setting">
@@ -101,7 +101,10 @@ const navBarItemAction = (type) => {
     flex: 1;
     align-items: center;
     justify-content: center;
-    color: var(--color-white);
+    font-weight: 500;
+    font-size: 18px;
+    line-height: 26px;
+    color: var(--color-main-black);
 }
 .nav-bar-item {
     position: relative;
@@ -113,7 +116,7 @@ const navBarItemAction = (type) => {
 }
 
 .nav-bar-item-btn-text {
-    color: var(--color-white);
+    color: var(--color-main-black);
 }
 .nav-bar-item-btn {
     position: absolute;

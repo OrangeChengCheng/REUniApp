@@ -105,7 +105,7 @@ const scan_area_click = () => {
 .sup-top-bar {
     position: relative;
     width: 100%;
-    height: 130px;
+    height: 110px;
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
@@ -125,7 +125,7 @@ const scan_area_click = () => {
     position: fixed;
     top: 40px;
     width: 100%;
-    height: 130px;
+    height: 110px;
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
@@ -137,21 +137,21 @@ const scan_area_click = () => {
     position: relative;
     width: 100%;
     display: flex;
-    padding: 10px 12px;
+    padding: 6px 12px;
     box-sizing: border-box;
 
     .border-view {
         position: relative;
         width: 100%;
-        height: 56px;
-        border-radius: 15px;
+        height: 44px;
+        border-radius: 12px;
         border: 2px solid var(--color-main-black);
         display: flex;
         align-items: center;
 
         .search-area {
             position: relative;
-            width: 56px;
+            width: 44px;
             height: 100%;
             display: flex;
             justify-content: center;
@@ -182,11 +182,12 @@ const scan_area_click = () => {
 
 .tab-area {
     position: relative;
+    margin-top: 16px;
     width: 100%;
-    flex: 1;
+    height: 28px;
     display: flex;
     align-items: center;
-    padding: 10px 12px;
+    padding: 0px 12px;
     box-sizing: border-box;
 
     .tab-bar {

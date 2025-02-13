@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-24 17:34:32
- * @LastEditTime: 2024-10-16 10:48:55
+ * @LastEditTime: 2025-02-13 15:19:04
 -->
 <template>
     <div class="sup-banner-comp">
@@ -95,7 +95,7 @@ const bottom_area_touchend = () => {
     height: 230px;
     justify-content: center;
     align-items: center;
-    padding: 20px 12px 10px 12px;
+    padding: 20px 12px 20px 12px;
     box-sizing: border-box;
     flex-shrink: 0;
 

@@ -1,10 +1,10 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-22 11:31:42
- * @LastEditTime: 2024-09-27 11:33:29
+ * @LastEditTime: 2025-02-13 14:58:06
 -->
 <template>
-    <view class="sup-card" :style="`${card_min ? 'width: 150px;' : 'width: 180px'}`" @click="card_click">
+    <view class="sup-card" :style="`width: ${card_width}px;`" @click="card_click">
         <view class="top-area" @touchstart="top_area_touchstart" @touchend="top_area_touchend">
             <image src="../../static/Main/card_bg.png" class="top-area-bg" />
         </view>
@@ -12,11 +12,11 @@
             <text class="bottom-title" @touchstart="bottom_title_area_touchstart" @touchend="bottom_title_area_touchend">{{
                 card_proj.projName
             }}</text>
-            <text class="bottom-time"> {{ `${lastTime_computed}前 查看` }}</text>
+            <text class="bottom-time"> {{ `${lastTime_computed}前&nbsp;&nbsp;查看` }}</text>
         </view>
         <view v-if="card_type !== 2" class="collect-area" @click.stop="collect_area_click">
-            <icon-font v-if="card_proj.collect" name="card_icon_like_pressed" size="24px" color="--color-main-blue"></icon-font>
-            <icon-font v-else name="card_icon_like_default" size="24px" color="--color-white"></icon-font>
+            <icon-font v-if="card_proj.collect" name="card_icon_like_pressed1" size="20px" color="--color-main-blue"></icon-font>
+            <icon-font v-else name="card_icon_like_default1" size="20px" color="--color-white"></icon-font>
         </view>
     </view>
 </template>
@@ -32,9 +32,9 @@ const props = defineProps({
         type: Number,
         default: 0,
     },
-    card_min: {
-        type: Boolean,
-        default: false,
+    card_width: {
+        type: Number,
+        default: 0,
     },
     card_proj: {
         type: Object as PropType<Share>,
@@ -63,6 +63,7 @@ const touch_longpress_bottom_title = 500; // 长按时间阈值
 
 const touch_timer_top_img = ref<number | null>(null);
 const touch_longpress_top_img = 4000; // 长按时间阈值
+
 
 // MARK Computed  最近查看
 const lastTime_computed = computed(() => {
@@ -121,10 +122,10 @@ const top_area_touchend = () => {
 <style lang="scss" scoped>
 .sup-card {
     position: relative;
-    // width: 180px;
-    height: 240px;
     display: flex;
     flex-direction: column;
+    border-radius: 8px;
+    background-color: var(--color-white);
 }
 
 .top-area {
@@ -167,6 +168,7 @@ const top_area_touchend = () => {
 
     .bottom-time {
         position: relative;
+        margin-top: 4px;
         font-size: 13px;
         color: var(--color-main-gray);
         font-weight: lighter;
@@ -180,7 +182,12 @@ const top_area_touchend = () => {
     position: absolute;
     top: 10px;
     right: 10px;
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.32);
+    border-radius: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 </style>

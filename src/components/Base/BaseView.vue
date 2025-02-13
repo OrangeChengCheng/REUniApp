@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-22 10:11:39
- * @LastEditTime: 2024-09-25 14:35:22
+ * @LastEditTime: 2025-02-13 15:46:18
 -->
 <template>
     <view class="sup-base-view">
@@ -53,7 +53,9 @@ const props = defineProps({
 });
 
 const nav_bar_item_callback = (type) => {
-    props.nav_bar_item_callback(type);
+    if (props.nav_bar_item_callback) {
+        props.nav_bar_item_callback(type);
+    }
     if (type == 'nav-bar-item-back') {
         uni.navigateBack();
     }

@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-01-21 12:21:24
+ * @LastEditTime: 2025-02-13 16:15:10
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -37,7 +37,7 @@
                         <view class="grid-item" v-for="(item, index) in list_show" :key="index">
                             <card
                                 :card_type="tb_tab_index"
-                                :card_min="grid_isMin"
+                                :card_width="grid_columnWidth"
                                 :card_proj="item"
                                 :card_callback="card_callback"
                                 :card_title_longpress_callback="card_title_longpress_callback"
@@ -98,8 +98,8 @@ const sw_contain_scrollTop_curr = ref(0); // 记录当前滚动
 const uniapi_windowWidth = ref(0); // 屏幕宽度
 const uniapi_windowHeight = ref(0); // 屏幕高度
 const grid_columns = ref(2);
-const grid_columnWidth = ref(180 + 20);
-const grid_isMin = ref(false);
+const grid_MaxWidth = 180 + 20;
+const grid_columnWidth = ref(0);
 
 const ref_urlInput_dialog = ref<InstanceType<typeof UrlInputDialog> | null>(null);
 const dialog_projName = ref(''); // 分享项目名称
@@ -195,13 +195,27 @@ const listen_contain_scroll = (e: any) => {
 
 // MARK Listen 更新 Grid 比例
 const update_gridColumns = () => {
-    if (uniapi_windowWidth.value / 2 < grid_columnWidth.value) {
-        grid_isMin.value = true;
-        grid_columns.value = 2;
-    } else {
-        grid_isMin.value = false;
-        grid_columns.value = Math.floor(uniapi_windowWidth.value / grid_columnWidth.value);
+    const containerWidth = uniapi_windowWidth.value - 24;
+    const minItemWidth = grid_MaxWidth;
+    let columns = 2; // 默认最少2个
+    let itemWidth = 0;
+
+    for (let n = 2; ; n++) {
+        const totalGap = 8 * (n - 1);
+        const availableWidth = containerWidth - totalGap;
+        const calculatedWidth = availableWidth / n;
+
+        if (calculatedWidth < minItemWidth && n > 2) break;
+
+        columns = n;
+        itemWidth = calculatedWidth;
+
+        if (calculatedWidth >= minItemWidth) continue;
+        else break;
     }
+
+    grid_columns.value = Math.max(columns, 2);
+    grid_columnWidth.value = itemWidth;
 };
 
 // MARK uniapp 获取粘贴板内容
@@ -386,11 +400,12 @@ const card_collect_callback = (e: Share) => {
 const topbar_tab_callback = (index: number) => {
     tb_tab_index.value = index;
     update_cardList();
-    // 解决view层不同步的问题
-    sw_contain_scrollTop.value = sw_contain_scrollTop_curr.value;
-    nextTick(() => {
-        sw_contain_scrollTop.value = TopBar_fixedSpace.value;
-    });
+    // // 点击切换保持置顶操作
+    // // 解决view层不同步的问题
+    // sw_contain_scrollTop.value = sw_contain_scrollTop_curr.value;
+    // nextTick(() => {
+    //     sw_contain_scrollTop.value = TopBar_fixedSpace.value;
+    // });
 };
 
 // MARK Dialog  查看模型/确认修改
@@ -901,10 +916,11 @@ const getTerrainDataSetList = (sceneTree: any, nodeType: Number) => {
     .grid-container {
         position: relative;
         width: 100%;
-        display: grid;
-        gap: 10px;
         padding: 10px 12px;
         box-sizing: border-box;
+        display: grid;
+        column-gap: 8px;
+        row-gap: 8px;
 
         .grid-item {
             position: relative;

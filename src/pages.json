@@ -7,6 +7,12 @@
             }
         },
         {
+            "path": "pages/Mine/MinePage",
+            "style": {
+                "enablePullDownRefresh": false
+            }
+        },
+        {
             "path": "pages/Search/SearchPage",
             "style": {
                 "enablePullDownRefresh": false
@@ -26,11 +32,33 @@
             }
         }
     ],
+    "tabBar": {
+        "color": "#86909C",
+        "selectedColor": "#0052D9",
+        "borderStyle": "white",
+        "backgroundColor": "#ffffff",
+        "spacing": "0px",
+        "iconWidth": "20px",
+        "list": [
+            {
+                "pagePath": "pages/Main/MainPage",
+                "iconPath": "static/TabBar/tabbar_home_default.png",
+                "selectedIconPath": "static/TabBar/tabbar_home_selected.png",
+                "text": "首页"
+            },
+            {
+                "pagePath": "pages/Mine/MinePage",
+                "iconPath": "static/TabBar/tabbar_mine_default.png",
+                "selectedIconPath": "static/TabBar/tabbar_mine_selected.png",
+                "text": "我的"
+            }
+        ]
+    },
     "globalStyle": {
-        "navigationBarTextStyle": "#FFFFFF",
-        "navigationBarTitleText": "uni-app",
-        "navigationBarBackgroundColor": "#478BFF",
-        "backgroundColor": "#FFFFFF",
-        "navigationStyle": "custom"
+        "navigationStyle": "custom",
+        "navigationBarTextStyle": "#1D2129",
+        "navigationBarTitleText": "黑洞引擎",
+        "navigationBarBackgroundColor": "#FFFFFF",
+        "backgroundColor": "#FFFFFF"
     }
 }

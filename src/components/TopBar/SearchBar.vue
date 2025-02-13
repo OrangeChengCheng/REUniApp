@@ -1,9 +1,6 @@
 <template>
     <view class="sup-search-bar">
         <view class="search-area">
-            <view class="back-area" @click.stop="back_area_click">
-                <icon-font name="nav_icon_back_default" size="40px" color="--color-main-black"></icon-font>
-            </view>
             <view class="border-view">
                 <input class="uni-input" v-model="search" confirm-type="done" placeholder="请输入搜索标题" />
                 <view class="search-area" @click.stop="search_area_click">
@@ -88,7 +85,7 @@ const search_area_click = () => {
 .sup-search-bar {
     position: relative;
     width: 100%;
-    height: 130px;
+    height: 110px;
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
@@ -99,24 +96,14 @@ const search_area_click = () => {
     position: relative;
     width: 100%;
     display: flex;
-    padding: 10px 12px;
+    padding: 6px 12px;
     box-sizing: border-box;
-
-    .back-area {
-        position: relative;
-        width: 56px;
-        height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
 
     .border-view {
         position: relative;
-        margin-left: 15px;
-        flex: 1;
-        height: 56px;
-        border-radius: 15px;
+        width: 100%;
+        height: 44px;
+        border-radius: 12px;
         border: 2px solid var(--color-main-black);
         display: flex;
         align-items: center;
@@ -144,11 +131,12 @@ const search_area_click = () => {
 
 .tab-area {
     position: relative;
+    margin-top: 16px;
     width: 100%;
-    flex: 1;
+    height: 28px;
     display: flex;
     align-items: center;
-    padding: 10px 12px;
+    padding: 0px 12px;
     box-sizing: border-box;
 
     .tab-bar {

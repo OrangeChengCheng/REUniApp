@@ -1,10 +1,10 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2024-10-28 14:48:30
+ * @LastEditTime: 2025-02-13 15:42:06
 -->
 <template>
-    <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
+    <base-view :nav_bar="true" :nav_bar_title="`项目首页`" :nav_bar_color="`--color-main-bg`">
         <view class="sup-main-page">
             <search-bar
                 :topbar_tab_index="tb_tab_index"
@@ -17,7 +17,7 @@
                         <view class="grid-item" v-for="(item, index) in list_show" :key="index">
                             <card
                                 :card_type="tb_tab_index"
-                                :card_min="grid_isMin"
+                                :card_width="grid_columnWidth"
                                 :card_proj="item"
                                 :card_callback="card_callback"
                                 :card_title_longpress_callback="card_title_longpress_callback"
@@ -62,8 +62,8 @@ const tb_tab_index = ref(0); // 顶部模块是否固定显示
 const uniapi_windowWidth = ref(0); // 屏幕宽度
 const uniapi_windowHeight = ref(0); // 屏幕高度
 const grid_columns = ref(2);
-const grid_columnWidth = ref(180 + 20);
-const grid_isMin = ref(false);
+const grid_MaxWidth = 180 + 20;
+const grid_columnWidth = ref(0);
 
 const ref_urlInput_dialog = ref<InstanceType<typeof UrlInputDialog> | null>(null);
 const dialog_projName = ref(''); // 分享项目名称
@@ -121,13 +121,27 @@ const listen_windoeResize = (e: any) => {
 
 // MARK Listen 更新 Grid 比例
 const update_gridColumns = () => {
-    if (uniapi_windowWidth.value / 2 < grid_columnWidth.value) {
-        grid_isMin.value = true;
-        grid_columns.value = 2;
-    } else {
-        grid_isMin.value = false;
-        grid_columns.value = Math.floor(uniapi_windowWidth.value / grid_columnWidth.value);
+    const containerWidth = uniapi_windowWidth.value - 24;
+    const minItemWidth = grid_MaxWidth;
+    let columns = 2; // 默认最少2个
+    let itemWidth = 0;
+
+    for (let n = 2; ; n++) {
+        const totalGap = 8 * (n - 1);
+        const availableWidth = containerWidth - totalGap;
+        const calculatedWidth = availableWidth / n;
+
+        if (calculatedWidth < minItemWidth && n > 2) break;
+
+        columns = n;
+        itemWidth = calculatedWidth;
+
+        if (calculatedWidth >= minItemWidth) continue;
+        else break;
     }
+
+    grid_columns.value = Math.max(columns, 2);
+    grid_columnWidth.value = itemWidth;
 };
 
 // MARK Topbar 搜索
@@ -149,7 +163,7 @@ const topbar_tab_callback = (index: number) => {
 // MARK Click  卡片点击
 const card_callback = (e: Share) => {
     uni.$re.unipluginLog('card_callback: ' + JSON.stringify(e.dataSetList));
-    
+
     // 不知道什么原因导致ts的数组到安卓中变成JSONObject导致解析崩溃，这样操作可以重置属性，避免ts的属性带入
     let dataSetListJson = JSON.stringify(e.dataSetList);
     let dataSetList = JSON.parse(dataSetListJson);
@@ -256,9 +270,11 @@ const dialog_UrlInputCallBack = (e: any) => {
         position: relative;
         width: 100%;
         display: grid;
-        gap: 10px;
         padding: 10px 12px;
         box-sizing: border-box;
+        display: grid;
+        column-gap: 8px;
+        row-gap: 8px;
 
         .grid-item {
             position: relative;
