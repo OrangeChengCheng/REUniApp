@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-13 18:01:53
- * @LastEditTime: 2024-11-09 12:21:27
+ * @LastEditTime: 2025-05-28 12:03:32
  */
 
 
@@ -22,11 +22,7 @@ declare global {
             reUniPostData(data: any): void;
         }
         $window: {
-            serverBaseUrl: string;
             serverUrl: string,
-            imageBaseUrl: string,
-            exampleUrl: string,
-            downloadBaseUrl: string,
             commonTimeout: number,
         };
         $tool: {
@@ -37,6 +33,7 @@ declare global {
         scan_code(): Promise<any>;
         show_loading(): void;
         hide_loading(): void;
+        update_serverUrl(url: string): void;
     }
 }
 

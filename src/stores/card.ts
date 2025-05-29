@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-13 15:14:00
- * @LastEditTime: 2024-10-16 11:30:30
+ * @LastEditTime: 2025-05-29 16:05:54
  */
 import { defineStore } from 'pinia'
 import { type Share } from '@/types/class';
@@ -26,6 +26,7 @@ export const useCardStore = defineStore('card', {
             let find = this.cardList.find((e: Share) => e.id === shareData.id);
             if (find) {
                 find.dataSetList = shareData.dataSetList;
+                find.entityList = shareData.entityList;
                 find.worldCRS = shareData.worldCRS;
                 find.camDefaultDataSetId = shareData.camDefaultDataSetId;
                 find.shareType = shareData.shareType;

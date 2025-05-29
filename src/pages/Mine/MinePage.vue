@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2025-02-13 10:55:26
- * @LastEditTime: 2025-02-13 17:45:40
+ * @LastEditTime: 2025-05-21 16:22:02
 -->
 <template>
     <base-view :nav_bar="true" :nav_bar_item_back="false" :nav_bar_title="`我的`" :nav_bar_color="`--color-white`">
@@ -27,27 +27,46 @@ const type_list = ref([
     {
         name: '用户协议',
         icon: 'a-personalpage_icon_useragreement',
-        detail: '',
         detailJump: true,
+        jumpType: 1,
         detailJumpUrl: 'https://demo.bjblackhole.com/ServiceAgreement.html',
-        detailText: false,
     },
     {
         name: '隐私政策',
         icon: 'a-privacypolicy',
-        detail: '',
         detailJump: true,
+        jumpType: 1,
         detailJumpUrl: 'https://demo.bjblackhole.com/PrivacyPolicy.html',
-        detailText: false,
+    },
+    {
+        name: '服务配置',
+        icon: 'a-personalpage_icon_updateinformation',
+        detailJump: true,
+        jumpType: 2,
     },
     { name: '应用版本', icon: 'a-personalpage_icon_updateinformation', detail: '1.0.6', detailJump: false, detailJumpUrl: '', detailText: true },
 ]);
 
 const handleItemClick = (item: any) => {
     if (item.detailJump) {
-        uni.navigateTo({
-            url: `/pages/WebView/WebViewPage?title=${item.name}&url=${encodeURIComponent(item.detailJumpUrl)}`,
-        });
+        switch (item.jumpType) {
+            case 1:
+                {
+                    uni.navigateTo({
+                        url: `/pages/WebView/WebViewPage?title=${item.name}&url=${encodeURIComponent(item.detailJumpUrl)}`,
+                    });
+                }
+                break;
+            case 2:
+                {
+                    uni.navigateTo({
+                        url: `/pages/ServerConfig/ServerConfigPage?title=${item.name}`,
+                    });
+                }
+                break;
+            default:
+                break;
+        }
     }
 };
 </script>

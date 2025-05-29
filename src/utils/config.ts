@@ -1,23 +1,44 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-04-19 12:22:21
- * @LastEditTime: 2024-10-31 16:31:01
+ * @LastEditTime: 2025-05-21 16:09:00
  */
 
 
 
-const config = {
-    serverBaseUrl: 'http://192.168.31.7:9012/blackHole3D/basic',
-    serverUrl: 'https://engine3.bjblackhole.com/blackHole3D/project',
-    // serverUrl: 'http://192.168.31.6:9012/blackHole3D/project',
-    imageBaseUrl: 'https://developer.bjblackhole.com/ImageServer',
-    exampleUrl: 'https://demo.bjblackhole.com/default.aspx',
-    downloadBaseUrl: 'http://192.168.31.6:9203/api/developercenter/download',//文件查看下载
 
-    // 通用超时时间
-    commonTimeout: 30000,
+interface ApiMethods {
+    getServerUrl(): string;
+    updateServerUrl(url: string): void;
+    getTimeout(): number;
+}
+
+
+const api: ApiMethods = {
+    // MARK config 获取当前的服务配置地址
+    getServerUrl: (): string => {
+        let private_serverUrl = uni.getStorageSync('RE_private_serverUrl');
+        if (!private_serverUrl || private_serverUrl.length <= 0) {
+            return 'https://engine3.bjblackhole.com/blackHole3D/project';
+        } else {
+            return private_serverUrl;
+        }
+    },
+
+
+    // MARK config 更新服务配置地址
+    updateServerUrl: (url: string): void => {
+        uni.setStorageSync('RE_private_serverUrl', url);
+    },
+
+
+    // MARK config 获取通用请求超时时间
+    getTimeout: (): number => {
+        return 30000;
+    },
+
 }
 
 
 
-export default config
+export default api;

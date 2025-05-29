@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-14 12:21:00
- * @LastEditTime: 2024-09-20 11:56:31
+ * @LastEditTime: 2025-05-21 16:01:44
  */
 
 
@@ -17,6 +17,7 @@ export function requestPost(url: string, data?: object): Promise<any> {
             url: uni.$window.serverUrl + url,
             data: data || {},
             method: 'POST',
+            timeout: uni.$window.commonTimeout,
             header: {
                 'content-type': 'application/json',
                 'authorization': uni.getStorageSync('RE_Token'),
@@ -61,6 +62,7 @@ export function requestGet(url: string, data?: object): Promise<any> {
             url: uni.$window.serverUrl + url,
             data: data || {},
             method: 'GET',
+            timeout: uni.$window.commonTimeout,
             header: {
                 'content-type': 'application/json',
                 'authorization': uni.getStorageSync('RE_Token'),

@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-02-13 16:15:10
+ * @LastEditTime: 2025-05-29 17:08:06
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -328,6 +328,8 @@ const card_callback = (e: Share) => {
     // 不知道什么原因导致ts的数组到安卓中变成JSONObject导致解析崩溃，这样操作可以重置属性，避免ts的属性带入
     let dataSetListJson = JSON.stringify(e.dataSetList);
     let dataSetList = JSON.parse(dataSetListJson);
+    let entityListJson = JSON.stringify(e.entityList);
+    let entityList = JSON.parse(entityListJson);
     // 默认相机信息
     let defaultCamLoc = null;
     if (e.defaultCamLoc) {
@@ -347,6 +349,7 @@ const card_callback = (e: Share) => {
             shareViewMode: e.shareViewMode,
             shareDataType: e.shareDataType,
             defaultCamLoc: defaultCamLoc,
+            entityList: entityList,
         })
         .then((result) => {
             console.log(result);
@@ -438,8 +441,13 @@ const showSceneRes = (params: any) => {
         .then((res_1) => {
             getSceneTree({ sceneId: params.id, isPublished: true })
                 .then((res_2) => {
-                    const dataSetIdList = getDataSetIds(res_2);
+                    //TODO: 单构件数据集特殊处理
+                    let dataSetIdList = getDataSetIds(res_2);
+                    if (res_1.componentTreeId && res_1.componentTreeId.length > 0) {
+                        dataSetIdList.push(res_1.componentTreeId); //单构件需要单独添加，不在模型数据中获取
+                    }
                     const terrainList = getTerrainDataSetList(res_2, 2);
+                    const entityList = handleEntityData(res_2, res_1.componentPosition);
                     getDataSetList({ dataSetIds: dataSetIdList })
                         .then((res_3) => {
                             const dataSetList_temp1: any[] = handleDataSetTrans(res_3, res_1.dataSetPosition);
@@ -456,6 +464,7 @@ const showSceneRes = (params: any) => {
                                 shareType: 2,
                                 camDefaultDataSetId: cam_dataSetId,
                                 shareViewMode: params.shareViewMode,
+                                entityList: entityList,
                             });
                             card_store.addCard(shareData);
 
@@ -472,6 +481,7 @@ const showSceneRes = (params: any) => {
                                     camDefaultDataSetId: cam_dataSetId,
                                     shareViewMode: params.shareViewMode,
                                     defaultCamLoc: shareData.defaultCamLoc,
+                                    entityList: entityList,
                                 })
                                 .then((result) => {
                                     console.log(result);
@@ -621,7 +631,13 @@ const getSceneInfo = (paran: any): Promise<any> => {
     return new Promise<any>((resolve, reject) => {
         getSceneById(paran).then((res) => {
             if (res.data) {
-                let info = { coordinates: res.data.coordinates, dataSetPosition: res.data.dataSetPosition, sceneName: res.data.sceneName };
+                let info = {
+                    coordinates: res.data.coordinates,
+                    dataSetPosition: res.data.dataSetPosition,
+                    sceneName: res.data.sceneName,
+                    componentTreeId: res.data.componentTreeId,
+                    componentPosition: res.data.componentPosition,
+                };
                 resolve(info);
             } else {
                 reject('位置偏移信息获取失败！');
@@ -840,6 +856,43 @@ const handleTerrainLayerLev = (dataSetList: any, dataSetTerrain: any) => {
         }
     });
     return dataSetList;
+};
+
+// MARK Service 处理数据集--单构件信息
+const handleEntityData = (sceneTree: any, entityEditTranList: any = []) => {
+    let entityList: any[] = [];
+    const entity_server_obj = sceneTree.find((item: any) => item.dataSetType == state_store.appSupportEntityType);
+    if (entity_server_obj && entity_server_obj.subNodes.length > 0) {
+        const entity_server_list = entity_server_obj.subNodes.filter((item: any) => {
+            if (item.componentInfo && item.componentInfo.isPublished && item.nodeType == 2 && item.viewStatus !== 2) {
+                return true;
+            } else {
+                return false;
+            }
+        });
+        entity_server_list.forEach((item: any) => {
+            let { hostFileId, instanceIndex, location } = item.componentInfo;
+            let scale = JSON.parse(location.scale);
+            let rotate = JSON.parse(location.rotate);
+            let offset = JSON.parse(location.translation);
+            const editTran_obj = entityEditTranList.find((edit_item: any) => item.dataSetId === edit_item.id);
+            if (editTran_obj) {
+                scale = JSON.parse(editTran_obj.scale);
+                rotate = JSON.parse(editTran_obj.rotate);
+                offset = JSON.parse(editTran_obj.translation);
+            }
+            let entity_obj: any = {};
+            entity_obj.dataSetId = item.parentId;
+            entity_obj.entityType = String(hostFileId);
+            entity_obj.elemId = Number(`${hostFileId}${instanceIndex}`);
+            entity_obj.scale = scale;
+            entity_obj.rotate = rotate;
+            entity_obj.offset = offset;
+            entity_obj.dataSetCRS = location.DataSetCRS;
+            entityList.push(entity_obj);
+        });
+    }
+    return entityList;
 };
 
 // MARK Service 递归获取数据集标识集合

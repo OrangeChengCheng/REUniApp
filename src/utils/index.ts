@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-14 10:05:14
- * @LastEditTime: 2024-11-08 14:31:12
+ * @LastEditTime: 2025-05-28 12:03:19
  */
 import config from './config'
 import reApi from './reApi'
@@ -27,12 +27,8 @@ export default {
             toast,
         };
         uni.$window = {
-            serverBaseUrl: config.serverBaseUrl,
-            serverUrl: config.serverUrl,
-            imageBaseUrl: config.imageBaseUrl,
-            exampleUrl: config.exampleUrl,
-            downloadBaseUrl: config.downloadBaseUrl,
-            commonTimeout: config.commonTimeout,
+            serverUrl: config.getServerUrl(),
+            commonTimeout: config.getTimeout(),
         };
         uni.$re = {
             unipluginLog: reApi.unipluginLog,
@@ -48,5 +44,6 @@ export default {
         uni.scan_code = uniApi.scan_code;
         uni.show_loading = uniApi.show_loading;
         uni.hide_loading = uniApi.hide_loading;
+        uni.update_serverUrl = config.updateServerUrl;
     }
 }

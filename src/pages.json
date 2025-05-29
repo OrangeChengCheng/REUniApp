@@ -25,6 +25,12 @@
             }
         },
         {
+            "path": "pages/ServerConfig/ServerConfigPage",
+            "style": {
+                "enablePullDownRefresh": false
+            }
+        },
+        {
             "path": "pages/Card/CardPage",
             "style": {
                 "enablePullDownRefresh": false

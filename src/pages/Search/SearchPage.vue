@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-02-13 15:42:06
+ * @LastEditTime: 2025-05-29 17:07:40
 -->
 <template>
     <base-view :nav_bar="true" :nav_bar_title="`搜索`" :nav_bar_color="`--color-main-bg`">
@@ -167,6 +167,8 @@ const card_callback = (e: Share) => {
     // 不知道什么原因导致ts的数组到安卓中变成JSONObject导致解析崩溃，这样操作可以重置属性，避免ts的属性带入
     let dataSetListJson = JSON.stringify(e.dataSetList);
     let dataSetList = JSON.parse(dataSetListJson);
+    let entityListJson = JSON.stringify(e.entityList);
+    let entityList = JSON.parse(entityListJson);
     uni.$re
         .realEngineRender({
             name: 'uni-app',
@@ -180,6 +182,7 @@ const card_callback = (e: Share) => {
             shareViewMode: e.shareViewMode,
             shareDataType: e.shareDataType,
             defaultCamLoc: e.defaultCamLoc,
+            entityList: entityList,
         })
         .then((result) => {
             console.log(result);

@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-11-09 10:46:29
- * @LastEditTime: 2025-01-20 11:59:45
+ * @LastEditTime: 2025-05-29 16:31:11
  */
 import { defineStore } from 'pinia'
 
@@ -19,6 +19,7 @@ import { defineStore } from 'pinia'
     20 矢量
     21 场景CAD
     22 场景矢量
+    23 水面
 */
 
 interface StateMold {
@@ -26,6 +27,8 @@ interface StateMold {
     entityDataSetType: Array<Number>,
     sceneDataSetType: Array<Number>,
     appSupportDataSetType: Array<Number>,
+    appSupportEntityType: Number,
+    appSupportWaterType: Number,
     launchOnce: Boolean,
     agreePolicy: Boolean,
 }
@@ -37,6 +40,8 @@ export const useStateStore = defineStore('state', {
         entityDataSetType: [17, 18, 19],
         sceneDataSetType: [0, 13, 10, 11, 14, 15, 17, 18, 19, 21, 22],
         appSupportDataSetType: [0, 13, 10, 11, 14, 15, 16, 20, 21, 22],
+        appSupportEntityType: 19,
+        appSupportWaterType: 23,
         launchOnce: JSON.parse(uni.getStorageSync('RE_launchOnce') || "false") || false, // 首次启动标记，避免多次创建store
         agreePolicy: JSON.parse(uni.getStorageSync('RE_agreePolicy') || "false") || false,
     }),
