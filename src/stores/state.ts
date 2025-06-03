@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-11-09 10:46:29
- * @LastEditTime: 2025-05-29 16:31:11
+ * @LastEditTime: 2025-05-30 14:31:10
  */
 import { defineStore } from 'pinia'
 
@@ -29,6 +29,7 @@ interface StateMold {
     appSupportDataSetType: Array<Number>,
     appSupportEntityType: Number,
     appSupportWaterType: Number,
+    appSupportExtrudeType: Number,
     launchOnce: Boolean,
     agreePolicy: Boolean,
 }
@@ -42,6 +43,7 @@ export const useStateStore = defineStore('state', {
         appSupportDataSetType: [0, 13, 10, 11, 14, 15, 16, 20, 21, 22],
         appSupportEntityType: 19,
         appSupportWaterType: 23,
+        appSupportExtrudeType: 24,
         launchOnce: JSON.parse(uni.getStorageSync('RE_launchOnce') || "false") || false, // 首次启动标记，避免多次创建store
         agreePolicy: JSON.parse(uni.getStorageSync('RE_agreePolicy') || "false") || false,
     }),

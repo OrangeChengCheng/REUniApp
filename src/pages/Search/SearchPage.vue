@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-05-29 17:07:40
+ * @LastEditTime: 2025-05-30 15:17:31
 -->
 <template>
     <base-view :nav_bar="true" :nav_bar_title="`搜索`" :nav_bar_color="`--color-main-bg`">
@@ -165,10 +165,10 @@ const card_callback = (e: Share) => {
     uni.$re.unipluginLog('card_callback: ' + JSON.stringify(e.dataSetList));
 
     // 不知道什么原因导致ts的数组到安卓中变成JSONObject导致解析崩溃，这样操作可以重置属性，避免ts的属性带入
-    let dataSetListJson = JSON.stringify(e.dataSetList);
-    let dataSetList = JSON.parse(dataSetListJson);
-    let entityListJson = JSON.stringify(e.entityList);
-    let entityList = JSON.parse(entityListJson);
+    let dataSetList = e.dataSetList ? JSON.parse(JSON.stringify(e.dataSetList)) : [];
+    let entityList = e.entityList ? JSON.parse(JSON.stringify(e.entityList)) : [];
+    let waterList = e.waterList ? JSON.parse(JSON.stringify(e.waterList)) : [];
+    let extrudeList = e.extrudeList ? JSON.parse(JSON.stringify(e.extrudeList)) : [];
     uni.$re
         .realEngineRender({
             name: 'uni-app',
@@ -183,6 +183,8 @@ const card_callback = (e: Share) => {
             shareDataType: e.shareDataType,
             defaultCamLoc: e.defaultCamLoc,
             entityList: entityList,
+            waterList: waterList,
+            extrudeList: extrudeList,
         })
         .then((result) => {
             console.log(result);

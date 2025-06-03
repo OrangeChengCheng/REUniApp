@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-05-29 17:08:06
+ * @LastEditTime: 2025-06-03 10:37:54
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -326,10 +326,11 @@ const card_callback = (e: Share) => {
     uni.$re.unipluginLog('card_callback: ' + JSON.stringify(e.dataSetList));
 
     // 不知道什么原因导致ts的数组到安卓中变成JSONObject导致解析崩溃，这样操作可以重置属性，避免ts的属性带入
-    let dataSetListJson = JSON.stringify(e.dataSetList);
-    let dataSetList = JSON.parse(dataSetListJson);
-    let entityListJson = JSON.stringify(e.entityList);
-    let entityList = JSON.parse(entityListJson);
+    let dataSetList = e.dataSetList ? JSON.parse(JSON.stringify(e.dataSetList)) : [];
+    let entityList = e.entityList ? JSON.parse(JSON.stringify(e.entityList)) : [];
+    let waterList = e.waterList ? JSON.parse(JSON.stringify(e.waterList)) : [];
+    let extrudeList = e.extrudeList ? JSON.parse(JSON.stringify(e.extrudeList)) : [];
+
     // 默认相机信息
     let defaultCamLoc = null;
     if (e.defaultCamLoc) {
@@ -350,6 +351,8 @@ const card_callback = (e: Share) => {
             shareDataType: e.shareDataType,
             defaultCamLoc: defaultCamLoc,
             entityList: entityList,
+            waterList: waterList,
+            extrudeList: extrudeList,
         })
         .then((result) => {
             console.log(result);
@@ -448,10 +451,13 @@ const showSceneRes = (params: any) => {
                     }
                     const terrainList = getTerrainDataSetList(res_2, 2);
                     const entityList = handleEntityData(res_2, res_1.componentPosition);
+                    const waterList = hanldleWaterData(res_2);
+                    const extrudeList = hanldleExtrudeData(res_2);
                     getDataSetList({ dataSetIds: dataSetIdList })
                         .then((res_3) => {
                             const dataSetList_temp1: any[] = handleDataSetTrans(res_3, res_1.dataSetPosition);
-                            const dataSetList = handleTerrainLayerLev(dataSetList_temp1, terrainList);
+                            const dataSetList_temp2 = handleTerrainLayerLev(dataSetList_temp1, terrainList);
+                            const dataSetList = handleDataSetId(dataSetList_temp2);
 
                             let cam_dataSetId = uni.$tool.cam_defauleDataSet(dataSetList);
                             let shareData: Share = newShare({
@@ -465,6 +471,8 @@ const showSceneRes = (params: any) => {
                                 camDefaultDataSetId: cam_dataSetId,
                                 shareViewMode: params.shareViewMode,
                                 entityList: entityList,
+                                waterList: waterList,
+                                extrudeList: extrudeList,
                             });
                             card_store.addCard(shareData);
 
@@ -482,6 +490,8 @@ const showSceneRes = (params: any) => {
                                     shareViewMode: params.shareViewMode,
                                     defaultCamLoc: shareData.defaultCamLoc,
                                     entityList: entityList,
+                                    waterList: waterList,
+                                    extrudeList: extrudeList,
                                 })
                                 .then((result) => {
                                     console.log(result);
@@ -858,6 +868,16 @@ const handleTerrainLayerLev = (dataSetList: any, dataSetTerrain: any) => {
     return dataSetList;
 };
 
+// MARK Service 处理数据集--数据集标识横杠
+const handleDataSetId = (dataSetList: any) => {
+    dataSetList.forEach((dataSet: any) => {
+        if (dataSet.dataSetId && dataSet.dataSetId.length) {
+            dataSet.dataSetId = dataSet.dataSetId.replace(/-/g, "");//不能使用replaceAll,app端异常
+        }
+    });
+    return dataSetList;
+};
+
 // MARK Service 处理数据集--单构件信息
 const handleEntityData = (sceneTree: any, entityEditTranList: any = []) => {
     let entityList: any[] = [];
@@ -882,7 +902,7 @@ const handleEntityData = (sceneTree: any, entityEditTranList: any = []) => {
                 offset = JSON.parse(editTran_obj.translation);
             }
             let entity_obj: any = {};
-            entity_obj.dataSetId = item.parentId;
+            entity_obj.dataSetId = item.parentId.replace(/-/g, "");
             entity_obj.entityType = String(hostFileId);
             entity_obj.elemId = Number(`${hostFileId}${instanceIndex}`);
             entity_obj.scale = scale;
@@ -893,6 +913,59 @@ const handleEntityData = (sceneTree: any, entityEditTranList: any = []) => {
         });
     }
     return entityList;
+};
+
+// MARK Service 处理数据集--水面信息
+const hanldleWaterData = (sceneTree: any) => {
+    const allLeafNodes = getAllNodeByLevel(sceneTree, 2);
+    const allWaters = allLeafNodes.filter((item) => item.dataSetType == state_store.appSupportWaterType);
+
+    let waterList: any[] = [];
+    allWaters.forEach((item: any) => {
+        const waterGeoJson: any = JSON.parse(item.waterInfo.geoJson);
+        const rgnList = waterGeoJson.rgnList;
+        const rgnInfo = rgnList[0];
+        let cornerRgnInfo: any = {};
+        cornerRgnInfo.pointList = rgnInfo.pointList;
+        cornerRgnInfo.indexList = rgnInfo.indexList;
+
+        const waterRgnList = [cornerRgnInfo];
+        const { red, green, blue, alpha } = waterGeoJson.waterClr;
+        const waterClr = [red, green, blue, alpha];
+
+        let waterInfo: any = {};
+        waterInfo.waterName = item.waterInfo.id;
+        waterInfo.waterClr = waterClr;
+        waterInfo.blendDist = waterGeoJson.blendDist;
+        waterInfo.visible = waterGeoJson.visible;
+        waterInfo.expandDist = waterGeoJson.expandDist;
+        waterInfo.depthBias = waterGeoJson.depthBias;
+        waterInfo.visDist = waterGeoJson.visDist;
+        waterInfo.rgnList = waterRgnList;
+        waterList.push(waterInfo);
+    });
+    return waterList;
+};
+
+// MARK Service 处理数据集--挤出信息
+const hanldleExtrudeData = (sceneTree: any) => {
+    const allLeafNodes = getAllNodeByLevel(sceneTree, 2);
+    const allExtrudes = allLeafNodes.filter((item) => item.dataSetType == state_store.appSupportExtrudeType);
+
+    let extrudeList: any[] = [];
+    allExtrudes.forEach((item: any) => {
+        const extrudeGeoJson = JSON.parse(item.excavateInfo.geoJson);
+        const rgnList = extrudeGeoJson.rgnList;
+        let extrudeInfo: any = {};
+        extrudeInfo.extrudeId = item.excavateInfo.id;
+        extrudeInfo.dataSetIdList = extrudeGeoJson.dataSetIdList;
+        extrudeInfo.rgnList = rgnList;
+        extrudeInfo.depthLimitRange = extrudeGeoJson.depthLimitRange;
+        extrudeInfo.type = extrudeGeoJson.type;
+        extrudeInfo.texId = 0;
+        extrudeList.push(extrudeInfo);
+    });
+    return extrudeList;
 };
 
 // MARK Service 递归获取数据集标识集合
@@ -917,8 +990,27 @@ const getDataSetIds = (sceneTree: any) => {
     return dataSetIdList;
 };
 
+// MARK Service 递归获取树节点按照级别
+const getAllNodeByLevel = (sceneeTree: any, level: number) => {
+    const array: any[] = [];
+    const traverse = (item: any) => {
+        if (item.nodeType === level) {
+            array.push(item);
+        }
+        if (item.subNodes && item.subNodes.length) {
+            item.subNodes.forEach((subNode: any) => {
+                traverse(subNode);
+            });
+        }
+    };
+    sceneeTree.forEach((item: any) => {
+        traverse(item);
+    });
+    return array;
+};
+
 // MARK Service 递归获取地形数据集合
-const getTerrainDataSetList = (sceneTree: any, nodeType: Number) => {
+const getTerrainDataSetList = (sceneTree: any, nodeType: number) => {
     const array: any[] = [];
     const traverse = (item: any) => {
         if (item.nodeType === nodeType) {
