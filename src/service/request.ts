@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-14 12:21:00
- * @LastEditTime: 2025-05-21 16:01:44
+ * @LastEditTime: 2025-06-03 12:33:10
  */
 
 
@@ -14,7 +14,7 @@ export function requestPost(url: string, data?: object): Promise<any> {
         if (!checkToken()) { reject(new Error); return; }
         uni.request({
             // url: "http://192.168.31.6:9202/api/developercenter" + url,
-            url: uni.$window.serverUrl + url,
+            url: `${uni.$window.serverUrl}/blackHole3D/project${url}`,
             data: data || {},
             method: 'POST',
             timeout: uni.$window.commonTimeout,
@@ -59,7 +59,7 @@ export function requestGet(url: string, data?: object): Promise<any> {
     return new Promise<any>((resolve, reject) => {
         if (!checkToken()) { reject(new Error); return; }
         uni.request({
-            url: uni.$window.serverUrl + url,
+            url: `${uni.$window.serverUrl}/blackHole3D/project${url}`,
             data: data || {},
             method: 'GET',
             timeout: uni.$window.commonTimeout,

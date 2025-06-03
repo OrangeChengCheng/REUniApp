@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-14 10:05:14
- * @LastEditTime: 2025-05-28 12:03:19
+ * @LastEditTime: 2025-06-03 12:37:02
  */
 import config from './config'
 import reApi from './reApi'
@@ -28,6 +28,7 @@ export default {
         };
         uni.$window = {
             serverUrl: config.getServerUrl(),
+            downloadUrl: config.getDownloadUrl(),
             commonTimeout: config.getTimeout(),
         };
         uni.$re = {

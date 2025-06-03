@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-04-19 12:22:25
- * @LastEditTime: 2024-10-28 11:00:41
+ * @LastEditTime: 2025-06-03 11:47:31
  */
 import { requestPost, requestGet } from '@/service/request';
 
@@ -48,4 +48,11 @@ export function getCadDatasetFiles(data: any) {
 // 获取用户自定义视角
 export function getViewAngleService(data: any) {
     return requestPost('/userDefined/v3/VisualAngle', data);
+}
+
+
+// MOD-- 开挖 相关
+// 分享查看界面获取开挖纹理列表
+export function getSharedExtrudeTexturesList() {
+    return requestGet('/sceneTree/v3/getSceneExcavateIntrinsicTextureImages');
 }

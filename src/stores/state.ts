@@ -1,9 +1,10 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-11-09 10:46:29
- * @LastEditTime: 2025-05-30 14:31:10
+ * @LastEditTime: 2025-06-03 12:46:19
  */
 import { defineStore } from 'pinia'
+import { getSharedExtrudeTexturesList } from '@/service/interface'
 
 /**
     0 BIM模型
@@ -32,6 +33,7 @@ interface StateMold {
     appSupportExtrudeType: Number,
     launchOnce: Boolean,
     agreePolicy: Boolean,
+    extrudeTexList: Array<any>,
 }
 
 
@@ -46,6 +48,7 @@ export const useStateStore = defineStore('state', {
         appSupportExtrudeType: 24,
         launchOnce: JSON.parse(uni.getStorageSync('RE_launchOnce') || "false") || false, // 首次启动标记，避免多次创建store
         agreePolicy: JSON.parse(uni.getStorageSync('RE_agreePolicy') || "false") || false,
+        extrudeTexList: JSON.parse(uni.getStorageSync('RE_ExtrudeTexList') || '[]') || [],//全局开挖纹理信息
     }),
     actions: {
         appLaunchOnceUpdate() {
@@ -60,6 +63,38 @@ export const useStateStore = defineStore('state', {
         clearAgree() {
             this.agreePolicy = false;
             uni.setStorageSync('RE_agreePolicy', JSON.stringify(false));
-        }
+        },
+
+        updateExtrudeTexList() {
+            if (this.extrudeTexList.length > 0) {
+                return;
+            }
+            getSharedExtrudeTexturesList()
+                .then((res) => {
+                    const intrinsicTextures = res?.data.intrinsicTextures;
+                    let textureList: any[] = [];
+                    if (intrinsicTextures && intrinsicTextures.length) {
+                        textureList = intrinsicTextures.map((item: any) => {
+                            const tokenId = uni.getStorageSync('RE_Token');
+                            const picPath = `${uni.$window.downloadUrl}/${item.fileDataId}?token=${tokenId}`;
+                            const size = [5.0, 5.0];
+                            return {
+                                picPath: picPath,
+                                picSize: size,
+                                textureGuid: item.TextureImageId,
+                            };
+                        });
+                    }
+                    this.extrudeTexList = [];
+                    uni.setStorageSync('RE_ExtrudeTexList', JSON.stringify(this.extrudeTexList));
+                    const extrudeTexList_jsonp = JSON.parse(JSON.stringify(textureList));
+                    this.extrudeTexList = extrudeTexList_jsonp;
+                    uni.setStorageSync('RE_ExtrudeTexList', JSON.stringify(this.extrudeTexList));
+                })
+                .catch((err) => {
+                    this.extrudeTexList = [];
+                    uni.setStorageSync('RE_ExtrudeTexList', JSON.stringify(this.extrudeTexList));
+                });
+        },
     }
 });

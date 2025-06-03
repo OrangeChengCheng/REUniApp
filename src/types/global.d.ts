@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-13 18:01:53
- * @LastEditTime: 2025-05-28 12:03:32
+ * @LastEditTime: 2025-06-03 12:36:52
  */
 
 
@@ -23,6 +23,7 @@ declare global {
         }
         $window: {
             serverUrl: string,
+            downloadUrl: string,
             commonTimeout: number,
         };
         $tool: {

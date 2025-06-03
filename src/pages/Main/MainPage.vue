@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-06-03 10:37:54
+ * @LastEditTime: 2025-06-03 15:59:12
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -438,80 +438,76 @@ const showShareUrlRes = (params: any) => {
 };
 
 // MARK re-api 查看分享链接资源 -- 场景资源
-const showSceneRes = (params: any) => {
+const showSceneRes = async (params: any) => {
     uni.show_loading();
-    getSceneInfo(params.id)
-        .then((res_1) => {
-            getSceneTree({ sceneId: params.id, isPublished: true })
-                .then((res_2) => {
-                    //TODO: 单构件数据集特殊处理
-                    let dataSetIdList = getDataSetIds(res_2);
-                    if (res_1.componentTreeId && res_1.componentTreeId.length > 0) {
-                        dataSetIdList.push(res_1.componentTreeId); //单构件需要单独添加，不在模型数据中获取
-                    }
-                    const terrainList = getTerrainDataSetList(res_2, 2);
-                    const entityList = handleEntityData(res_2, res_1.componentPosition);
-                    const waterList = hanldleWaterData(res_2);
-                    const extrudeList = hanldleExtrudeData(res_2);
-                    getDataSetList({ dataSetIds: dataSetIdList })
-                        .then((res_3) => {
-                            const dataSetList_temp1: any[] = handleDataSetTrans(res_3, res_1.dataSetPosition);
-                            const dataSetList_temp2 = handleTerrainLayerLev(dataSetList_temp1, terrainList);
-                            const dataSetList = handleDataSetId(dataSetList_temp2);
+    try {
+        // 获取场景信息
+        const res_1 = await getSceneInfo(params.id);
+        // 获取场景树
+        const res_2 = await getSceneTree({ sceneId: params.id, isPublished: true });
+        // 处理数据集ID列表
+        let dataSetIdList = getDataSetIds(res_2);
+        if (res_1.componentTreeId && res_1.componentTreeId.length > 0) {
+            dataSetIdList.push(res_1.componentTreeId); //单构件需要单独添加，不在模型数据中获取
+        }
+        // 并行处理各种数据
+        const [terrainList, entityList, waterList, extrudeList] = await Promise.all([
+            getTerrainDataSetList(res_2, 2),
+            handleEntityData(res_2, res_1.componentPosition),
+            hanldleWaterData(res_2),
+            hanldleExtrudeData(res_2),
+        ]);
 
-                            let cam_dataSetId = uni.$tool.cam_defauleDataSet(dataSetList);
-                            let shareData: Share = newShare({
-                                url: params.url,
-                                projName: params.projName,
-                                id: params.id,
-                                lastTime: new Date(),
-                                dataSetList: dataSetList,
-                                worldCRS: res_1.coordinates,
-                                shareType: 2,
-                                camDefaultDataSetId: cam_dataSetId,
-                                shareViewMode: params.shareViewMode,
-                                entityList: entityList,
-                                waterList: waterList,
-                                extrudeList: extrudeList,
-                            });
-                            card_store.addCard(shareData);
+        // 获取数据集信息
+        const res_3 = await getDataSetList({ dataSetIds: dataSetIdList });
 
-                            uni.hide_loading();
-                            uni.$re
-                                .realEngineRender({
-                                    name: 'uni-app',
-                                    shareUrl: params.url,
-                                    projName: params.projName,
-                                    collect: shareData.collect,
-                                    worldCRS: res_1.coordinates,
-                                    dataSetList: dataSetList,
-                                    shareType: 2,
-                                    camDefaultDataSetId: cam_dataSetId,
-                                    shareViewMode: params.shareViewMode,
-                                    defaultCamLoc: shareData.defaultCamLoc,
-                                    entityList: entityList,
-                                    waterList: waterList,
-                                    extrudeList: extrudeList,
-                                })
-                                .then((result) => {
-                                    console.log(result);
-                                    uni.$re.unipluginLog(JSON.stringify(result));
-                                });
-                        })
-                        .catch((err_3) => {
-                            uni.hide_loading();
-                            uni.showToast({ title: err_3, icon: 'none' });
-                        });
-                })
-                .catch((err_2) => {
-                    uni.hide_loading();
-                    uni.showToast({ title: err_2, icon: 'none' });
-                });
-        })
-        .catch((err_1) => {
-            uni.hide_loading();
-            uni.showToast({ title: err_1, icon: 'none' });
+        const dataSetList_temp1: any[] = handleDataSetTrans(res_3, res_1.dataSetPosition);
+        const dataSetList_temp2 = handleTerrainLayerLev(dataSetList_temp1, terrainList);
+        const dataSetList = handleDataSetId(dataSetList_temp2);
+
+        let cam_dataSetId = uni.$tool.cam_defauleDataSet(dataSetList);
+        let shareData: Share = newShare({
+            url: params.url,
+            projName: params.projName,
+            id: params.id,
+            lastTime: new Date(),
+            dataSetList: dataSetList,
+            worldCRS: res_1.coordinates,
+            shareType: 2,
+            camDefaultDataSetId: cam_dataSetId,
+            shareViewMode: params.shareViewMode,
+            entityList: entityList,
+            waterList: waterList,
+            extrudeList: extrudeList,
         });
+        card_store.addCard(shareData);
+
+        uni.hide_loading();
+        uni.$re
+            .realEngineRender({
+                name: 'uni-app',
+                shareUrl: params.url,
+                projName: params.projName,
+                collect: shareData.collect,
+                worldCRS: res_1.coordinates,
+                dataSetList: dataSetList,
+                shareType: 2,
+                camDefaultDataSetId: cam_dataSetId,
+                shareViewMode: params.shareViewMode,
+                defaultCamLoc: shareData.defaultCamLoc,
+                entityList: entityList,
+                waterList: waterList,
+                extrudeList: extrudeList,
+            })
+            .then((result) => {
+                console.log(result);
+                uni.$re.unipluginLog(JSON.stringify(result));
+            });
+    } catch (error: any) {
+        uni.hide_loading();
+        uni.showToast({ title: error.message || '获取数据失败', icon: 'none' });
+        throw error; // 向上抛出错误
+    }
 };
 
 // MARK re-api 查看分享链接资源 -- 模型资源
@@ -872,14 +868,14 @@ const handleTerrainLayerLev = (dataSetList: any, dataSetTerrain: any) => {
 const handleDataSetId = (dataSetList: any) => {
     dataSetList.forEach((dataSet: any) => {
         if (dataSet.dataSetId && dataSet.dataSetId.length) {
-            dataSet.dataSetId = dataSet.dataSetId.replace(/-/g, "");//不能使用replaceAll,app端异常
+            dataSet.dataSetId = dataSet.dataSetId.replace(/-/g, ''); //不能使用replaceAll,app端异常
         }
     });
     return dataSetList;
 };
 
 // MARK Service 处理数据集--单构件信息
-const handleEntityData = (sceneTree: any, entityEditTranList: any = []) => {
+const handleEntityData = async (sceneTree: any, entityEditTranList: any = []) => {
     let entityList: any[] = [];
     const entity_server_obj = sceneTree.find((item: any) => item.dataSetType == state_store.appSupportEntityType);
     if (entity_server_obj && entity_server_obj.subNodes.length > 0) {
@@ -902,7 +898,7 @@ const handleEntityData = (sceneTree: any, entityEditTranList: any = []) => {
                 offset = JSON.parse(editTran_obj.translation);
             }
             let entity_obj: any = {};
-            entity_obj.dataSetId = item.parentId.replace(/-/g, "");
+            entity_obj.dataSetId = item.parentId.replace(/-/g, '');
             entity_obj.entityType = String(hostFileId);
             entity_obj.elemId = Number(`${hostFileId}${instanceIndex}`);
             entity_obj.scale = scale;
@@ -916,7 +912,7 @@ const handleEntityData = (sceneTree: any, entityEditTranList: any = []) => {
 };
 
 // MARK Service 处理数据集--水面信息
-const hanldleWaterData = (sceneTree: any) => {
+const hanldleWaterData = async (sceneTree: any) => {
     const allLeafNodes = getAllNodeByLevel(sceneTree, 2);
     const allWaters = allLeafNodes.filter((item) => item.dataSetType == state_store.appSupportWaterType);
 
@@ -948,7 +944,8 @@ const hanldleWaterData = (sceneTree: any) => {
 };
 
 // MARK Service 处理数据集--挤出信息
-const hanldleExtrudeData = (sceneTree: any) => {
+const hanldleExtrudeData = async (sceneTree: any) => {
+    const extrudeTexList = state_store.extrudeTexList;
     const allLeafNodes = getAllNodeByLevel(sceneTree, 2);
     const allExtrudes = allLeafNodes.filter((item) => item.dataSetType == state_store.appSupportExtrudeType);
 
@@ -962,7 +959,11 @@ const hanldleExtrudeData = (sceneTree: any) => {
         extrudeInfo.rgnList = rgnList;
         extrudeInfo.depthLimitRange = extrudeGeoJson.depthLimitRange;
         extrudeInfo.type = extrudeGeoJson.type;
-        extrudeInfo.texId = 0;
+        if (extrudeGeoJson.type === 2) {
+            const find = extrudeTexList.find((el: any) => el.textureGuid === item.excavateInfo.textureFileDataId);
+            extrudeInfo.texSize = JSON.parse(JSON.stringify(find.picSize));
+            extrudeInfo.texPath = find.picPath;
+        }
         extrudeList.push(extrudeInfo);
     });
     return extrudeList;
@@ -1010,7 +1011,7 @@ const getAllNodeByLevel = (sceneeTree: any, level: number) => {
 };
 
 // MARK Service 递归获取地形数据集合
-const getTerrainDataSetList = (sceneTree: any, nodeType: number) => {
+const getTerrainDataSetList = async (sceneTree: any, nodeType: number) => {
     const array: any[] = [];
     const traverse = (item: any) => {
         if (item.nodeType === nodeType) {
@@ -1090,6 +1091,7 @@ const getTerrainDataSetList = (sceneTree: any, nodeType: number) => {
             margin-top: 50px;
             margin-right: 10px;
         }
+
         .empty-text {
             font-size: 16px;
             color: #86909c;
