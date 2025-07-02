@@ -35,6 +35,7 @@ declare global {
         show_loading(): void;
         hide_loading(): void;
         update_serverUrl(url: string): void;
+        get_serverUrl(): string;
     }
 }
 

@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-22 11:05:25
- * @LastEditTime: 2025-02-13 16:23:14
+ * @LastEditTime: 2025-07-02 10:25:56
 -->
 <template>
     <view class="sup-nav-bar" :style="`background-color:var(${nav_bar_color})`">
@@ -10,7 +10,7 @@
         <!-- 导航栏 -->
         <view class="nav-bar" v-if="nav_bar" :style="`background-color:var(${nav_bar_color})`">
             <view class="nav-bar-item" v-if="nav_bar_item_back">
-                <icon-font class="nav-bar-item-btn-text" name="nav_icon_back_default" size="24px" color="--color-main-black"></icon-font>
+                <icon-font class="nav-bar-item-btn-back" name="nav_icon_back_default" size="24px" color="--color-main-black"></icon-font>
                 <button class="nav-bar-item-btn" @click="navBarItemAction('nav-bar-item-back')"></button>
             </view>
             <view class="nav-bar-item" v-else>
@@ -25,6 +25,10 @@
             <view class="nav-bar-item" v-if="nav_bar_item_scan">
                 <text class="nav-bar-item-btn-text">扫码</text>
                 <button class="nav-bar-item-btn" @click="navBarItemAction('nav-bar-item-scan')"></button>
+            </view>
+            <view class="nav-bar-item" v-else-if="nav_bar_item_right_text.length > 0">
+                <text class="nav-bar-item-btn-text_small">{{ nav_bar_item_right_text }}</text>
+                <button class="nav-bar-item-btn" @click="navBarItemAction('nav-bar-item-right-text')"></button>
             </view>
             <view class="nav-bar-item" v-else>
                 <text class="nav-bar-item-btn-text"></text>
@@ -54,6 +58,10 @@ const props = defineProps({
     nav_bar_item_scan: {
         type: Boolean,
         default: false,
+    },
+    nav_bar_item_right_text: {
+        type: String,
+        default: '',
     },
     nav_bar_color: {
         type: String,
@@ -112,21 +120,31 @@ const navBarItemAction = (type) => {
 }
 .nav-bar-item {
     position: relative;
-    width: 44px;
+    width: 60px;
     height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
+.nav-bar-item-btn-back {
+    margin-left: -10px;
+    color: var(--color-main-black);
+}
+
 .nav-bar-item-btn-text {
     color: var(--color-main-black);
+}
+
+.nav-bar-item-btn-text_small {
+    font-size: 14px;
+    color: var(--color-main-blue);
 }
 .nav-bar-item-btn {
     position: absolute;
     top: 0;
     left: 0;
-    width: 44px;
+    width: 60px;
     height: 44px;
     background-color: transparent;
     &:after {

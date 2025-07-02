@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2025-02-13 10:55:26
- * @LastEditTime: 2025-05-21 16:22:02
+ * @LastEditTime: 2025-07-02 10:42:42
 -->
 <template>
     <base-view :nav_bar="true" :nav_bar_item_back="false" :nav_bar_title="`我的`" :nav_bar_color="`--color-white`">
@@ -40,7 +40,7 @@ const type_list = ref([
     },
     {
         name: '服务配置',
-        icon: 'a-personalpage_icon_updateinformation',
+        icon: 'a-serviceconfiguration',
         detailJump: true,
         jumpType: 2,
     },

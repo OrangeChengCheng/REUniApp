@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-14 10:05:14
- * @LastEditTime: 2025-06-03 12:37:02
+ * @LastEditTime: 2025-07-01 18:07:32
  */
 import config from './config'
 import reApi from './reApi'
@@ -46,5 +46,6 @@ export default {
         uni.show_loading = uniApi.show_loading;
         uni.hide_loading = uniApi.hide_loading;
         uni.update_serverUrl = config.updateServerUrl;
+        uni.get_serverUrl = config.getServerUrl;
     }
 }
