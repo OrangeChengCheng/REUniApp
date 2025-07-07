@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-06-03 15:59:12
+ * @LastEditTime: 2025-07-04 12:40:38
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -337,9 +337,12 @@ const card_callback = (e: Share) => {
         let defaultCamLocJson = JSON.stringify(e.defaultCamLoc);
         defaultCamLoc = JSON.parse(defaultCamLocJson);
     }
+    
     uni.$re
         .realEngineRender({
             name: 'uni-app',
+            token: uni.getStorageSync('RE_Token'),
+            baseUrl: uni.get_serverUrl(),
             shareUrl: e.url,
             projName: e.projName,
             worldCRS: e.worldCRS,
@@ -486,6 +489,8 @@ const showSceneRes = async (params: any) => {
         uni.$re
             .realEngineRender({
                 name: 'uni-app',
+                token: uni.getStorageSync('RE_Token'),
+                baseUrl: uni.get_serverUrl(),
                 shareUrl: params.url,
                 projName: params.projName,
                 collect: shareData.collect,
@@ -552,6 +557,8 @@ const showModelTypeRes = (params: any) => {
             uni.$re
                 .realEngineRender({
                     name: 'uni-app',
+                    token: uni.getStorageSync('RE_Token'),
+                    baseUrl: uni.get_serverUrl(),
                     shareUrl: params.url,
                     projName: params.projName,
                     dataSetList: res,
@@ -590,6 +597,8 @@ const showCadTypeRes = (params: any) => {
             uni.$re
                 .realEngineRender({
                     name: 'uni-app',
+                    token: uni.getStorageSync('RE_Token'),
+                    baseUrl: uni.get_serverUrl(),
                     shareUrl: params.url,
                     projName: params.projName,
                     dataSetList: res,
@@ -624,6 +633,8 @@ const showResourceAddressRes = (e: any) => {
     uni.$re
         .realEngineRender({
             name: 'uni-app',
+            token: uni.getStorageSync('RE_Token'),
+            baseUrl: uni.get_serverUrl(),
             dataSetList: dataSetList,
             maxInstDrawFaceNum: e.faceNum,
         })

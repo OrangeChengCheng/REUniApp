@@ -29,18 +29,6 @@
             "style": {
                 "enablePullDownRefresh": false
             }
-        },
-        {
-            "path": "pages/Card/CardPage",
-            "style": {
-                "enablePullDownRefresh": false
-            }
-        },
-        {
-            "path": "pages/Home/HomePage",
-            "style": {
-                "enablePullDownRefresh": false
-            }
         }
     ],
     "tabBar": {
