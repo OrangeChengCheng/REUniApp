@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-14 14:22:08
- * @LastEditTime: 2025-07-09 11:16:21
+ * @LastEditTime: 2025-07-09 15:25:27
  */
 
 
@@ -44,6 +44,7 @@ const api: ApiMethods = {
         const reModule = api.getREModule();
         if (reModule && reModule.registerAppMsg) {
             reModule.registerAppMsg((res: any) => {
+                api.unipluginLog('registerAppMsg: ' + JSON.stringify(res));
                 // 不能使用promise的resolve进行返回，要使用传递回调进行处理，不然resolve执行后函数就结束，无法再次执行resolve，需要保持函数一直在，使用参数的回调
                 onCallBack(res);
             });
