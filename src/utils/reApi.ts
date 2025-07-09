@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-14 14:22:08
- * @LastEditTime: 2024-11-09 12:21:17
+ * @LastEditTime: 2025-07-09 10:27:17
  */
 
 
@@ -10,8 +10,8 @@ interface ApiMethods {
     unipluginLog(log: string): void;
     realEngineRender(data: any): Promise<any>;
     getREModule(): any;
-    reAppToUniMessageHandler(onCallBack: (data: any) => void): Promise<void>; // 添加一个回调参数来处理每条消息
-    reUniPostData(data: any): void;
+    registerAppMsg(onCallBack: (data: any) => void): Promise<void>; // 添加一个回调参数来处理每条消息
+    reSendMessageToApp(data: any): void;
 }
 
 const api: ApiMethods = {
@@ -40,21 +40,21 @@ const api: ApiMethods = {
     },
 
     // MARK re-api 原生&uni-app通信
-    reAppToUniMessageHandler: async (onCallBack: (data: any) => void): Promise<void> => {
+    registerAppMsg: async (onCallBack: (data: any) => void): Promise<void> => {
         const reModule = api.getREModule();
-        if (reModule && reModule.reAppToUniMessageHandler) {
-            reModule.reAppToUniMessageHandler((res: any) => {
+        if (reModule && reModule.registerAppMsg) {
+            reModule.registerAppMsg((res: any) => {
                 // 不能使用promise的resolve进行返回，要使用传递回调进行处理，不然resolve执行后函数就结束，无法再次执行resolve，需要保持函数一直在，使用参数的回调
                 onCallBack(res);
             });
         } else {
-            api.unipluginLog('reAppToUniMessageHandler: 消息监听机制加载失败');
+            api.unipluginLog('registerAppMsg: 消息监听机制加载失败');
         }
     },
 
     // MARK re-api 向app发送数据
-    reUniPostData: (data: any) => {
-        api.getREModule()?.reUniPostData(data);
+    reSendMessageToApp: (data: any) => {
+        api.getREModule()?.reSendMessageToApp(data);
     },
 
 }

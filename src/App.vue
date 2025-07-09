@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-14 10:24:21
- * @LastEditTime: 2025-06-03 12:47:25
+ * @LastEditTime: 2025-07-09 10:58:57
 -->
 <script setup lang="ts">
 import { onLaunch, onShow, onHide, onExit } from '@dcloudio/uni-app';
@@ -22,13 +22,13 @@ onLaunch(() => {
     const state_store = useStateStore();
     state_store.updateExtrudeTexList();
     uniApi.get_deviceInfo();
-    uni.$re.reAppToUniMessageHandler((data) => {
+    uni.$re.registerAppMsg((data) => {
         const message_store = useMessageStore();
         message_store.sendMessage(message_store.M_AppToUni, data);
         // setTimeout(() => {
         //     let postData = { data: { key: '666', value: [1, 2, 3, 4, 5] }, msg: '---', item: data };
-        //     uni.$re.unipluginLog('reUniPostData: ' + JSON.stringify(postData));
-        //     uni.$re.reUniPostData(postData);
+        //     uni.$re.unipluginLog('reSendMessageToApp: ' + JSON.stringify(postData));
+        //     uni.$re.reSendMessageToApp(postData);
         // }, 2000);
     });
 });

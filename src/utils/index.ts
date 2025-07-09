@@ -34,8 +34,8 @@ export default {
         uni.$re = {
             unipluginLog: reApi.unipluginLog,
             realEngineRender: reApi.realEngineRender,
-            reAppToUniMessageHandler: reApi.reAppToUniMessageHandler,
-            reUniPostData: reApi.reUniPostData,
+            registerAppMsg: reApi.registerAppMsg,
+            reSendMessageToApp: reApi.reSendMessageToApp,
         };
         uni.$tool = {
             url_handle: tool.url_handle,

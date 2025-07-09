@@ -18,8 +18,8 @@ declare global {
         $re: {
             unipluginLog(log: string): void;
             realEngineRender(data: any): Promise<any>;
-            reAppToUniMessageHandler(onCallBack: (data: any) => void): Promise<void>;
-            reUniPostData(data: any): void;
+            registerAppMsg(onCallBack: (data: any) => void): Promise<void>;
+            reSendMessageToApp(data: any): void;
         }
         $window: {
             serverUrl: string,
