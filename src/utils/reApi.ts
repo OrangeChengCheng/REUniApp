@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-14 14:22:08
- * @LastEditTime: 2025-07-09 10:27:17
+ * @LastEditTime: 2025-07-09 11:16:21
  */
 
 
@@ -11,7 +11,7 @@ interface ApiMethods {
     realEngineRender(data: any): Promise<any>;
     getREModule(): any;
     registerAppMsg(onCallBack: (data: any) => void): Promise<void>; // 添加一个回调参数来处理每条消息
-    reSendMessageToApp(data: any): void;
+    sendMsgUniToApp(data: any): void;
 }
 
 const api: ApiMethods = {
@@ -53,8 +53,8 @@ const api: ApiMethods = {
     },
 
     // MARK re-api 向app发送数据
-    reSendMessageToApp: (data: any) => {
-        api.getREModule()?.reSendMessageToApp(data);
+    sendMsgUniToApp: (data: any) => {
+        api.getREModule()?.sendMsgUniToApp(data);
     },
 
 }

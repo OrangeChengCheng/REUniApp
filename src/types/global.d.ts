@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-13 18:01:53
- * @LastEditTime: 2025-06-03 12:36:52
+ * @LastEditTime: 2025-07-09 11:16:16
  */
 
 
@@ -19,7 +19,7 @@ declare global {
             unipluginLog(log: string): void;
             realEngineRender(data: any): Promise<any>;
             registerAppMsg(onCallBack: (data: any) => void): Promise<void>;
-            reSendMessageToApp(data: any): void;
+            sendMsgUniToApp(data: any): void;
         }
         $window: {
             serverUrl: string,
