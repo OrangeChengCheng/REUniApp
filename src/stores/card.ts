@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-13 15:14:00
- * @LastEditTime: 2025-05-29 17:56:41
+ * @LastEditTime: 2025-07-16 10:56:08
  */
 import { defineStore } from 'pinia'
 import { type Share } from '@/types/class';
@@ -32,15 +32,24 @@ export const useCardStore = defineStore('card', {
                 find.worldCRS = shareData.worldCRS;
                 find.camDefaultDataSetId = shareData.camDefaultDataSetId;
                 find.shareType = shareData.shareType;
+                find.url = shareData.url;
+                find.token = shareData.token;
                 this.saveToLocalStorage();
             }
         },
         getCardList(search?: string) {
+            let result = this.cardList;
+
             if (search) {
-                return this.cardList.filter((e: Share) => e.projName.includes(search));
-            } else {
-                return this.cardList;
+                result = result.filter((e: Share) => e.projName.includes(search));
             }
+
+            // 按 lastTime 降序排序（最新的在前）
+            return result.sort((a, b) => {
+                const lastTime_a = new Date(a.lastTime);
+                const lastTime_b = new Date(b.lastTime);
+                return lastTime_b.getTime() - lastTime_a.getTime();
+            });
         },
         addCollect(shareData: Share, coollect: boolean) {
             let find = this.cardList.find((e: Share) => e.url === shareData.url || e.id === shareData.id);
@@ -50,11 +59,20 @@ export const useCardStore = defineStore('card', {
             this.saveToLocalStorage();
         },
         getCollectCardList(search?: string) {
+            let result = this.cardList;
+
             if (search) {
-                return this.cardList.filter((e: Share) => e.collect === true && e.projName.includes(search));
+                result = result.filter((e: Share) => e.collect === true && e.projName.includes(search));
             } else {
-                return this.cardList.filter((e: Share) => e.collect === true);
+                result = result.filter((e: Share) => e.collect === true);
             }
+
+            // 按 lastTime 降序排序（最新的在前）
+            return result.sort((a, b) => {
+                const lastTime_a = new Date(a.lastTime);
+                const lastTime_b = new Date(b.lastTime);
+                return lastTime_b.getTime() - lastTime_a.getTime();
+            });
         },
         saveToLocalStorage() {
             uni.setStorageSync('RE_cardList', JSON.stringify(this.cardList));
@@ -92,8 +110,8 @@ export const useCardStore = defineStore('card', {
                 uni.request({
                     url: 'https://demo.bjblackhole.com/BlackHole3.0/app/json/re_sample_res.json',
                     success: (res) => {
-						this.sample_cardList = [];
-						uni.setStorageSync('RE_sample_cardList', JSON.stringify(this.sample_cardList));
+                        this.sample_cardList = [];
+                        uni.setStorageSync('RE_sample_cardList', JSON.stringify(this.sample_cardList));
                         let sampleCardList_json = JSON.stringify(res.data);
                         let sampleCardList_obj = JSON.parse(sampleCardList_json);
                         this.sample_cardList = sampleCardList_obj;
