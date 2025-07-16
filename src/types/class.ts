@@ -1,12 +1,14 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-23 16:54:42
- * @LastEditTime: 2025-05-30 14:39:24
+ * @LastEditTime: 2025-07-10 10:08:55
  */
 
 
 export interface Share {
     url: string;
+    token: string;
+    baseUrl: string;
     projName: string;
     id: string;
     lastTime: Date;
@@ -26,6 +28,8 @@ export interface Share {
 export const newShare = (overrides?: Partial<Share>): Share => {
     return {
         url: "",
+        token: "",
+        baseUrl: "",
         projName: "",
         id: "",
         lastTime: new Date(),

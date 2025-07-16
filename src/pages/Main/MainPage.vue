@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-07-04 12:40:38
+ * @LastEditTime: 2025-07-10 11:20:17
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -248,7 +248,8 @@ const tool_handleUrl = (e: any): Promise<any> => {
     return new Promise<any>((resolve, reject) => {
         let urlData = uni.$tool.url_handle(e);
         if (urlData) {
-            uni.setStorageSync('RE_Token', urlData.token);
+            uni.$server.updateCurToken(urlData.token);
+            uni.$server.updateCurBaseUrl(urlData.baseUrl);
             // 获取项目名称
             getProjName(urlData)
                 .then((res) => {
@@ -337,12 +338,12 @@ const card_callback = (e: Share) => {
         let defaultCamLocJson = JSON.stringify(e.defaultCamLoc);
         defaultCamLoc = JSON.parse(defaultCamLocJson);
     }
-    
+
     uni.$re
         .realEngineRender({
             name: 'uni-app',
-            token: uni.getStorageSync('RE_Token'),
-            baseUrl: uni.get_serverUrl(),
+            token: e.token,
+            baseUrl: e.baseUrl,
             shareUrl: e.url,
             projName: e.projName,
             worldCRS: e.worldCRS,
@@ -432,7 +433,8 @@ const dialog_UrlInputCallBack = (e: any) => {
 
 // MARK 查看分享链接资源
 const showShareUrlRes = (params: any) => {
-    uni.setStorageSync('RE_Token', params.token);
+    uni.$server.updateCurToken(params.token);
+    uni.$server.updateCurBaseUrl(params.baseUrl);
     if (params.shareType === 2) {
         showSceneRes(params);
     } else {
@@ -471,6 +473,8 @@ const showSceneRes = async (params: any) => {
         let cam_dataSetId = uni.$tool.cam_defauleDataSet(dataSetList);
         let shareData: Share = newShare({
             url: params.url,
+            token: params.token,
+            baseUrl: params.baseUrl,
             projName: params.projName,
             id: params.id,
             lastTime: new Date(),
@@ -489,8 +493,8 @@ const showSceneRes = async (params: any) => {
         uni.$re
             .realEngineRender({
                 name: 'uni-app',
-                token: uni.getStorageSync('RE_Token'),
-                baseUrl: uni.get_serverUrl(),
+                token: params.token,
+                baseUrl: params.baseUrl,
                 shareUrl: params.url,
                 projName: params.projName,
                 collect: shareData.collect,
@@ -545,6 +549,8 @@ const showModelTypeRes = (params: any) => {
             uni.hide_loading();
             let shareData: Share = newShare({
                 url: params.url,
+                token: params.token,
+                baseUrl: params.baseUrl,
                 projName: params.projName,
                 id: params.id,
                 lastTime: new Date(),
@@ -557,8 +563,8 @@ const showModelTypeRes = (params: any) => {
             uni.$re
                 .realEngineRender({
                     name: 'uni-app',
-                    token: uni.getStorageSync('RE_Token'),
-                    baseUrl: uni.get_serverUrl(),
+                    token: params.token,
+                    baseUrl: params.baseUrl,
                     shareUrl: params.url,
                     projName: params.projName,
                     dataSetList: res,
@@ -585,6 +591,8 @@ const showCadTypeRes = (params: any) => {
             uni.hide_loading();
             let shareData: Share = newShare({
                 url: params.url,
+                token: params.token,
+                baseUrl: params.baseUrl,
                 projName: params.projName,
                 id: params.id,
                 lastTime: new Date(),
@@ -597,8 +605,8 @@ const showCadTypeRes = (params: any) => {
             uni.$re
                 .realEngineRender({
                     name: 'uni-app',
-                    token: uni.getStorageSync('RE_Token'),
-                    baseUrl: uni.get_serverUrl(),
+                    token: params.token,
+                    baseUrl: params.baseUrl,
                     shareUrl: params.url,
                     projName: params.projName,
                     dataSetList: res,
@@ -633,8 +641,8 @@ const showResourceAddressRes = (e: any) => {
     uni.$re
         .realEngineRender({
             name: 'uni-app',
-            token: uni.getStorageSync('RE_Token'),
-            baseUrl: uni.get_serverUrl(),
+            token: e.token,
+            baseUrl: e.baseUrl,
             dataSetList: dataSetList,
             maxInstDrawFaceNum: e.faceNum,
         })

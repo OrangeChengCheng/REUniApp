@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2025-05-21 16:18:51
- * @LastEditTime: 2025-07-02 11:15:42
+ * @LastEditTime: 2025-07-10 11:57:39
 -->
 <template>
     <base-view
@@ -58,14 +58,13 @@ onLoad((options) => {
 });
 
 onMounted(() => {
-    private_serverUrl.value = uni.get_serverUrl();
+    private_serverUrl.value = uni.$server.getCurBaseUrl();
 });
 
 // MARK NavItemClick 导航栏点击
 const nav_bar_item_callback = (type: any) => {
     if (type == 'nav-bar-item-right-text') {
-        uni.update_serverUrl('');
-        private_serverUrl.value = uni.get_serverUrl();
+        private_serverUrl.value = uni.$server.getCurBaseUrl();
         textarea_clear_btn.value = false;
     }
 };
@@ -91,7 +90,7 @@ const change_serverUrl = (e: any) => {
         uni.showToast({ title: '请输入服务配置地址', icon: 'none' });
         return;
     }
-    uni.update_serverUrl(private_serverUrl.value);
+    // uni.update_serverUrl(private_serverUrl.value);
     textarea_clear_btn.value = false;
 };
 

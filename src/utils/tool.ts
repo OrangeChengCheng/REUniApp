@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-23 14:42:45
- * @LastEditTime: 2025-06-03 10:19:14
+ * @LastEditTime: 2025-07-10 10:16:44
  */
 
 import { getSceneById, getProjectTree } from '@/service/interface';
@@ -19,6 +19,22 @@ const api: ApiMethods = {
 
         uni.$re.unipluginLog('url = ' + url);
         if (url.length <= 0) return null;
+
+        //提取baseUrl（域名和端口号）
+        let baseUrl = '';
+        // 判断协议类型（http:// 或 https://）
+        const protocolEndIndex = url.indexOf('://');
+        if (protocolEndIndex !== -1) {
+            // 从协议结束位置（://后）开始，寻找第一个“/”
+            const pathStartIndex = url.indexOf('/', protocolEndIndex + 3);
+            if (pathStartIndex !== -1) {
+                // 截取从开头到第一个“/”的部分，即为baseUrl
+                baseUrl = url.substring(0, pathStartIndex);
+            } else {
+                // 若没有“/”，则整个URL即为baseUrl（如单独的域名）
+                baseUrl = url;
+            }
+        }
 
         // 使用字符串截取方式，无法使用URL的方式，uniapp在真机上无法使用URL方式
         let shareType: number = 0; // 判断分享链接类型 0：无 1：模型 2：场景
@@ -61,7 +77,7 @@ const api: ApiMethods = {
             _dataType = dataTypeEndIndex !== -1 ? url.substring(dataTypeIndex + 'dataType='.length, dataTypeEndIndex) : url.substring(dataTypeIndex + 'dataType='.length);
         }
 
-        let params = { url: url, shareType: shareType, projName: "", id: _id, token: _token, shareViewMode: _viewMode, shareDataType: _dataType };        
+        let params = { url: url, baseUrl: baseUrl, shareType: shareType, projName: "", id: _id, token: _token, shareViewMode: _viewMode, shareDataType: _dataType };
         uni.$re.unipluginLog('params = ' + JSON.stringify(params));
         return params;
     },

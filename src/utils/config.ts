@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-04-19 12:22:21
- * @LastEditTime: 2025-06-03 12:36:20
+ * @LastEditTime: 2025-07-10 11:11:51
  */
 
 
@@ -9,38 +9,72 @@ const RE_ServerURl = "https://engine3.bjblackhole.com";
 const RE_DownloadUrl = "/DownloadService/blackHole3D/files/Download";
 
 interface ApiMethods {
-    getServerUrl(): string;
-    updateServerUrl(url: string): void;
-    getDownloadUrl(): string;
+    getCurDownloadUrl(): string;
+    getCurBaseUrl(): string;
+    updateCurBaseUrl(url: string): void;
+    getCurToken(): string;
+    updateCurToken(token: string): void;
+    getServerWhiteList(): any;
+    updateServerWhiteList(list: any): void;
+    checkWhiteListContain(url: string): boolean;
     getTimeout(): number;
 }
 
 
 const api: ApiMethods = {
-    // MARK config 获取当前的服务配置地址
-    getServerUrl: (): string => {
-        let private_serverUrl = uni.getStorageSync('RE_private_serverUrl');
-        if (!private_serverUrl || private_serverUrl.length <= 0) {
-            return RE_ServerURl;
-        } else {
-            return private_serverUrl;
-        }
-    },
-
     // MARK config 获取当前的服务资源地址
-    getDownloadUrl: (): string => {
-        let private_serverUrl = uni.getStorageSync('RE_private_serverUrl');
-        if (!private_serverUrl || private_serverUrl.length <= 0) {
-            return `${RE_ServerURl}${RE_DownloadUrl}`;
-        } else {
-            return `${private_serverUrl}${RE_DownloadUrl}`;
-        }
+    getCurDownloadUrl: (): string => {
+        const baseUrl = api.getCurBaseUrl();
+        return `${baseUrl}${RE_DownloadUrl}`;
     },
 
 
-    // MARK config 更新服务配置地址
-    updateServerUrl: (url: string): void => {
-        uni.setStorageSync('RE_private_serverUrl', url);
+    // MARK config 获取最新服务配置地址
+    getCurBaseUrl: (): string => {
+        let baseUrl: string = uni.getStorageSync('RE_Server_BaseUrl') || "";
+        if (!baseUrl || baseUrl.length <= 0) {
+            baseUrl = RE_ServerURl;
+        }
+        return baseUrl;
+    },
+
+    // MARK config 更新最新服务配置地址
+    updateCurBaseUrl: (url: string): void => {
+        uni.setStorageSync('RE_Server_BaseUrl', url);
+    },
+
+    // MARK config 获取最新Token
+    getCurToken: (): string => {
+        const token: string = uni.getStorageSync('RE_Server_Token') || "";
+        return token;
+    },
+
+    // MARK config 更新Token
+    updateCurToken: (token: string): void => {
+        uni.setStorageSync('RE_Server_Token', token);
+    },
+
+    // MARK config 获取服务白名单
+    getServerWhiteList: (): any => {
+        let whiteList: any = uni.getStorageSync('RE_Server_WhiteList');
+        if (!whiteList || whiteList.length <= 0) {
+            whiteList.push(RE_ServerURl);
+        }
+        return whiteList;
+    },
+
+    // MARK config 更新服务白名单
+    updateServerWhiteList: (list: any): void => {
+        uni.setStorageSync('RE_Server_WhiteList', list);
+    },
+
+    // MARK config 检查是否是白名单范围
+    checkWhiteListContain: (url: string): boolean => {
+        const whiteList = api.getServerWhiteList();
+        if (whiteList.includes(url)) {
+            return true;
+        }
+        return false;
     },
 
 

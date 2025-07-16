@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-07-04 13:20:01
+ * @LastEditTime: 2025-07-10 11:07:46
 -->
 <template>
     <base-view :nav_bar="true" :nav_bar_title="`搜索`" :nav_bar_color="`--color-main-bg`">
@@ -172,8 +172,8 @@ const card_callback = (e: Share) => {
     uni.$re
         .realEngineRender({
             name: 'uni-app',
-            token: uni.getStorageSync('RE_Token'),
-            baseUrl: uni.get_serverUrl(),
+            token: e.token,
+            baseUrl: e.baseUrl,
             shareUrl: e.url,
             projName: e.projName,
             worldCRS: e.worldCRS,

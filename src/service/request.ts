@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-14 12:21:00
- * @LastEditTime: 2025-06-03 12:33:10
+ * @LastEditTime: 2025-07-10 11:26:48
  */
 
 
@@ -14,13 +14,13 @@ export function requestPost(url: string, data?: object): Promise<any> {
         if (!checkToken()) { reject(new Error); return; }
         uni.request({
             // url: "http://192.168.31.6:9202/api/developercenter" + url,
-            url: `${uni.$window.serverUrl}/blackHole3D/project${url}`,
+            url: `${uni.$server.getCurBaseUrl()}/blackHole3D/project${url}`,
             data: data || {},
             method: 'POST',
-            timeout: uni.$window.commonTimeout,
+            timeout: uni.$server.commonTimeout,
             header: {
                 'content-type': 'application/json',
-                'authorization': uni.getStorageSync('RE_Token'),
+                'authorization': uni.$server.getCurToken(),
             },
             success: (res) => {
                 if (res.statusCode && res.statusCode == 200) {
@@ -59,13 +59,13 @@ export function requestGet(url: string, data?: object): Promise<any> {
     return new Promise<any>((resolve, reject) => {
         if (!checkToken()) { reject(new Error); return; }
         uni.request({
-            url: `${uni.$window.serverUrl}/blackHole3D/project${url}`,
+            url: `${uni.$server.getCurBaseUrl()}/blackHole3D/project${url}`,
             data: data || {},
             method: 'GET',
-            timeout: uni.$window.commonTimeout,
+            timeout: uni.$server.commonTimeout,
             header: {
                 'content-type': 'application/json',
-                'authorization': uni.getStorageSync('RE_Token'),
+                'authorization': uni.$server.getCurToken(),
             },
             success: (res) => {
                 if (res.statusCode && res.statusCode == 200) {
@@ -101,7 +101,7 @@ export function requestGet(url: string, data?: object): Promise<any> {
 
 
 function checkToken() {
-    if (!uni.getStorageSync('RE_Token') || uni.getStorageSync('RE_Token').length <= 0) {
+    if (!uni.$server.getCurToken() || uni.$server.getCurToken().length <= 0) {
         uni.showToast({ title: '链接无效，请联系管理员!', icon: 'none' });
         return false;
     } else {

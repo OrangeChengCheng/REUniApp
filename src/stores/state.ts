@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-11-09 10:46:29
- * @LastEditTime: 2025-06-03 12:46:19
+ * @LastEditTime: 2025-07-10 11:27:14
  */
 import { defineStore } from 'pinia'
 import { getSharedExtrudeTexturesList } from '@/service/interface'
@@ -75,8 +75,8 @@ export const useStateStore = defineStore('state', {
                     let textureList: any[] = [];
                     if (intrinsicTextures && intrinsicTextures.length) {
                         textureList = intrinsicTextures.map((item: any) => {
-                            const tokenId = uni.getStorageSync('RE_Token');
-                            const picPath = `${uni.$window.downloadUrl}/${item.fileDataId}?token=${tokenId}`;
+                            const tokenId = uni.$server.getCurToken();
+                            const picPath = `${uni.$server.getCurDownloadUrl()}/${item.fileDataId}?token=${tokenId}`;
                             const size = [5.0, 5.0];
                             return {
                                 picPath: picPath,

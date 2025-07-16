@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-14 10:24:21
- * @LastEditTime: 2025-07-09 10:58:57
+ * @LastEditTime: 2025-07-10 10:46:27
 -->
 <script setup lang="ts">
 import { onLaunch, onShow, onHide, onExit } from '@dcloudio/uni-app';
@@ -20,7 +20,7 @@ onLaunch(() => {
     const card_store = useCardStore();
     card_store.updateSample();
     const state_store = useStateStore();
-    state_store.updateExtrudeTexList();
+    // state_store.updateExtrudeTexList();
     uniApi.get_deviceInfo();
     uni.$re.registerAppMsg((data) => {
         const message_store = useMessageStore();

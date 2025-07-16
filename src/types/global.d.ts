@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-13 18:01:53
- * @LastEditTime: 2025-07-09 11:16:16
+ * @LastEditTime: 2025-07-10 10:59:46
  */
 
 
@@ -12,19 +12,22 @@ declare global {
      * 拓展全局变量Uni
     */
     interface Uni extends _Uni {
-        $u: {
-            toast(title: string): void;
-        }
         $re: {
             unipluginLog(log: string): void;
             realEngineRender(data: any): Promise<any>;
             registerAppMsg(onCallBack: (data: any) => void): Promise<void>;
             sendMsgUniToApp(data: any): void;
         }
-        $window: {
-            serverUrl: string,
-            downloadUrl: string,
+        $server: {
             commonTimeout: number,
+            getCurDownloadUrl(): string;
+            getCurBaseUrl(): string;
+            updateCurBaseUrl(url: string): void;
+            getCurToken(): string;
+            updateCurToken(token: string): void;
+            getServerWhiteList(): any;
+            updateServerWhiteList(list: any): void;
+            checkWhiteListContain(url: string): boolean;
         };
         $tool: {
             url_handle(utl: string): any;
@@ -34,8 +37,6 @@ declare global {
         scan_code(): Promise<any>;
         show_loading(): void;
         hide_loading(): void;
-        update_serverUrl(url: string): void;
-        get_serverUrl(): string;
     }
 }
 

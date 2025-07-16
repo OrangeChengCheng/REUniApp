@@ -1,20 +1,12 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-14 10:05:14
- * @LastEditTime: 2025-07-01 18:07:32
+ * @LastEditTime: 2025-07-10 11:04:53
  */
 import config from './config'
 import reApi from './reApi'
 import uniApi from './uniApi'
 import tool from './tool'
-
-
-function toast(title: string) {
-    console.log("---------------------");
-    console.log(title);
-    console.log("---------------------");
-
-}
 
 
 
@@ -23,13 +15,16 @@ export default {
         if (!uni || typeof uni !== 'object') {
             return;
         }
-        uni.$u = {
-            toast,
-        };
-        uni.$window = {
-            serverUrl: config.getServerUrl(),
-            downloadUrl: config.getDownloadUrl(),
+        uni.$server = {
             commonTimeout: config.getTimeout(),
+            getCurDownloadUrl: config.getCurDownloadUrl,
+            getCurBaseUrl: config.getCurBaseUrl,
+            updateCurBaseUrl: config.updateCurBaseUrl,
+            getCurToken: config.getCurToken,
+            updateCurToken: config.updateCurToken,
+            getServerWhiteList: config.getServerWhiteList,
+            updateServerWhiteList: config.updateServerWhiteList,
+            checkWhiteListContain: config.checkWhiteListContain,
         };
         uni.$re = {
             unipluginLog: reApi.unipluginLog,
@@ -45,7 +40,5 @@ export default {
         uni.scan_code = uniApi.scan_code;
         uni.show_loading = uniApi.show_loading;
         uni.hide_loading = uniApi.hide_loading;
-        uni.update_serverUrl = config.updateServerUrl;
-        uni.get_serverUrl = config.getServerUrl;
     }
 }
