@@ -1,44 +1,27 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-07-10 11:20:17
+ * @LastEditTime: 2025-07-17 18:36:15
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
         <view class="sup-main-page">
-            <scroll-view
-                class="contain-scroll-view"
-                scroll-y
-                :show-scrollbar="false"
-                :scroll-top="sw_contain_scrollTop"
+            <scroll-view class="contain-scroll-view" scroll-y :show-scrollbar="false" :scroll-top="sw_contain_scrollTop"
                 @scroll="listen_contain_scroll">
-                <banner-comp
-                    :style="`height: ${TopBar_fixedSpace}px`"
-                    :banner_re_callback="banner_re_callback"
+                <banner-comp :style="`height: ${TopBar_fixedSpace}px`" :banner_re_callback="banner_re_callback"
                     :banner_re_longpress_callback="banner_re_longpress_callback"></banner-comp>
                 <view class="content">
-                    <top-bar
-                        :topbar_type="0"
-                        :topbar_tab_index="tb_tab_index"
+                    <top-bar :topbar_type="0" :topbar_tab_index="tb_tab_index"
                         :topbar_houerArea_callback="topbar_houerArea_callback"
-                        :topbar_scan_callback="topbar_scan_callback"
-                        :topbar_search_callback="topbar_search_callback"
+                        :topbar_scan_callback="topbar_scan_callback" :topbar_search_callback="topbar_search_callback"
                         :topbar_tab_callback="topbar_tab_callback"></top-bar>
-                    <top-bar
-                        v-if="tb_isFixed"
-                        :topbar_type="1"
-                        :topbar_isFixed="tb_isFixed"
-                        :topbar_tab_index="tb_tab_index"
-                        :topbar_houerArea_callback="topbar_houerArea_callback"
-                        :topbar_scan_callback="topbar_scan_callback"
-                        :topbar_search_callback="topbar_search_callback"
+                    <top-bar v-if="tb_isFixed" :topbar_type="1" :topbar_isFixed="tb_isFixed"
+                        :topbar_tab_index="tb_tab_index" :topbar_houerArea_callback="topbar_houerArea_callback"
+                        :topbar_scan_callback="topbar_scan_callback" :topbar_search_callback="topbar_search_callback"
                         :topbar_tab_callback="topbar_tab_callback"></top-bar>
                     <view class="grid-container" :style="style_grid_computed" v-if="list_show.length > 0">
                         <view class="grid-item" v-for="(item, index) in list_show" :key="index">
-                            <card
-                                :card_type="tb_tab_index"
-                                :card_width="grid_columnWidth"
-                                :card_proj="item"
+                            <card :card_type="tb_tab_index" :card_width="grid_columnWidth" :card_proj="item"
                                 :card_callback="card_callback"
                                 :card_title_longpress_callback="card_title_longpress_callback"
                                 :card_img_longpress_callback="card_img_longpress_callback"
@@ -53,15 +36,13 @@
             </scroll-view>
         </view>
     </base-view>
-    <url-input-dialog
-        ref="ref_urlInput_dialog"
-        :dialog_projName="dialog_projName"
-        :dialog_shareUrl="dialog_shareUrl"
-        :dialog_revise="dialog_revise"
-        :dialog_shareUrl_disabled="dialog_shareUrl_disabled"
+    <url-input-dialog ref="ref_urlInput_dialog" :dialog_projName="dialog_projName" :dialog_shareUrl="dialog_shareUrl"
+        :dialog_revise="dialog_revise" :dialog_shareUrl_disabled="dialog_shareUrl_disabled"
         :dialog_UrlInputCallBack="dialog_UrlInputCallBack"></url-input-dialog>
-    <custom-input-dialog ref="ref_customInput_dialog" :dialog_CustomInputCallBack="showResourceAddressRes"></custom-input-dialog>
-    <sample-input-dialog ref="ref_sampleInput_dialog" :dialog_SampleInputCallBack="dialog_SampleInputCallBack"></sample-input-dialog>
+    <custom-input-dialog ref="ref_customInput_dialog"
+        :dialog_CustomInputCallBack="showResourceAddressRes"></custom-input-dialog>
+    <sample-input-dialog ref="ref_sampleInput_dialog"
+        :dialog_SampleInputCallBack="dialog_SampleInputCallBack"></sample-input-dialog>
 </template>
 
 // MOD-- JavaScript
@@ -305,7 +286,7 @@ const topbar_scan_callback = () => {
                     uni.showToast({ title: '无效二维码', icon: 'none' });
                 });
         })
-        .catch((err: any) => {});
+        .catch((err: any) => { });
 };
 
 // MARK Topbar 搜索
@@ -885,6 +866,7 @@ const handleTerrainLayerLev = (dataSetList: any, dataSetTerrain: any) => {
 
 // MARK Service 处理数据集--数据集标识横杠
 const handleDataSetId = (dataSetList: any) => {
+    return dataSetList;// 不处理横杠了，不然业务太多使用横杠的接口，去除会导致数据不对
     dataSetList.forEach((dataSet: any) => {
         if (dataSet.dataSetId && dataSet.dataSetId.length) {
             dataSet.dataSetId = dataSet.dataSetId.replace(/-/g, ''); //不能使用replaceAll,app端异常
@@ -906,7 +888,7 @@ const handleEntityData = async (sceneTree: any, entityEditTranList: any = []) =>
             }
         });
         entity_server_list.forEach((item: any) => {
-            let { hostFileId, instanceIndex, location } = item.componentInfo;
+            let { hostFileId, instanceIndex, location, treeNodeId } = item.componentInfo;
             let scale = JSON.parse(location.scale);
             let rotate = JSON.parse(location.rotate);
             let offset = JSON.parse(location.translation);
@@ -917,13 +899,15 @@ const handleEntityData = async (sceneTree: any, entityEditTranList: any = []) =>
                 offset = JSON.parse(editTran_obj.translation);
             }
             let entity_obj: any = {};
-            entity_obj.dataSetId = item.parentId.replace(/-/g, '');
+            // entity_obj.dataSetId = item.parentId.replace(/-/g, '');
+            entity_obj.dataSetId = item.parentId;// 不处理横杠了，不然业务太多使用横杠的接口，去除会导致数据不对
             entity_obj.entityType = String(hostFileId);
             entity_obj.elemId = Number(`${hostFileId}${instanceIndex}`);
             entity_obj.scale = scale;
             entity_obj.rotate = rotate;
             entity_obj.offset = offset;
             entity_obj.dataSetCRS = location.DataSetCRS;
+            entity_obj.entityId = treeNodeId;// 单构件id保存，后期服务接口需要调用
             entityList.push(entity_obj);
         });
     }
