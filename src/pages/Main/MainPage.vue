@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-07-17 18:36:15
+ * @LastEditTime: 2025-07-18 11:56:25
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -331,6 +331,7 @@ const card_callback = (e: Share) => {
             dataSetList: dataSetList,
             collect: e.collect,
             shareType: e.shareType,
+            sceneId: e.id,
             camDefaultDataSetId: e.camDefaultDataSetId,
             shareViewMode: e.shareViewMode,
             shareDataType: e.shareDataType,
@@ -482,6 +483,7 @@ const showSceneRes = async (params: any) => {
                 worldCRS: res_1.coordinates,
                 dataSetList: dataSetList,
                 shareType: 2,
+                sceneId: params.id,
                 camDefaultDataSetId: cam_dataSetId,
                 shareViewMode: params.shareViewMode,
                 defaultCamLoc: shareData.defaultCamLoc,

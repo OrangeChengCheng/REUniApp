@@ -180,6 +180,7 @@ const card_callback = (e: Share) => {
             dataSetList: dataSetList,
             collect: e.collect,
             shareType: e.shareType,
+            sceneId: e.id,
             camDefaultDataSetId: e.camDefaultDataSetId,
             shareViewMode: e.shareViewMode,
             shareDataType: e.shareDataType,
