@@ -1,27 +1,44 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-07-18 11:56:25
+ * @LastEditTime: 2025-07-30 14:56:15
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
         <view class="sup-main-page">
-            <scroll-view class="contain-scroll-view" scroll-y :show-scrollbar="false" :scroll-top="sw_contain_scrollTop"
+            <scroll-view
+                class="contain-scroll-view"
+                scroll-y
+                :show-scrollbar="false"
+                :scroll-top="sw_contain_scrollTop"
                 @scroll="listen_contain_scroll">
-                <banner-comp :style="`height: ${TopBar_fixedSpace}px`" :banner_re_callback="banner_re_callback"
+                <banner-comp
+                    :style="`height: ${TopBar_fixedSpace}px`"
+                    :banner_re_callback="banner_re_callback"
                     :banner_re_longpress_callback="banner_re_longpress_callback"></banner-comp>
                 <view class="content">
-                    <top-bar :topbar_type="0" :topbar_tab_index="tb_tab_index"
+                    <top-bar
+                        :topbar_type="0"
+                        :topbar_tab_index="tb_tab_index"
                         :topbar_houerArea_callback="topbar_houerArea_callback"
-                        :topbar_scan_callback="topbar_scan_callback" :topbar_search_callback="topbar_search_callback"
+                        :topbar_scan_callback="topbar_scan_callback"
+                        :topbar_search_callback="topbar_search_callback"
                         :topbar_tab_callback="topbar_tab_callback"></top-bar>
-                    <top-bar v-if="tb_isFixed" :topbar_type="1" :topbar_isFixed="tb_isFixed"
-                        :topbar_tab_index="tb_tab_index" :topbar_houerArea_callback="topbar_houerArea_callback"
-                        :topbar_scan_callback="topbar_scan_callback" :topbar_search_callback="topbar_search_callback"
+                    <top-bar
+                        v-if="tb_isFixed"
+                        :topbar_type="1"
+                        :topbar_isFixed="tb_isFixed"
+                        :topbar_tab_index="tb_tab_index"
+                        :topbar_houerArea_callback="topbar_houerArea_callback"
+                        :topbar_scan_callback="topbar_scan_callback"
+                        :topbar_search_callback="topbar_search_callback"
                         :topbar_tab_callback="topbar_tab_callback"></top-bar>
                     <view class="grid-container" :style="style_grid_computed" v-if="list_show.length > 0">
                         <view class="grid-item" v-for="(item, index) in list_show" :key="index">
-                            <card :card_type="tb_tab_index" :card_width="grid_columnWidth" :card_proj="item"
+                            <card
+                                :card_type="tb_tab_index"
+                                :card_width="grid_columnWidth"
+                                :card_proj="item"
                                 :card_callback="card_callback"
                                 :card_title_longpress_callback="card_title_longpress_callback"
                                 :card_img_longpress_callback="card_img_longpress_callback"
@@ -36,13 +53,15 @@
             </scroll-view>
         </view>
     </base-view>
-    <url-input-dialog ref="ref_urlInput_dialog" :dialog_projName="dialog_projName" :dialog_shareUrl="dialog_shareUrl"
-        :dialog_revise="dialog_revise" :dialog_shareUrl_disabled="dialog_shareUrl_disabled"
+    <url-input-dialog
+        ref="ref_urlInput_dialog"
+        :dialog_projName="dialog_projName"
+        :dialog_shareUrl="dialog_shareUrl"
+        :dialog_revise="dialog_revise"
+        :dialog_shareUrl_disabled="dialog_shareUrl_disabled"
         :dialog_UrlInputCallBack="dialog_UrlInputCallBack"></url-input-dialog>
-    <custom-input-dialog ref="ref_customInput_dialog"
-        :dialog_CustomInputCallBack="showResourceAddressRes"></custom-input-dialog>
-    <sample-input-dialog ref="ref_sampleInput_dialog"
-        :dialog_SampleInputCallBack="dialog_SampleInputCallBack"></sample-input-dialog>
+    <custom-input-dialog ref="ref_customInput_dialog" :dialog_CustomInputCallBack="showResourceAddressRes"></custom-input-dialog>
+    <sample-input-dialog ref="ref_sampleInput_dialog" :dialog_SampleInputCallBack="dialog_SampleInputCallBack"></sample-input-dialog>
 </template>
 
 // MOD-- JavaScript
@@ -55,7 +74,14 @@ import Card from '@/components/Card/Card.vue';
 import UrlInputDialog from '@/components/Dialog/UrlInputDialog.vue';
 import CustomInputDialog from '@/components/Dialog/CustomInputDialog.vue';
 import SampleInputDialog from '@/components/Dialog/SampleInputDialog.vue';
-import { getSceneById, getSingleSceneTreeById, getProjectModel, getCadDatasetFiles, getProjectTree } from '@/service/interface';
+import {
+    getSceneById,
+    getSingleSceneTreeById,
+    getProjectModel,
+    getCadDatasetFiles,
+    getProjectTree,
+    getSharedExtrudeTexturesList,
+} from '@/service/interface';
 import { newShare, type Share } from '@/types/class';
 import { useCardStore } from '@/stores/card';
 import { useDeviceStore } from '@/stores/device';
@@ -215,6 +241,7 @@ const uniapp_getClipboard = () => {
                 })
                 .catch((errMsg) => {
                     // uni.hide_loading();
+                    uni.showToast({ title: errMsg, icon: 'none' });
                 });
         },
         fail: (err) => {
@@ -229,6 +256,13 @@ const tool_handleUrl = (e: any): Promise<any> => {
     return new Promise<any>((resolve, reject) => {
         let urlData = uni.$tool.url_handle(e);
         if (urlData) {
+            //处理白名单配置
+            const whiteList = uni.$server.getServerWhiteList();
+            const hasWhiteList = whiteList.some((item: any) => e.includes(item));
+            if (!hasWhiteList) {
+                reject('数据不在白名单范围');
+                return;
+            }
             uni.$server.updateCurToken(urlData.token);
             uni.$server.updateCurBaseUrl(urlData.baseUrl);
             // 获取项目名称
@@ -240,8 +274,6 @@ const tool_handleUrl = (e: any): Promise<any> => {
                 .catch((err) => {
                     resolve(urlData);
                 });
-        } else {
-            reject(null);
         }
     });
 };
@@ -281,12 +313,12 @@ const topbar_scan_callback = () => {
                     dialog_shareUrl_disabled.value = true;
                     ref_urlInput_dialog.value?.show_dialog();
                 })
-                .catch((error) => {
+                .catch((errMsg) => {
                     uni.hide_loading();
-                    uni.showToast({ title: '无效二维码', icon: 'none' });
+                    uni.showToast({ title: errMsg, icon: 'none' });
                 });
         })
-        .catch((err: any) => { });
+        .catch((err: any) => {});
 };
 
 // MARK Topbar 搜索
@@ -312,6 +344,7 @@ const card_callback = (e: Share) => {
     let entityList = e.entityList ? JSON.parse(JSON.stringify(e.entityList)) : [];
     let waterList = e.waterList ? JSON.parse(JSON.stringify(e.waterList)) : [];
     let extrudeList = e.extrudeList ? JSON.parse(JSON.stringify(e.extrudeList)) : [];
+    let extrudeTexList = e.extrudeTexList ? JSON.parse(JSON.stringify(e.extrudeTexList)) : [];
 
     // 默认相机信息
     let defaultCamLoc = null;
@@ -339,6 +372,7 @@ const card_callback = (e: Share) => {
             entityList: entityList,
             waterList: waterList,
             extrudeList: extrudeList,
+            extrudeTexList: extrudeTexList,
         })
         .then((result) => {
             console.log(result);
@@ -437,12 +471,14 @@ const showSceneRes = async (params: any) => {
         if (res_1.componentTreeId && res_1.componentTreeId.length > 0) {
             dataSetIdList.push(res_1.componentTreeId); //单构件需要单独添加，不在模型数据中获取
         }
+        // 获取挤出纹理信息
+        const extrudeTexList = await getExtrudeTexList(res_2);
         // 并行处理各种数据
         const [terrainList, entityList, waterList, extrudeList] = await Promise.all([
             getTerrainDataSetList(res_2, 2),
             handleEntityData(res_2, res_1.componentPosition),
             hanldleWaterData(res_2),
-            hanldleExtrudeData(res_2),
+            hanldleExtrudeData(res_2, extrudeTexList),
         ]);
 
         // 获取数据集信息
@@ -468,6 +504,7 @@ const showSceneRes = async (params: any) => {
             entityList: entityList,
             waterList: waterList,
             extrudeList: extrudeList,
+            extrudeTexList: extrudeTexList,
         });
         card_store.addCard(shareData);
 
@@ -490,6 +527,7 @@ const showSceneRes = async (params: any) => {
                 entityList: entityList,
                 waterList: waterList,
                 extrudeList: extrudeList,
+                extrudeTexList: extrudeTexList,
             })
             .then((result) => {
                 console.log(result);
@@ -771,6 +809,40 @@ const getCadDataSetList = (params: any): Promise<any> => {
     });
 };
 
+// MARK Service 获取开挖纹理列表
+const getExtrudeTexList = (sceneTree: any): Promise<any> => {
+    return new Promise<any>((resolve, reject) => {
+        const allLeafNodes = getAllNodeByLevel(sceneTree, 2);
+        const allExtrudes = allLeafNodes.filter((item) => item.dataSetType == state_store.appSupportExtrudeType);
+        if (!allExtrudes.length) {
+            resolve([]);
+            return;
+        }
+
+        getSharedExtrudeTexturesList().then((res) => {
+            const intrinsicTextures = res?.data.intrinsicTextures;
+            let textureList: any[] = [];
+            if (intrinsicTextures && intrinsicTextures.length) {
+                textureList = intrinsicTextures.map((item: any) => {
+                    const tokenId = uni.$server.getCurToken();
+                    const picPath = `${uni.$server.getCurDownloadUrl()}/${item.fileDataId}?token=${tokenId}`;
+                    const size = [5.0, 5.0];
+                    return {
+                        picPath: picPath,
+                        picSize: size,
+                        textureGuid: item.TextureImageId,
+                    };
+                });
+            }
+            if (textureList.length > 0) {
+                resolve(textureList);
+            } else {
+                reject([]);
+            }
+        });
+    });
+};
+
 // MARK Service 处理数据集偏移信息
 const handleDataSetTrans = (dataSetList: any, dataSetTrans: any): any => {
     dataSetList.forEach((dataSet: any) => {
@@ -868,7 +940,7 @@ const handleTerrainLayerLev = (dataSetList: any, dataSetTerrain: any) => {
 
 // MARK Service 处理数据集--数据集标识横杠
 const handleDataSetId = (dataSetList: any) => {
-    return dataSetList;// 不处理横杠了，不然业务太多使用横杠的接口，去除会导致数据不对
+    return dataSetList; // 不处理横杠了，不然业务太多使用横杠的接口，去除会导致数据不对
     dataSetList.forEach((dataSet: any) => {
         if (dataSet.dataSetId && dataSet.dataSetId.length) {
             dataSet.dataSetId = dataSet.dataSetId.replace(/-/g, ''); //不能使用replaceAll,app端异常
@@ -902,14 +974,14 @@ const handleEntityData = async (sceneTree: any, entityEditTranList: any = []) =>
             }
             let entity_obj: any = {};
             // entity_obj.dataSetId = item.parentId.replace(/-/g, '');
-            entity_obj.dataSetId = item.parentId;// 不处理横杠了，不然业务太多使用横杠的接口，去除会导致数据不对
+            entity_obj.dataSetId = item.parentId; // 不处理横杠了，不然业务太多使用横杠的接口，去除会导致数据不对
             entity_obj.entityType = String(hostFileId);
             entity_obj.elemId = Number(`${hostFileId}${instanceIndex}`);
             entity_obj.scale = scale;
             entity_obj.rotate = rotate;
             entity_obj.offset = offset;
             entity_obj.dataSetCRS = location.DataSetCRS;
-            entity_obj.entityId = treeNodeId;// 单构件id保存，后期服务接口需要调用
+            entity_obj.entityId = treeNodeId; // 单构件id保存，后期服务接口需要调用
             entityList.push(entity_obj);
         });
     }
@@ -949,8 +1021,7 @@ const hanldleWaterData = async (sceneTree: any) => {
 };
 
 // MARK Service 处理数据集--挤出信息
-const hanldleExtrudeData = async (sceneTree: any) => {
-    const extrudeTexList = state_store.extrudeTexList;
+const hanldleExtrudeData = async (sceneTree: any, extrudeTexList: any) => {
     const allLeafNodes = getAllNodeByLevel(sceneTree, 2);
     const allExtrudes = allLeafNodes.filter((item) => item.dataSetType == state_store.appSupportExtrudeType);
 

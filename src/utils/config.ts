@@ -1,11 +1,12 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-04-19 12:22:21
- * @LastEditTime: 2025-07-10 11:11:51
+ * @LastEditTime: 2025-07-30 14:33:53
  */
 
 
-const RE_ServerURl = "https://engine3.bjblackhole.com";
+const RE_ServerURl_HD = "https://engine3.bjblackhole.com";
+const RE_ServerURl_XH = "http://realbim.bjblackhole.cn:16060/";
 const RE_DownloadUrl = "/DownloadService/blackHole3D/files/Download";
 
 interface ApiMethods {
@@ -33,7 +34,7 @@ const api: ApiMethods = {
     getCurBaseUrl: (): string => {
         let baseUrl: string = uni.getStorageSync('RE_Server_BaseUrl') || "";
         if (!baseUrl || baseUrl.length <= 0) {
-            baseUrl = RE_ServerURl;
+            baseUrl = RE_ServerURl_HD;
         }
         return baseUrl;
     },
@@ -56,16 +57,19 @@ const api: ApiMethods = {
 
     // MARK config 获取服务白名单
     getServerWhiteList: (): any => {
-        let whiteList: any = uni.getStorageSync('RE_Server_WhiteList');
+        let whiteList: any[] = JSON.parse(uni.getStorageSync('RE_Server_WhiteList') || '[]');
         if (!whiteList || whiteList.length <= 0) {
-            whiteList.push(RE_ServerURl);
+            whiteList.push(RE_ServerURl_HD);
+            whiteList.push(RE_ServerURl_XH);
+            api.updateServerWhiteList(whiteList);
         }
         return whiteList;
     },
 
     // MARK config 更新服务白名单
     updateServerWhiteList: (list: any): void => {
-        uni.setStorageSync('RE_Server_WhiteList', list);
+        const list_json = JSON.stringify(list);
+        uni.setStorageSync('RE_Server_WhiteList', list_json);
     },
 
     // MARK config 检查是否是白名单范围

@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-07-10 11:07:46
+ * @LastEditTime: 2025-07-29 18:39:52
 -->
 <template>
     <base-view :nav_bar="true" :nav_bar_title="`搜索`" :nav_bar_color="`--color-main-bg`">
@@ -169,6 +169,8 @@ const card_callback = (e: Share) => {
     let entityList = e.entityList ? JSON.parse(JSON.stringify(e.entityList)) : [];
     let waterList = e.waterList ? JSON.parse(JSON.stringify(e.waterList)) : [];
     let extrudeList = e.extrudeList ? JSON.parse(JSON.stringify(e.extrudeList)) : [];
+    let extrudeTexList = e.extrudeTexList ? JSON.parse(JSON.stringify(e.extrudeTexList)) : [];
+
     uni.$re
         .realEngineRender({
             name: 'uni-app',
@@ -188,6 +190,7 @@ const card_callback = (e: Share) => {
             entityList: entityList,
             waterList: waterList,
             extrudeList: extrudeList,
+            extrudeTexList: extrudeTexList,
         })
         .then((result) => {
             console.log(result);

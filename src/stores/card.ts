@@ -1,14 +1,20 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-13 15:14:00
- * @LastEditTime: 2025-07-16 11:09:11
+ * @LastEditTime: 2025-07-29 18:27:22
  */
 import { defineStore } from 'pinia'
 import { type Share } from '@/types/class';
 
 
+interface CardMold {
+    cardList: Array<Share>,
+    sample_cardList: Array<any>,
+}
+
+
 export const useCardStore = defineStore('card', {
-    state: (): { cardList: Share[], sample_cardList: Share[] } => ({
+    state: (): CardMold => ({
         cardList: JSON.parse(uni.getStorageSync('RE_cardList') || '[]') || [],
         sample_cardList: JSON.parse(uni.getStorageSync('RE_sample_cardList') || '[]') || [],
     }),

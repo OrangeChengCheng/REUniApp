@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-23 16:54:42
- * @LastEditTime: 2025-07-10 10:08:55
+ * @LastEditTime: 2025-07-29 18:26:23
  */
 
 
@@ -23,6 +23,7 @@ export interface Share {
     entityList: any; // 单构件列表 
     waterList: any; // 水面列表 
     extrudeList: any; // 挤出列表 
+    extrudeTexList: any; // 挤出纹理列表 
 }
 
 export const newShare = (overrides?: Partial<Share>): Share => {
@@ -44,6 +45,7 @@ export const newShare = (overrides?: Partial<Share>): Share => {
         entityList: [],
         waterList: [],
         extrudeList: [],
+        extrudeTexList: [],
         ...overrides
     };
 };
