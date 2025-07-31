@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-14 10:05:14
- * @LastEditTime: 2025-07-10 11:04:53
+ * @LastEditTime: 2025-07-30 17:15:44
  */
 import config from './config'
 import reApi from './reApi'
@@ -20,11 +20,13 @@ export default {
             getCurDownloadUrl: config.getCurDownloadUrl,
             getCurBaseUrl: config.getCurBaseUrl,
             updateCurBaseUrl: config.updateCurBaseUrl,
+            getCurSource: config.getCurSource,
+            getCurSourcePath: config.getCurSourcePath,
+            updateCurSource: config.updateCurSource,
             getCurToken: config.getCurToken,
             updateCurToken: config.updateCurToken,
             getServerWhiteList: config.getServerWhiteList,
             updateServerWhiteList: config.updateServerWhiteList,
-            checkWhiteListContain: config.checkWhiteListContain,
         };
         uni.$re = {
             unipluginLog: reApi.unipluginLog,

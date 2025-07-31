@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2025-05-21 16:18:51
- * @LastEditTime: 2025-07-30 14:37:20
+ * @LastEditTime: 2025-07-30 15:12:29
 -->
 <template>
     <base-view :nav_bar="true" :nav_bar_title="title" :nav_bar_color="`--color-white`">
@@ -24,7 +24,7 @@
                             transform: `translateX(${swipe_offset[index]}px)`,
                         }"
                         @click.stop="click_card(item)"
-                        >{{ item }}
+                        >{{ item.url }}
                     </view>
                     <view
                         class="delete-area"
@@ -58,7 +58,7 @@ const ref_serverConfig_dialog = ref<InstanceType<typeof ServerConfigInputDialog>
 const title = ref('');
 
 const editConfigUrl = ref('');
-const serverWhiteList = ref<any>([]);
+const serverWhiteList = ref<any[]>([]);
 
 const swipe_offset = reactive<number[]>(new Array(serverWhiteList.value.length).fill(0)); // 滑动相关状态：记录每个 card 的位移
 const startX = ref(0); // 记录触摸起始位置
@@ -76,7 +76,7 @@ onLoad((options) => {
 
 // MARK Click 添加服务配置白名单地址
 const click_card = (e: any) => {
-    editConfigUrl.value = e;
+    editConfigUrl.value = e.url;
     ref_serverConfig_dialog.value?.show_dialog();
 };
 
@@ -90,7 +90,12 @@ const click_addServerConfig = (e: any) => {
 const dialog_confirmCallBack = (e: any) => {
     editConfigUrl.value = '';
     if (e.length > 0) {
-        serverWhiteList.value.push(e);
+        const find: any = serverWhiteList.value.find((item: any) => item.url === e);
+        if (find) {
+            uni.showToast({ title: '配置已存在', icon: 'none' });
+            return;
+        }
+        serverWhiteList.value.push({ url: e, type: 3 });
         uni.$server.updateServerWhiteList(serverWhiteList.value);
     }
 };

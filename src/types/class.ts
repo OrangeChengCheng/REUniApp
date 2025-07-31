@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-23 16:54:42
- * @LastEditTime: 2025-07-29 18:26:23
+ * @LastEditTime: 2025-07-30 17:57:58
  */
 
 
@@ -9,9 +9,11 @@ export interface Share {
     url: string;
     token: string;
     baseUrl: string;
+    source: number;//判断分享链接来源 0: 未知 1：黑洞 2：星河
     projName: string;
     id: string;
     lastTime: Date;
+    overdueTime: Date;
     dataSetList: any;
     worldCRS: string;
     collect: boolean;
@@ -32,8 +34,10 @@ export const newShare = (overrides?: Partial<Share>): Share => {
         token: "",
         baseUrl: "",
         projName: "",
+        source: 0,
         id: "",
         lastTime: new Date(),
+        overdueTime: new Date(),
         dataSetList: [],
         worldCRS: "",
         collect: false,

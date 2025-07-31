@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-23 14:42:45
- * @LastEditTime: 2025-07-30 14:48:00
+ * @LastEditTime: 2025-07-30 17:30:47
  */
 
 import { getSceneById, getProjectTree } from '@/service/interface';
@@ -35,6 +35,15 @@ const api: ApiMethods = {
                 baseUrl = url;
             }
         }
+
+        // 判断平台来源
+        let source: number = 0;// 判断分享链接来源 0: 未知 1：黑洞 2：星河
+        if (url.includes('StarRiver')) {
+            source = 2;
+        } else if (url.includes('BlackHole')) {
+            source = 1;
+        }
+        if (!source) return null;
 
         // 使用字符串截取方式，无法使用URL的方式，uniapp在真机上无法使用URL方式
         let shareType: number = 0; // 判断分享链接类型 0：无 1：模型 2：场景
@@ -77,7 +86,7 @@ const api: ApiMethods = {
             _dataType = dataTypeEndIndex !== -1 ? url.substring(dataTypeIndex + 'dataType='.length, dataTypeEndIndex) : url.substring(dataTypeIndex + 'dataType='.length);
         }
 
-        let params = { url: url, baseUrl: baseUrl, shareType: shareType, projName: "", id: _id, token: _token, shareViewMode: _viewMode, shareDataType: _dataType };
+        let params = { url: url, baseUrl: baseUrl, source: source, shareType: shareType, projName: "", id: _id, token: _token, shareViewMode: _viewMode, shareDataType: _dataType };
         uni.$re.unipluginLog('params = ' + JSON.stringify(params));
         return params;
     },

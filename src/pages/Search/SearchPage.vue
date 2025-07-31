@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-07-29 18:39:52
+ * @LastEditTime: 2025-07-30 16:57:00
 -->
 <template>
     <base-view :nav_bar="true" :nav_bar_title="`搜索`" :nav_bar_color="`--color-main-bg`">
@@ -22,7 +22,8 @@
                                 :card_callback="card_callback"
                                 :card_title_longpress_callback="card_title_longpress_callback"
                                 :card_img_longpress_callback="card_img_longpress_callback"
-                                :card_collect_callback="card_collect_callback"></card>
+                                :card_collect_callback="card_collect_callback"
+                                :card_delete_callback="card_delete_callback"></card>
                         </view>
                     </view>
                     <view class="empty-area" v-else>
@@ -238,6 +239,25 @@ const card_img_longpress_callback = (e: Share) => {
 const card_collect_callback = (e: Share) => {
     card_store.addCollect(e, !e.collect);
     update_cardList();
+};
+
+// MARK Click  删除卡片
+const card_delete_callback = (e: Share) => {
+    if (tb_tab_index.value == 2) {
+        return; //模板不能删除
+    }
+    uni.showModal({
+        title: '提示',
+        content: '是否删除卡片',
+        success: function (res) {
+            if (res.confirm) {
+                card_store.removeCard(e.id);
+                if (tb_tab_index.value == 1) {
+                    update_cardList();
+                }
+            }
+        },
+    });
 };
 
 // MARK Dialog  查看模型/确认修改

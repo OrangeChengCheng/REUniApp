@@ -9,6 +9,12 @@ import { requestPost, requestGet } from '@/service/request';
 
 
 
+// MOD-- 分享 相关
+// 获取分享信息
+export function getSharedInfo() {
+    return requestPost(`/share/v3/getSharedInfo`);
+}
+
 // MOD-- 场景 相关
 // 获取场景信息
 export function getSceneById(sceneId: string) {

@@ -23,11 +23,13 @@ declare global {
             getCurDownloadUrl(): string;
             getCurBaseUrl(): string;
             updateCurBaseUrl(url: string): void;
+            getCurSource(): number;
+            getCurSourcePath(): string;
+            updateCurSource(source: number): void;
             getCurToken(): string;
             updateCurToken(token: string): void;
             getServerWhiteList(): any;
             updateServerWhiteList(list: any): void;
-            checkWhiteListContain(url: string): boolean;
         };
         $tool: {
             url_handle(utl: string): any;

@@ -14,7 +14,7 @@ export function requestPost(url: string, data?: object): Promise<any> {
         if (!checkToken()) { reject(new Error); return; }
         uni.request({
             // url: "http://192.168.31.6:9202/api/developercenter" + url,
-            url: `${uni.$server.getCurBaseUrl()}/blackHole3D/project${url}`,
+            url: `${uni.$server.getCurBaseUrl()}/${uni.$server.getCurSourcePath()}/project${url}`,
             data: data || {},
             method: 'POST',
             timeout: uni.$server.commonTimeout,
@@ -59,7 +59,7 @@ export function requestGet(url: string, data?: object): Promise<any> {
     return new Promise<any>((resolve, reject) => {
         if (!checkToken()) { reject(new Error); return; }
         uni.request({
-            url: `${uni.$server.getCurBaseUrl()}/blackHole3D/project${url}`,
+            url: `${uni.$server.getCurBaseUrl()}/${uni.$server.getCurSourcePath()}/project${url}`,
             data: data || {},
             method: 'GET',
             timeout: uni.$server.commonTimeout,

@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-13 15:14:00
- * @LastEditTime: 2025-07-29 18:27:22
+ * @LastEditTime: 2025-07-30 18:07:38
  */
 import { defineStore } from 'pinia'
 import { type Share } from '@/types/class';
@@ -40,9 +40,13 @@ export const useCardStore = defineStore('card', {
                 find.shareType = shareData.shareType;
                 find.shareViewMode = shareData.shareViewMode;
                 find.defaultCamLoc = shareData.defaultCamLoc;
+                find.overdueTime = shareData.overdueTime;
                 find.url = shareData.url;
                 find.token = shareData.token;
+                find.baseUrl = shareData.baseUrl;
+                find.source = shareData.source;
                 find.projName = shareData.projName;
+                find.id = shareData.id;
                 this.saveToLocalStorage();
             }
         },

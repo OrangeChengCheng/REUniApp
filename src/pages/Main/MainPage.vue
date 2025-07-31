@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-07-30 14:56:15
+ * @LastEditTime: 2025-07-30 18:15:36
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -42,7 +42,8 @@
                                 :card_callback="card_callback"
                                 :card_title_longpress_callback="card_title_longpress_callback"
                                 :card_img_longpress_callback="card_img_longpress_callback"
-                                :card_collect_callback="card_collect_callback"></card>
+                                :card_collect_callback="card_collect_callback"
+                                :card_delete_callback="card_delete_callback"></card>
                         </view>
                     </view>
                     <view class="empty-area" v-else>
@@ -75,6 +76,7 @@ import UrlInputDialog from '@/components/Dialog/UrlInputDialog.vue';
 import CustomInputDialog from '@/components/Dialog/CustomInputDialog.vue';
 import SampleInputDialog from '@/components/Dialog/SampleInputDialog.vue';
 import {
+    getSharedInfo,
     getSceneById,
     getSingleSceneTreeById,
     getProjectModel,
@@ -258,13 +260,14 @@ const tool_handleUrl = (e: any): Promise<any> => {
         if (urlData) {
             //处理白名单配置
             const whiteList = uni.$server.getServerWhiteList();
-            const hasWhiteList = whiteList.some((item: any) => e.includes(item));
+            const hasWhiteList = whiteList.some((item: any) => e.includes(item.url));
             if (!hasWhiteList) {
                 reject('数据不在白名单范围');
                 return;
             }
             uni.$server.updateCurToken(urlData.token);
             uni.$server.updateCurBaseUrl(urlData.baseUrl);
+            uni.$server.updateCurSource(urlData.source);
             // 获取项目名称
             getProjName(urlData)
                 .then((res) => {
@@ -335,9 +338,14 @@ const topbar_search_callback = () => {
 };
 
 // MARK Click  卡片点击
-const card_callback = (e: Share) => {
+const card_callback = async (e: Share) => {
     console.log('卡片点击', JSON.stringify(e));
     uni.$re.unipluginLog('card_callback: ' + JSON.stringify(e.dataSetList));
+
+    uni.$server.updateCurToken(e.token);
+    uni.$server.updateCurBaseUrl(e.baseUrl);
+    uni.$server.updateCurSource(e.source);
+    const shareInfo = await getShareInfo();
 
     // 不知道什么原因导致ts的数组到安卓中变成JSONObject导致解析崩溃，这样操作可以重置属性，避免ts的属性带入
     let dataSetList = e.dataSetList ? JSON.parse(JSON.stringify(e.dataSetList)) : [];
@@ -358,6 +366,7 @@ const card_callback = (e: Share) => {
             name: 'uni-app',
             token: e.token,
             baseUrl: e.baseUrl,
+            source: e.source,
             shareUrl: e.url,
             projName: e.projName,
             worldCRS: e.worldCRS,
@@ -422,6 +431,25 @@ const card_collect_callback = (e: Share) => {
     update_cardList();
 };
 
+// MARK Click  删除卡片
+const card_delete_callback = (e: Share) => {
+    if (tb_tab_index.value == 2) {
+        return; //模板不能删除
+    }
+    uni.showModal({
+        title: '提示',
+        content: '是否删除卡片',
+        success: function (res) {
+            if (res.confirm) {
+                card_store.removeCard(e.id);
+                if (tb_tab_index.value == 1) {
+                    update_cardList();
+                }
+            }
+        },
+    });
+};
+
 // MARK Topbar tab切换
 const topbar_tab_callback = (index: number) => {
     tb_tab_index.value = index;
@@ -451,6 +479,7 @@ const dialog_UrlInputCallBack = (e: any) => {
 const showShareUrlRes = (params: any) => {
     uni.$server.updateCurToken(params.token);
     uni.$server.updateCurBaseUrl(params.baseUrl);
+    uni.$server.updateCurSource(params.source);
     if (params.shareType === 2) {
         showSceneRes(params);
     } else {
@@ -493,6 +522,7 @@ const showSceneRes = async (params: any) => {
             url: params.url,
             token: params.token,
             baseUrl: params.baseUrl,
+            source: params.source,
             projName: params.projName,
             id: params.id,
             lastTime: new Date(),
@@ -507,6 +537,7 @@ const showSceneRes = async (params: any) => {
             extrudeTexList: extrudeTexList,
         });
         card_store.addCard(shareData);
+        update_cardList();
 
         uni.hide_loading();
         uni.$re
@@ -514,6 +545,7 @@ const showSceneRes = async (params: any) => {
                 name: 'uni-app',
                 token: params.token,
                 baseUrl: params.baseUrl,
+                source: params.source,
                 shareUrl: params.url,
                 projName: params.projName,
                 collect: shareData.collect,
@@ -572,6 +604,7 @@ const showModelTypeRes = (params: any) => {
                 url: params.url,
                 token: params.token,
                 baseUrl: params.baseUrl,
+                source: params.source,
                 projName: params.projName,
                 id: params.id,
                 lastTime: new Date(),
@@ -580,12 +613,14 @@ const showModelTypeRes = (params: any) => {
                 shareDataType: params.shareDataType,
             });
             card_store.addCard(shareData);
+            update_cardList();
 
             uni.$re
                 .realEngineRender({
                     name: 'uni-app',
                     token: params.token,
                     baseUrl: params.baseUrl,
+                    source: params.source,
                     shareUrl: params.url,
                     projName: params.projName,
                     dataSetList: res,
@@ -614,6 +649,7 @@ const showCadTypeRes = (params: any) => {
                 url: params.url,
                 token: params.token,
                 baseUrl: params.baseUrl,
+                source: params.source,
                 projName: params.projName,
                 id: params.id,
                 lastTime: new Date(),
@@ -622,12 +658,14 @@ const showCadTypeRes = (params: any) => {
                 shareDataType: params.shareDataType,
             });
             card_store.addCard(shareData);
+            update_cardList();
 
             uni.$re
                 .realEngineRender({
                     name: 'uni-app',
                     token: params.token,
                     baseUrl: params.baseUrl,
+                    source: params.source,
                     shareUrl: params.url,
                     projName: params.projName,
                     dataSetList: res,
@@ -664,12 +702,22 @@ const showResourceAddressRes = (e: any) => {
             name: 'uni-app',
             token: e.token,
             baseUrl: e.baseUrl,
+            source: e.source,
             dataSetList: dataSetList,
             maxInstDrawFaceNum: e.faceNum,
         })
         .then((result) => {
             uni.$re.unipluginLog(JSON.stringify(result));
         });
+};
+
+// MARK Service 获取分享信息
+const getShareInfo = (): Promise<any> => {
+    return new Promise<any>((resolve, reject) => {
+        getSharedInfo().then((res) => {
+            console.log(res);
+        });
+    });
 };
 
 // MARK Service 获取场景信息
