@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-13 18:01:53
- * @LastEditTime: 2025-07-10 10:59:46
+ * @LastEditTime: 2025-08-04 16:52:14
  */
 
 
@@ -32,6 +32,10 @@ declare global {
             updateServerWhiteList(list: any): void;
         };
         $tool: {
+            update_data(): void;
+            del_data(): void;
+            getAppVersion(): string;
+            initializeData(): void;
             url_handle(utl: string): any;
             time_compare(frontTime: Date, backTime: Date): string;
             cam_defauleDataSet(dataSetList: any): string;

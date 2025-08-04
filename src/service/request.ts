@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-14 12:21:00
- * @LastEditTime: 2025-07-10 11:26:48
+ * @LastEditTime: 2025-08-04 17:18:00
  */
 
 
@@ -22,7 +22,7 @@ export function requestPost(url: string, data?: object): Promise<any> {
                 'content-type': 'application/json',
                 'authorization': uni.$server.getCurToken(),
             },
-            success: (res) => {
+            success: (res: any) => {
                 if (res.statusCode && res.statusCode == 200) {
                     let data: any = res.data;
                     if (data.data && data.data == '{}') {
@@ -40,6 +40,9 @@ export function requestPost(url: string, data?: object): Promise<any> {
                     } else {
                         uni.showToast({ title: '未知错误!', icon: 'none' });
                     }
+                    res.url = `${uni.$server.getCurBaseUrl()}/${uni.$server.getCurSourcePath()}/project${url}`;
+                    res.authorization = uni.$server.getCurToken();
+                    res.data = data;
                     uni.$re.unipluginLog(JSON.stringify(res));
                     reject(res);
                 }
@@ -67,7 +70,7 @@ export function requestGet(url: string, data?: object): Promise<any> {
                 'content-type': 'application/json',
                 'authorization': uni.$server.getCurToken(),
             },
-            success: (res) => {
+            success: (res: any) => {
                 if (res.statusCode && res.statusCode == 200) {
                     let data: any = res.data;
                     if (data.data && data.data == '{}') {
@@ -85,6 +88,9 @@ export function requestGet(url: string, data?: object): Promise<any> {
                     } else {
                         uni.showToast({ title: '未知错误!', icon: 'none' });
                     }
+                    res.url = `${uni.$server.getCurBaseUrl()}/${uni.$server.getCurSourcePath()}/project${url}`;
+                    res.authorization = uni.$server.getCurToken();
+                    res.data = data;
                     uni.$re.unipluginLog(JSON.stringify(res));
                     reject(res);
                 }

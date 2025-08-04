@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-04-19 12:22:21
- * @LastEditTime: 2025-07-30 17:32:47
+ * @LastEditTime: 2025-08-04 16:23:23
  */
 
 
@@ -9,8 +9,9 @@ const RE_ServerURl_HD = "https://engine3.bjblackhole.com";
 const RE_ServerURl_XH = "http://realbim.bjblackhole.cn:16060";
 const RE_ServerSource_HD = "blackHole3D";
 const RE_ServerSource_XH = "starRiver3D";
-const RE_DownloadUrl_HD = "/DownloadService/blackHole3D/files/Download";
-const RE_DownloadUrl_XH = "/DownloadService/starRiver3D/files/Download";
+const RE_ServerSource = "App3D";
+const RE_DownloadUrl = "/files";
+
 
 interface ApiMethods {
     getCurDownloadUrl(): string;
@@ -31,14 +32,7 @@ const api: ApiMethods = {
     // MARK config 获取当前的服务资源地址
     getCurDownloadUrl: (): string => {
         const baseUrl = api.getCurBaseUrl();
-        const source = api.getCurSource();
-        if (source == 2) {
-            return `${baseUrl}${RE_DownloadUrl_XH}`;
-        } else if (source == 1) {
-            return `${baseUrl}${RE_DownloadUrl_HD}`;
-        } else {
-            return `${baseUrl}${RE_DownloadUrl_HD}`;
-        }
+        return `${baseUrl}${RE_DownloadUrl}`;
     },
 
 
@@ -64,14 +58,7 @@ const api: ApiMethods = {
 
     // MARK config 获取最新服务来源路由
     getCurSourcePath: (): string => {
-        const source: number = api.getCurSource();
-        if (source == 2) {
-            return RE_ServerSource_XH;
-        } else if (source == 1) {
-            return RE_ServerSource_HD;
-        } else {
-            return RE_ServerSource_HD;
-        }
+        return RE_ServerSource;
     },
 
     // MARK config 更新最新服务来源

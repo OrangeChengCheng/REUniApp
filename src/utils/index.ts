@@ -35,6 +35,10 @@ export default {
             sendMsgUniToApp: reApi.sendMsgUniToApp,
         };
         uni.$tool = {
+            update_data: tool.update_data,
+            del_data: tool.del_data,
+            getAppVersion: tool.getAppVersion,
+            initializeData: tool.initializeData,
             url_handle: tool.url_handle,
             time_compare: tool.time_compare,
             cam_defauleDataSet: tool.cam_defauleDataSet,

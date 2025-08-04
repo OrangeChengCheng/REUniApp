@@ -1,15 +1,28 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-23 14:42:45
- * @LastEditTime: 2025-07-30 17:30:47
+ * @LastEditTime: 2025-08-04 16:52:02
  */
 
-import { getSceneById, getProjectTree } from '@/service/interface';
+const RE_AppVersion = "1.0.8";
+const RE_NeedUpdate = true;
+
+let card_store: any;
+async function getCardStore() {
+    // 异步导入
+    const { useCardStore } = await import('@/stores/card');
+    card_store = useCardStore();
+}
+getCardStore();
 
 interface ApiMethods {
     url_handle(url: string): any;
     time_compare(frontTime: Date, backTime: Date): string;
     cam_defauleDataSet(dataSetList: any): string;
+    update_data(): void;
+    del_data(): void;
+    getAppVersion(): string;
+    initializeData(): void;
 }
 
 const api: ApiMethods = {
@@ -35,15 +48,6 @@ const api: ApiMethods = {
                 baseUrl = url;
             }
         }
-
-        // 判断平台来源
-        let source: number = 0;// 判断分享链接来源 0: 未知 1：黑洞 2：星河
-        if (url.includes('StarRiver')) {
-            source = 2;
-        } else if (url.includes('BlackHole')) {
-            source = 1;
-        }
-        if (!source) return null;
 
         // 使用字符串截取方式，无法使用URL的方式，uniapp在真机上无法使用URL方式
         let shareType: number = 0; // 判断分享链接类型 0：无 1：模型 2：场景
@@ -86,7 +90,7 @@ const api: ApiMethods = {
             _dataType = dataTypeEndIndex !== -1 ? url.substring(dataTypeIndex + 'dataType='.length, dataTypeEndIndex) : url.substring(dataTypeIndex + 'dataType='.length);
         }
 
-        let params = { url: url, baseUrl: baseUrl, source: source, shareType: shareType, projName: "", id: _id, token: _token, shareViewMode: _viewMode, shareDataType: _dataType };
+        let params = { url: url, baseUrl: baseUrl, shareType: shareType, projName: "", id: _id, token: _token, shareViewMode: _viewMode, shareDataType: _dataType };
         uni.$re.unipluginLog('params = ' + JSON.stringify(params));
         return params;
     },
@@ -117,61 +121,50 @@ const api: ApiMethods = {
         }
     },
 
+    // MARK tool 提示更新数据
+    update_data: (): void => {
+        if (RE_NeedUpdate) {
+            if (!uni.getStorageSync('RE_updateData')) {
+                uni.showModal({
+                    title: '更新提示',
+                    content: '版本更新后旧分享数据无法使用，请删除后重新扫码获取（取消后可以在设置中重新删除）',
+                    success: function (res) {
+                        if (res.confirm) {
+                            api.initializeData();
+                        }
+                        uni.setStorageSync('RE_updateData', true);
+                    }
+                });
+            }
+        } else {
+            uni.setStorageSync('RE_updateData', false);
+        }
+    },
+
+    // MARK tool 提示删除数据
+    del_data: (): void => {
+        uni.showModal({
+            title: '提示',
+            content: '是否清除所有的存储数据（卡片列表和配置信息）',
+            success: function (res) {
+                if (res.confirm) {
+                    api.initializeData();
+                }
+            }
+        });
+    },
+
+    // MARK config 获取AppVersion
+    getAppVersion: (): string => {
+        return RE_AppVersion;
+    },
+
+    // MARK config 初始化数据
+    initializeData: (): void => {
+        uni.$server.updateServerWhiteList([]);//清空白名单数据
+        card_store.clearCardList();//清空卡片列表
+    },
 }
 
-
-// // MARK Service 获取项目名称
-// const getProjName = (params: any): Promise<any> => {
-//     return new Promise<any>((resolve, reject) => {
-//         if (params.shareType === 2) {
-//             getSceneInfo(params.id)
-//                 .then((res) => {
-//                     resolve(res?.sceneName);
-//                 })
-//                 .catch((err) => {
-//                     reject(err);
-//                 });
-//         } else {
-//             getModelTree({ dataSetId: params.id })
-//                 .then((res) => {
-//                     let find_obj = res?.find((item: any) => item.dataSetId === params.id);
-//                     if (find_obj) {
-//                         resolve(find_obj.dataSetName);
-//                     } else {
-//                         reject('项目查询失败');
-//                     }
-//                 })
-//                 .catch((err) => {
-//                     reject(err);
-//                 });
-//         }
-//     });
-// };
-
-// // MARK Service 获取模型目录树
-// const getModelTree = (paran: any): Promise<any> => {
-//     return new Promise<any>((resolve, reject) => {
-//         getProjectTree(paran).then((res) => {
-//             if (res.data) {
-//                 resolve(res.data);
-//             } else {
-//                 reject(new Error('模型目录树获取失败！'));
-//             }
-//         });
-//     });
-// };
-
-// // MARK Service 获取场景信息
-// const getSceneInfo = (paran: any): Promise<any> => {
-//     return new Promise<any>((resolve, reject) => {
-//         getSceneById(paran).then((res) => {
-//             if (res.data) {
-//                 resolve(res.data);
-//             } else {
-//                 reject(new Error('场景目录树获取失败！'));
-//             }
-//         });
-//     });
-// };
 
 export default api;

@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2025-05-21 16:18:51
- * @LastEditTime: 2025-07-30 15:12:29
+ * @LastEditTime: 2025-08-04 15:34:47
 -->
 <template>
     <base-view :nav_bar="true" :nav_bar_title="title" :nav_bar_color="`--color-white`">
@@ -32,7 +32,7 @@
                             background: `${swipe_offset[index] < 0 ? '#d54941' : 'transparent'}`,
                         }"
                         @click.stop="click_delete(index)">
-                        <icon-font class="delete-icon" name="a-serviceconfiguration" size="18px" color="#ffffff"></icon-font>
+                        <icon-font class="delete-icon" name="shanchu" size="18px" color="#ffffff"></icon-font>
                     </view>
                 </view>
             </view>

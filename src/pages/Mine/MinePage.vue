@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2025-02-13 10:55:26
- * @LastEditTime: 2025-07-02 10:42:42
+ * @LastEditTime: 2025-08-04 16:26:56
 -->
 <template>
     <base-view :nav_bar="true" :nav_bar_item_back="false" :nav_bar_title="`我的`" :nav_bar_color="`--color-white`">
@@ -44,7 +44,22 @@ const type_list = ref([
         detailJump: true,
         jumpType: 2,
     },
-    { name: '应用版本', icon: 'a-personalpage_icon_updateinformation', detail: '1.0.6', detailJump: false, detailJumpUrl: '', detailText: true },
+    {
+        name: '初始化数据',
+        icon: 'shanchu',
+        detailJump: false,
+        detailText: true,
+        detail: '重置',
+        jumpType: 3,
+    },
+    {
+        name: '应用版本',
+        icon: 'a-personalpage_icon_updateinformation',
+        detail: uni.$tool.getAppVersion(),
+        detailJump: false,
+        detailJumpUrl: '',
+        detailText: true,
+    },
 ]);
 
 const handleItemClick = (item: any) => {
@@ -62,6 +77,16 @@ const handleItemClick = (item: any) => {
                     uni.navigateTo({
                         url: `/pages/ServerConfig/ServerConfigPage?title=${item.name}`,
                     });
+                }
+                break;
+            default:
+                break;
+        }
+    } else {
+        switch (item.jumpType) {
+            case 3:
+                {
+                    uni.$tool.del_data();
                 }
                 break;
             default:

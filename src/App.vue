@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-14 10:24:21
- * @LastEditTime: 2025-07-29 18:40:37
+ * @LastEditTime: 2025-08-04 16:42:09
 -->
 <script setup lang="ts">
 import { onLaunch, onShow, onHide, onExit } from '@dcloudio/uni-app';
@@ -28,6 +28,8 @@ onLaunch(() => {
         //     uni.$re.reSendMessageToApp(postData);
         // }, 2000);
     });
+
+    uni.$tool.update_data(); //是否重置数据，处理版本导致的数据异常
 });
 onShow(() => {
     console.log('App Show');
@@ -81,8 +83,8 @@ body {
 }
 :root {
     --color-white: #ffffff;
-    --color-main-bg: #F9F9F9;
-    --color-main-blue: #0052D9;
+    --color-main-bg: #f9f9f9;
+    --color-main-blue: #0052d9;
     --color-main-black: #1d2129;
     --color-main-gray: #86909c;
     --animation-transform-style: transform 0.3s linear;
