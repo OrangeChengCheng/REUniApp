@@ -1,19 +1,21 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-23 16:54:42
- * @LastEditTime: 2025-07-30 17:57:58
+ * @LastEditTime: 2025-08-04 14:21:46
  */
 
 
 export interface Share {
+    appVersion: string;
     url: string;
     token: string;
     baseUrl: string;
-    source: number;//判断分享链接来源 0: 未知 1：黑洞 2：星河
+    source: number;//判断分享链接来源 0: 私有化 1：黑洞 2：星河 3: 星云
     projName: string;
     id: string;
     lastTime: Date;
-    overdueTime: Date;
+    endTime: Date;
+    shareFormUserExpirationTime: Date;
     dataSetList: any;
     worldCRS: string;
     collect: boolean;
@@ -30,6 +32,7 @@ export interface Share {
 
 export const newShare = (overrides?: Partial<Share>): Share => {
     return {
+        appVersion: "",
         url: "",
         token: "",
         baseUrl: "",
@@ -37,7 +40,8 @@ export const newShare = (overrides?: Partial<Share>): Share => {
         source: 0,
         id: "",
         lastTime: new Date(),
-        overdueTime: new Date(),
+        endTime: new Date(),
+        shareFormUserExpirationTime: new Date(),
         dataSetList: [],
         worldCRS: "",
         collect: false,
@@ -53,5 +57,6 @@ export const newShare = (overrides?: Partial<Share>): Share => {
         ...overrides
     };
 };
+
 
 

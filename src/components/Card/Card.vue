@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-22 11:31:42
- * @LastEditTime: 2025-07-30 18:08:18
+ * @LastEditTime: 2025-08-04 15:38:12
 -->
 <template>
     <view class="sup-card" :style="`width: ${card_width}px;`" @click="card_click">
@@ -25,7 +25,7 @@
             <text class="overdue-text">已过期</text>
             <view class="aux-area">
                 <view class="icon-area">
-                    <icon-font class="delete-icon" name="a-serviceconfiguration" size="26px" color="#ffffff"></icon-font>
+                    <icon-font class="delete-icon" name="shanchu" size="26px" color="#ffffff"></icon-font>
                 </view>
             </view>
         </view>
@@ -81,18 +81,21 @@ const touch_longpress_top_img = 4000; // 长按时间阈值
 
 // MARK Computed  过期
 const overdue_computed = computed(() => {
-    const baseUrl = props.card_proj.baseUrl;
-    const whiteList = uni.$server.getServerWhiteList();
-    const find = whiteList.find((item: any) => item.url === baseUrl);
-    return false;
-    // if (!find) return true;
-    // if (find.type == 1) {
-    //     return false;
-    // } else if (find.type == 2) {
-    //     return false;
-    // } else {
-    //     return true;
-    // }
+    if (!props.card_proj.endTime) {
+        return false;
+    }
+
+    if (props.card_proj.endTime && props.card_proj.shareFormUserExpirationTime) {
+        const endTime = new Date(props.card_proj.endTime);
+        const userEndTime = new Date(props.card_proj.shareFormUserExpirationTime);
+        if (endTime.getTime() - userEndTime.getTime() > 0) {
+            return false;
+        }
+    }
+
+    const endTime = new Date(props.card_proj.endTime);
+    const currTime = new Date();
+    return currTime.getTime() - endTime.getTime() > 0;
 });
 
 // MARK Computed  最近查看
@@ -110,6 +113,8 @@ const source_computed = computed(() => {
         return '黑洞';
     } else if (source == 2) {
         return '星河';
+    } else if (source == 3) {
+        return '星云';
     } else {
         return '私有化';
     }
@@ -122,6 +127,8 @@ const source_style_computed = computed(() => {
         return 'background-color: rgba(1,21,50,0.5);';
     } else if (source == 2) {
         return 'background-color: rgba(10,96,218,0.5);';
+    } else if (source == 3) {
+        return 'background-color: rgba(0,0,0,0.5);';
     } else {
         return 'background-color: rgba(0,0,0,0.5);';
     }
@@ -275,7 +282,7 @@ const delete_click = () => {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(255, 255, 255, 0.4);
     overflow: hidden;
     display: flex;
 

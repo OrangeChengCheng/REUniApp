@@ -1,16 +1,19 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-13 15:14:00
- * @LastEditTime: 2025-07-30 18:07:38
+ * @LastEditTime: 2025-08-04 16:02:58
  */
 import { defineStore } from 'pinia'
 import { type Share } from '@/types/class';
+
 
 
 interface CardMold {
     cardList: Array<Share>,
     sample_cardList: Array<any>,
 }
+
+
 
 
 export const useCardStore = defineStore('card', {
@@ -40,13 +43,15 @@ export const useCardStore = defineStore('card', {
                 find.shareType = shareData.shareType;
                 find.shareViewMode = shareData.shareViewMode;
                 find.defaultCamLoc = shareData.defaultCamLoc;
-                find.overdueTime = shareData.overdueTime;
+                find.endTime = shareData.endTime;
+                find.shareFormUserExpirationTime = shareData.shareFormUserExpirationTime;
                 find.url = shareData.url;
                 find.token = shareData.token;
                 find.baseUrl = shareData.baseUrl;
                 find.source = shareData.source;
                 find.projName = shareData.projName;
                 find.id = shareData.id;
+                find.appVersion = shareData.appVersion;
                 this.saveToLocalStorage();
             }
         },

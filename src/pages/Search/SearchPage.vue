@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-07-30 16:57:00
+ * @LastEditTime: 2025-08-04 14:59:50
 -->
 <template>
     <base-view :nav_bar="true" :nav_bar_title="`搜索`" :nav_bar_color="`--color-main-bg`">
@@ -50,6 +50,7 @@ import BaseView from '@/components/Base/BaseView.vue';
 import SearchBar from '@/components/TopBar/SearchBar.vue';
 import Card from '@/components/Card/Card.vue';
 import UrlInputDialog from '@/components/Dialog/UrlInputDialog.vue';
+import { getSharedInfo } from '@/service/interface';
 
 import { type Share } from '@/types/class';
 import { useCardStore } from '@/stores/card';
@@ -162,8 +163,22 @@ const topbar_tab_callback = (index: number) => {
 };
 
 // MARK Click  卡片点击
-const card_callback = (e: Share) => {
+const card_callback = async (e: Share) => {
     uni.$re.unipluginLog('card_callback: ' + JSON.stringify(e.dataSetList));
+
+    uni.$server.updateCurToken(e.token);
+    uni.$server.updateCurBaseUrl(e.baseUrl);
+    const shareInfo = await getShareInfo();
+    if (shareInfo) {
+        const endTime = new Date(shareInfo.endTime);
+        const shareFormUserExpirationTime = new Date(shareInfo.shareFormUserExpirationTime);
+        const currTime = new Date();
+
+        if ((shareInfo && currTime.getTime() - endTime.getTime() > 0) || endTime.getTime() - shareFormUserExpirationTime.getTime() > 0) {
+            uni.showToast({ title: '分享数据已过期', icon: 'none' });
+            return;
+        }
+    }
 
     // 不知道什么原因导致ts的数组到安卓中变成JSONObject导致解析崩溃，这样操作可以重置属性，避免ts的属性带入
     let dataSetList = e.dataSetList ? JSON.parse(JSON.stringify(e.dataSetList)) : [];
@@ -171,6 +186,13 @@ const card_callback = (e: Share) => {
     let waterList = e.waterList ? JSON.parse(JSON.stringify(e.waterList)) : [];
     let extrudeList = e.extrudeList ? JSON.parse(JSON.stringify(e.extrudeList)) : [];
     let extrudeTexList = e.extrudeTexList ? JSON.parse(JSON.stringify(e.extrudeTexList)) : [];
+
+    // 默认相机信息
+    let defaultCamLoc = null;
+    if (e.defaultCamLoc) {
+        let defaultCamLocJson = JSON.stringify(e.defaultCamLoc);
+        defaultCamLoc = JSON.parse(defaultCamLocJson);
+    }
 
     uni.$re
         .realEngineRender({
@@ -187,7 +209,7 @@ const card_callback = (e: Share) => {
             camDefaultDataSetId: e.camDefaultDataSetId,
             shareViewMode: e.shareViewMode,
             shareDataType: e.shareDataType,
-            defaultCamLoc: e.defaultCamLoc,
+            defaultCamLoc: defaultCamLoc,
             entityList: entityList,
             waterList: waterList,
             extrudeList: extrudeList,
@@ -268,6 +290,44 @@ const dialog_UrlInputCallBack = (e: any) => {
         card_store.reviseProjName(shareParams, e.projName);
         dialog_revise.value = false;
     }
+};
+
+// MARK Service 获取分享信息
+const getShareInfo = (): Promise<any> => {
+    return new Promise<any>((resolve, reject) => {
+        getSharedInfo().then((res) => {
+            console.log(res);
+            if (!res.data) {
+                reject(null);
+                return;
+            }
+            let shareInfo = res.data;
+            if (!res.data || !res.data.platformMode || !res.data.loginMode) {
+                shareInfo.source = 0;
+                resolve(shareInfo);
+                return;
+            }
+            // 判断分享链接来源 0: 私有化 1：黑洞 2：星河 3: 星云
+            if (res.data.loginMode.value === 'Private') {
+                shareInfo.source = 0;
+                resolve(shareInfo);
+                return;
+            }
+            if (res.data.platformMode.value === 'BlackHole') {
+                shareInfo.source = 1;
+                resolve(shareInfo);
+            } else if (res.data.platformMode.value === 'StarRiver') {
+                shareInfo.source = 2;
+                resolve(shareInfo);
+            } else if (res.data.platformMode.value === 'Nebula') {
+                shareInfo.source = 3;
+                resolve(shareInfo);
+            } else {
+                shareInfo.source = 0;
+                resolve(shareInfo);
+            }
+        });
+    });
 };
 </script>
 
