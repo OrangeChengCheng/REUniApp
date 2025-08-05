@@ -17,14 +17,6 @@ export default {
         }
         uni.$server = {
             commonTimeout: config.getTimeout(),
-            getCurDownloadUrl: config.getCurDownloadUrl,
-            getCurBaseUrl: config.getCurBaseUrl,
-            updateCurBaseUrl: config.updateCurBaseUrl,
-            getCurSource: config.getCurSource,
-            getCurSourcePath: config.getCurSourcePath,
-            updateCurSource: config.updateCurSource,
-            getCurToken: config.getCurToken,
-            updateCurToken: config.updateCurToken,
             getServerWhiteList: config.getServerWhiteList,
             updateServerWhiteList: config.updateServerWhiteList,
         };

@@ -54,7 +54,10 @@ import { getSharedInfo } from '@/service/interface';
 
 import { type Share } from '@/types/class';
 import { useCardStore } from '@/stores/card';
+import { useStateStore } from '@/stores/state';
 
+
+const state_store = useStateStore();
 const card_store = useCardStore();
 const list_show = ref<Share[]>([]); // 当前内容展示列表
 const list_recently_viewed = ref<Share[]>([]); // 最近浏览列表
@@ -166,8 +169,9 @@ const topbar_tab_callback = (index: number) => {
 const card_callback = async (e: Share) => {
     uni.$re.unipluginLog('card_callback: ' + JSON.stringify(e.dataSetList));
 
-    uni.$server.updateCurToken(e.token);
-    uni.$server.updateCurBaseUrl(e.baseUrl);
+    state_store.updateCurrToken(e.token);
+    state_store.updateCurrBaseUrl(e.baseUrl);
+    state_store.updateCurSource(e.source);
     const shareInfo = await getShareInfo();
     if (shareInfo) {
         const endTime = new Date(shareInfo.endTime);

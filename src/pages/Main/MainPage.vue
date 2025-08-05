@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-08-04 16:01:10
+ * @LastEditTime: 2025-08-05 10:46:06
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -269,8 +269,8 @@ const tool_handleUrl = (e: any): Promise<any> => {
                 reject('数据不在白名单范围');
                 return;
             }
-            uni.$server.updateCurToken(urlData.token);
-            uni.$server.updateCurBaseUrl(urlData.baseUrl);
+            state_store.updateCurrToken(urlData.token);
+            state_store.updateCurrBaseUrl(urlData.baseUrl);
             // 获取项目名称
             getProjName(urlData)
                 .then((res) => {
@@ -345,8 +345,9 @@ const card_callback = async (e: Share) => {
     console.log('卡片点击', JSON.stringify(e));
     uni.$re.unipluginLog('card_callback: ' + JSON.stringify(e.dataSetList));
 
-    uni.$server.updateCurToken(e.token);
-    uni.$server.updateCurBaseUrl(e.baseUrl);
+    state_store.updateCurrToken(e.token);
+    state_store.updateCurrBaseUrl(e.baseUrl);
+    state_store.updateCurSource(e.source);
     const shareInfo = await getShareInfo();
     if (shareInfo) {
         const endTime = new Date(shareInfo.endTime);
@@ -488,24 +489,30 @@ const dialog_UrlInputCallBack = (e: any) => {
 };
 
 // MARK 查看分享链接资源
-const showShareUrlRes = (params: any) => {
-    uni.$server.updateCurToken(params.token);
-    uni.$server.updateCurBaseUrl(params.baseUrl);
-    if (params.shareType === 2) {
-        showSceneRes(params);
-    } else {
-        showModelRes(params);
+const showShareUrlRes = async (urlInfo: any) => {
+    try {
+        // 获取分享信息
+        const shareInfo = await getShareInfo();
+        state_store.updateCurSource(shareInfo.source);
+
+        if (urlInfo.shareType === 2) {
+            showSceneRes(urlInfo, shareInfo);
+        } else {
+            showModelRes(urlInfo, shareInfo);
+        }
+    } catch (error) {
+        throw error;
     }
 };
 
 // MARK re-api 查看分享链接资源 -- 场景资源
-const showSceneRes = async (params: any) => {
+const showSceneRes = async (urlInfo: any, shareInfo: any) => {
     uni.show_loading();
     try {
         // 获取场景信息
-        const res_1 = await getSceneInfo(params.id);
+        const res_1 = await getSceneInfo(urlInfo.id);
         // 获取场景树
-        const res_2 = await getSceneTree({ sceneId: params.id, isPublished: true });
+        const res_2 = await getSceneTree({ sceneId: urlInfo.id, isPublished: true });
         // 处理数据集ID列表
         let dataSetIdList = getDataSetIds(res_2);
         if (res_1.componentTreeId && res_1.componentTreeId.length > 0) {
@@ -528,18 +535,14 @@ const showSceneRes = async (params: any) => {
         const dataSetList_temp2 = handleTerrainLayerLev(dataSetList_temp1, terrainList);
         const dataSetList = handleDataSetId(dataSetList_temp2);
 
-        // 获取分享信息
-        const shareInfo = await getShareInfo();
-        uni.$server.updateCurSource(shareInfo.source);
-
         let cam_dataSetId = uni.$tool.cam_defauleDataSet(dataSetList);
         let shareData: Share = newShare({
-            url: params.url,
-            token: params.token,
-            baseUrl: params.baseUrl,
+            url: urlInfo.url,
+            token: urlInfo.token,
+            baseUrl: urlInfo.baseUrl,
             source: shareInfo.source,
-            projName: params.projName,
-            id: params.id,
+            projName: urlInfo.projName,
+            id: urlInfo.id,
             lastTime: new Date(),
             endTime: new Date(shareInfo.endTime),
             shareFormUserExpirationTime: new Date(shareInfo.shareFormUserExpirationTime),
@@ -547,7 +550,7 @@ const showSceneRes = async (params: any) => {
             worldCRS: res_1.coordinates,
             shareType: 2,
             camDefaultDataSetId: cam_dataSetId,
-            shareViewMode: params.shareViewMode,
+            shareViewMode: urlInfo.shareViewMode,
             entityList: entityList,
             waterList: waterList,
             extrudeList: extrudeList,
@@ -560,18 +563,18 @@ const showSceneRes = async (params: any) => {
         uni.$re
             .realEngineRender({
                 name: 'uni-app',
-                token: params.token,
-                baseUrl: params.baseUrl,
+                token: urlInfo.token,
+                baseUrl: urlInfo.baseUrl,
                 source: shareInfo.source,
-                shareUrl: params.url,
-                projName: params.projName,
+                shareUrl: urlInfo.url,
+                projName: urlInfo.projName,
                 collect: shareData.collect,
                 worldCRS: res_1.coordinates,
                 dataSetList: dataSetList,
                 shareType: 2,
-                sceneId: params.id,
+                sceneId: urlInfo.id,
                 camDefaultDataSetId: cam_dataSetId,
-                shareViewMode: params.shareViewMode,
+                shareViewMode: urlInfo.shareViewMode,
                 defaultCamLoc: shareData.defaultCamLoc,
                 entityList: entityList,
                 waterList: waterList,
@@ -590,17 +593,17 @@ const showSceneRes = async (params: any) => {
 };
 
 // MARK re-api 查看分享链接资源 -- 模型资源
-const showModelRes = (params: any) => {
-    switch (params.shareDataType) {
+const showModelRes = (urlInfo: any, shareInfo: any) => {
+    switch (urlInfo.shareDataType) {
         case 'Bim':
         case 'Rs':
         case 'Wmts':
         case 'Osgb':
         case 'PointCloud':
-            showModelTypeRes(params);
+            showModelTypeRes(urlInfo, shareInfo);
             break;
         case 'Cad':
-            showCadTypeRes(params);
+            showCadTypeRes(urlInfo, shareInfo);
             break;
         default:
             // 使用延时解决弹窗关闭后的提示显示异常的问题，因为弹窗关闭有200的延迟
@@ -612,29 +615,25 @@ const showModelRes = (params: any) => {
 };
 
 // MARK re-api 查看模型类型数据
-const showModelTypeRes = async (params: any) => {
+const showModelTypeRes = async (urlInfo: any, shareInfo: any) => {
     uni.show_loading();
     try {
         // 获取资源数据
-        const dataSetList = await getDataSetList({ dataSetIds: [params.id] });
-
-        // 获取分享信息
-        const shareInfo = await getShareInfo();
-        uni.$server.updateCurSource(shareInfo.source);
+        const dataSetList = await getDataSetList({ dataSetIds: [urlInfo.id] });
 
         let shareData: Share = newShare({
-            url: params.url,
-            token: params.token,
-            baseUrl: params.baseUrl,
+            url: urlInfo.url,
+            token: urlInfo.token,
+            baseUrl: urlInfo.baseUrl,
             source: shareInfo.source,
-            projName: params.projName,
-            id: params.id,
+            projName: urlInfo.projName,
+            id: urlInfo.id,
             lastTime: new Date(),
             endTime: new Date(shareInfo.endTime),
             shareFormUserExpirationTime: new Date(shareInfo.shareFormUserExpirationTime),
             dataSetList: dataSetList,
             shareType: 1,
-            shareDataType: params.shareDataType,
+            shareDataType: urlInfo.shareDataType,
         });
         card_store.addCard(shareData);
         update_cardList();
@@ -643,15 +642,15 @@ const showModelTypeRes = async (params: any) => {
         uni.$re
             .realEngineRender({
                 name: 'uni-app',
-                token: params.token,
-                baseUrl: params.baseUrl,
+                token: urlInfo.token,
+                baseUrl: urlInfo.baseUrl,
                 source: shareInfo.source,
-                shareUrl: params.url,
-                projName: params.projName,
+                shareUrl: urlInfo.url,
+                projName: urlInfo.projName,
                 dataSetList: dataSetList,
                 collect: shareData.collect,
                 shareType: 1,
-                shareDataType: params.shareDataType,
+                shareDataType: urlInfo.shareDataType,
                 defaultCamLoc: shareData.defaultCamLoc,
             })
             .then((result) => {
@@ -665,30 +664,26 @@ const showModelTypeRes = async (params: any) => {
 };
 
 // MARK re-api 查看CAD类型数据
-const showCadTypeRes = async (params: any) => {
+const showCadTypeRes = async (urlInfo: any, shareInfo: any) => {
     uni.show_loading();
 
     try {
         // 获取资源数据
-        const cadDataSetList = await getCadDataSetList({ dataSetId: params.id });
-
-        // 获取分享信息
-        const shareInfo = await getShareInfo();
-        uni.$server.updateCurSource(shareInfo.source);
+        const cadDataSetList = await getCadDataSetList({ dataSetId: urlInfo.id });
 
         let shareData: Share = newShare({
-            url: params.url,
-            token: params.token,
-            baseUrl: params.baseUrl,
+            url: urlInfo.url,
+            token: urlInfo.token,
+            baseUrl: urlInfo.baseUrl,
             source: shareInfo.source,
-            projName: params.projName,
-            id: params.id,
+            projName: urlInfo.projName,
+            id: urlInfo.id,
             lastTime: new Date(),
             endTime: new Date(shareInfo.endTime),
             shareFormUserExpirationTime: new Date(shareInfo.shareFormUserExpirationTime),
             dataSetList: cadDataSetList,
             shareType: 1,
-            shareDataType: params.shareDataType,
+            shareDataType: urlInfo.shareDataType,
         });
         card_store.addCard(shareData);
         update_cardList();
@@ -697,15 +692,15 @@ const showCadTypeRes = async (params: any) => {
         uni.$re
             .realEngineRender({
                 name: 'uni-app',
-                token: params.token,
-                baseUrl: params.baseUrl,
+                token: urlInfo.token,
+                baseUrl: urlInfo.baseUrl,
                 source: shareInfo.source,
-                shareUrl: params.url,
-                projName: params.projName,
+                shareUrl: urlInfo.url,
+                projName: urlInfo.projName,
                 dataSetList: cadDataSetList,
                 collect: shareData.collect,
                 shareType: 1,
-                shareDataType: params.shareDataType,
+                shareDataType: urlInfo.shareDataType,
             })
             .then((result) => {
                 uni.$re.unipluginLog(JSON.stringify(result));
@@ -862,10 +857,10 @@ const getDataSetList = (params: any): Promise<any> => {
 };
 
 // MARK Service 获取项目名称
-const getProjName = (params: any): Promise<any> => {
+const getProjName = (urlInfo: any): Promise<any> => {
     return new Promise<any>((resolve, reject) => {
-        if (params.shareType === 2) {
-            getSceneInfo(params.id)
+        if (urlInfo.shareType === 2) {
+            getSceneInfo(urlInfo.id)
                 .then((res) => {
                     resolve(res?.sceneName);
                 })
@@ -873,9 +868,9 @@ const getProjName = (params: any): Promise<any> => {
                     reject(err);
                 });
         } else {
-            getModelTree({ dataSetId: params.id })
+            getModelTree({ dataSetId: urlInfo.id })
                 .then((res) => {
-                    let find_obj = res?.find((item: any) => item.dataSetId === params.id);
+                    let find_obj = res?.find((item: any) => item.dataSetId === urlInfo.id);
                     if (find_obj) {
                         resolve(find_obj.dataSetName);
                     } else {
@@ -935,8 +930,7 @@ const getExtrudeTexList = (sceneTree: any): Promise<any> => {
             let textureList: any[] = [];
             if (intrinsicTextures && intrinsicTextures.length) {
                 textureList = intrinsicTextures.map((item: any) => {
-                    const tokenId = uni.$server.getCurToken();
-                    const picPath = `${uni.$server.getCurDownloadUrl()}/${item.fileDataId}?token=${tokenId}`;
+                    const picPath = `${state_store.downloadUrl}/${item.fileDataId}?token=${state_store.token}`;
                     const size = [5.0, 5.0];
                     return {
                         picPath: picPath,

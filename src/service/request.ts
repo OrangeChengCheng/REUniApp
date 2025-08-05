@@ -1,26 +1,25 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-14 12:21:00
- * @LastEditTime: 2025-08-04 17:18:00
+ * @LastEditTime: 2025-08-05 10:39:12
  */
 
 
-
-
+import { useStateStore } from '@/stores/state';
 
 export function requestPost(url: string, data?: object): Promise<any> {
 
     return new Promise<any>((resolve, reject) => {
+        const state_store = useStateStore();
         if (!checkToken()) { reject(new Error); return; }
         uni.request({
-            // url: "http://192.168.31.6:9202/api/developercenter" + url,
-            url: `${uni.$server.getCurBaseUrl()}/${uni.$server.getCurSourcePath()}/project${url}`,
+            url: `${state_store.baseUrl}/${state_store.sourceRoute}/project${url}`,
             data: data || {},
             method: 'POST',
             timeout: uni.$server.commonTimeout,
             header: {
                 'content-type': 'application/json',
-                'authorization': uni.$server.getCurToken(),
+                'authorization': state_store.token,
             },
             success: (res: any) => {
                 if (res.statusCode && res.statusCode == 200) {
@@ -40,8 +39,8 @@ export function requestPost(url: string, data?: object): Promise<any> {
                     } else {
                         uni.showToast({ title: '未知错误!', icon: 'none' });
                     }
-                    res.url = `${uni.$server.getCurBaseUrl()}/${uni.$server.getCurSourcePath()}/project${url}`;
-                    res.authorization = uni.$server.getCurToken();
+                    res.url = `${state_store.baseUrl}/${state_store.sourceRoute}/project${url}`;
+                    res.authorization = state_store.token;
                     res.data = data;
                     uni.$re.unipluginLog(JSON.stringify(res));
                     reject(res);
@@ -60,15 +59,16 @@ export function requestPost(url: string, data?: object): Promise<any> {
 export function requestGet(url: string, data?: object): Promise<any> {
 
     return new Promise<any>((resolve, reject) => {
+        const state_store = useStateStore();
         if (!checkToken()) { reject(new Error); return; }
         uni.request({
-            url: `${uni.$server.getCurBaseUrl()}/${uni.$server.getCurSourcePath()}/project${url}`,
+            url: `${state_store.baseUrl}/${state_store.sourceRoute}/project${url}`,
             data: data || {},
             method: 'GET',
             timeout: uni.$server.commonTimeout,
             header: {
                 'content-type': 'application/json',
-                'authorization': uni.$server.getCurToken(),
+                'authorization': state_store.token,
             },
             success: (res: any) => {
                 if (res.statusCode && res.statusCode == 200) {
@@ -88,8 +88,8 @@ export function requestGet(url: string, data?: object): Promise<any> {
                     } else {
                         uni.showToast({ title: '未知错误!', icon: 'none' });
                     }
-                    res.url = `${uni.$server.getCurBaseUrl()}/${uni.$server.getCurSourcePath()}/project${url}`;
-                    res.authorization = uni.$server.getCurToken();
+                    res.url = `${state_store.baseUrl}/${state_store.sourceRoute}/project${url}`;
+                    res.authorization = state_store.token;
                     res.data = data;
                     uni.$re.unipluginLog(JSON.stringify(res));
                     reject(res);
@@ -107,7 +107,8 @@ export function requestGet(url: string, data?: object): Promise<any> {
 
 
 function checkToken() {
-    if (!uni.$server.getCurToken() || uni.$server.getCurToken().length <= 0) {
+    const state_store = useStateStore();
+    if (!state_store.token || state_store.token.length <= 0) {
         uni.showToast({ title: '链接无效，请联系管理员!', icon: 'none' });
         return false;
     } else {

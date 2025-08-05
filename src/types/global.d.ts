@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-13 18:01:53
- * @LastEditTime: 2025-08-04 16:52:14
+ * @LastEditTime: 2025-08-05 10:47:12
  */
 
 
@@ -20,14 +20,6 @@ declare global {
         }
         $server: {
             commonTimeout: number,
-            getCurDownloadUrl(): string;
-            getCurBaseUrl(): string;
-            updateCurBaseUrl(url: string): void;
-            getCurSource(): number;
-            getCurSourcePath(): string;
-            updateCurSource(source: number): void;
-            getCurToken(): string;
-            updateCurToken(token: string): void;
             getServerWhiteList(): any;
             updateServerWhiteList(list: any): void;
         };
