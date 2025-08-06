@@ -1,12 +1,12 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-04-19 12:22:21
- * @LastEditTime: 2025-08-05 10:46:52
+ * @LastEditTime: 2025-08-06 11:16:18
  */
 
 
 const RE_ServerURl_HD = "https://engine3.bjblackhole.com";
-const RE_ServerURl_XH = "http://realbim.bjblackhole.cn:16060";
+// const RE_ServerURl_XH = "http://realbim.bjblackhole.cn:16060";
 
 
 interface ApiMethods {
@@ -23,7 +23,7 @@ const api: ApiMethods = {
         let whiteList: any[] = JSON.parse(uni.getStorageSync('RE_Server_WhiteList') || '[]');
         if (!whiteList || whiteList.length <= 0) {
             whiteList.push({ url: RE_ServerURl_HD, type: 1 });
-            whiteList.push({ url: RE_ServerURl_XH, type: 2 });
+            // whiteList.push({ url: RE_ServerURl_XH, type: 2 });
             api.updateServerWhiteList(whiteList);
         }
         return whiteList;
