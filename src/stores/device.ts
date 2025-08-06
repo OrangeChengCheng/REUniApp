@@ -12,12 +12,20 @@ interface Device {
     romVersion: string;
 }
 
+interface DeviceMold {
+    deviceInfo: Device,
+    isConnected: boolean,
+    networkType: string,
+    appVersion: string,
+}
+
 
 export const useDeviceStore = defineStore('device', {
-    state: (): { deviceInfo: Device, isConnected: Boolean, networkType: String } => ({
+    state: (): DeviceMold => ({
         deviceInfo: JSON.parse(uni.getStorageSync('RE_device') || '{}') || {} as Device,
         isConnected: true,
         networkType: "",
+        appVersion: uni.getStorageSync('RE_appVersion') || "",
     }),
     actions: {
         // MARK uni-app  更新设备信息
@@ -56,6 +64,12 @@ export const useDeviceStore = defineStore('device', {
             console.log(e);
             console.log(this.isConnected);
 
+        },
+
+        // MARK device  更新版本信息
+        update_appVersion(appVersion: string) {
+            this.appVersion = appVersion;
+            uni.setStorageSync('RE_appVersion', this.appVersion);
         },
     },
 });

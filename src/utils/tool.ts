@@ -1,19 +1,14 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-23 14:42:45
- * @LastEditTime: 2025-08-04 16:52:02
+ * @LastEditTime: 2025-08-06 11:12:36
  */
 
 const RE_AppVersion = "1.0.8";
 const RE_NeedUpdate = true;
 
-let card_store: any;
-async function getCardStore() {
-    // 异步导入
-    const { useCardStore } = await import('@/stores/card');
-    card_store = useCardStore();
-}
-getCardStore();
+import { useCardStore } from '@/stores/card';
+import { useDeviceStore } from '@/stores/device';
 
 interface ApiMethods {
     url_handle(url: string): any;
@@ -23,6 +18,7 @@ interface ApiMethods {
     cam_defauleDataSet(dataSetList: any): string;
     update_data(): void;
     del_data(): void;
+    compareVersions(version1: string, version2: string): number;
     getAppVersion(): string;
     initializeData(): void;
 }
@@ -142,8 +138,22 @@ const api: ApiMethods = {
 
     // MARK tool 提示更新数据
     update_data: (): void => {
+        const device_store = useDeviceStore();
         if (RE_NeedUpdate) {
-            if (!uni.getStorageSync('RE_updateData')) {
+            const card_store = useCardStore();
+
+            if (!card_store.cardList || card_store.cardList.length <= 0) return;
+            let needUpdata = false;
+            const appVersion = device_store.appVersion;
+            if (appVersion.length) {
+                if (api.compareVersions(RE_AppVersion, appVersion) > 0) {
+                    needUpdata = true;
+                }
+            } else {
+                needUpdata = true;
+            }
+            device_store.update_appVersion(RE_AppVersion);
+            if (needUpdata) {
                 uni.showModal({
                     title: '更新提示',
                     content: '版本更新后旧分享数据无法使用，请删除后重新扫码获取（取消后可以在设置中重新删除）',
@@ -151,13 +161,32 @@ const api: ApiMethods = {
                         if (res.confirm) {
                             api.initializeData();
                         }
-                        uni.setStorageSync('RE_updateData', true);
                     }
                 });
             }
         } else {
-            uni.setStorageSync('RE_updateData', false);
+            device_store.update_appVersion(RE_AppVersion);
         }
+    },
+
+    compareVersions: (version1: string, version2: string): number => {
+        // 拆分版本号为数字数组
+        const v1 = version1.split('.').map(Number);
+        const v2 = version2.split('.').map(Number);
+
+        // 取最长的数组长度进行比较
+        const maxLength = Math.max(v1.length, v2.length);
+
+        for (let i = 0; i < maxLength; i++) {
+            // 若某一版本号长度不足，用 0 补位
+            const num1 = v1[i] || 0;
+            const num2 = v2[i] || 0;
+
+            if (num1 > num2) return 1; // version1 更大
+            if (num1 < num2) return -1; // version2 更大
+        }
+
+        return 0; // 版本号相等
     },
 
     // MARK tool 提示删除数据
@@ -180,6 +209,7 @@ const api: ApiMethods = {
 
     // MARK config 初始化数据
     initializeData: (): void => {
+        const card_store = useCardStore();
         uni.$server.updateServerWhiteList([]);//清空白名单数据
         card_store.clearCardList();//清空卡片列表
     },
