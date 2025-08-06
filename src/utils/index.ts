@@ -1,13 +1,13 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-14 10:05:14
- * @LastEditTime: 2025-07-30 17:15:44
+ * @LastEditTime: 2025-08-06 09:53:57
  */
 import config from './config'
 import reApi from './reApi'
 import uniApi from './uniApi'
 import tool from './tool'
-
+import { initRsaPublicKey, rsaEncrypt } from './rsa/rsa'
 
 
 export default {
@@ -33,7 +33,12 @@ export default {
             initializeData: tool.initializeData,
             url_handle: tool.url_handle,
             time_compare: tool.time_compare,
+            time_format: tool.time_format,
             cam_defauleDataSet: tool.cam_defauleDataSet,
+        };
+        uni.$rsa = {
+            initRsaPublicKey: initRsaPublicKey,
+            rsaEncrypt: rsaEncrypt,
         };
         uni.scan_code = uniApi.scan_code;
         uni.show_loading = uniApi.show_loading;

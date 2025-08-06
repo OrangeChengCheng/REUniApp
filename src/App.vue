@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-14 10:24:21
- * @LastEditTime: 2025-08-04 16:42:09
+ * @LastEditTime: 2025-08-06 10:37:08
 -->
 <script setup lang="ts">
 import { onLaunch, onShow, onHide, onExit } from '@dcloudio/uni-app';
@@ -30,6 +30,22 @@ onLaunch(() => {
     });
 
     uni.$tool.update_data(); //是否重置数据，处理版本导致的数据异常
+
+    // {
+    //     // 从后端获取XML公钥
+    //     const xmlPublicKey =
+    //         '<RSAKeyValue><Modulus>xg0I5DuCZkOYsiUlSMlNQ5lhT+cjptrd/e0Ypox3oaym2p+XXN7pFuubUaJ0W3d7TP13bA1BsiiLvWuN+svZ/p1QmA8dy7FzGcGREfsGJZf8nSng7pDfVhth77c5fMVlKAF1WHwWjOhZNB14acbUP0xhVzNw0b2yIFq0Az2vAgU=</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>';
+    //     // 初始化公钥
+    //     uni.$rsa.initRsaPublicKey(xmlPublicKey);
+
+    //     // 加密数据
+    //     try {
+    //         const result = uni.$rsa.rsaEncrypt('123');
+    //         console.log('加密成功:', result);
+    //     } catch (err) {
+    //         console.error('测试失败:', err);
+    //     }
+    // }
 });
 onShow(() => {
     console.log('App Show');

@@ -8,6 +8,7 @@
     },
     "lib": ["esnext", "dom"],
     "types": ["@dcloudio/types", "vite-plugin-svg-icons/client"],
+    "typeRoots": ["./node_modules/@types", "./src/types"],
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"]
 }

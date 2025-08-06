@@ -30,7 +30,12 @@ declare global {
             initializeData(): void;
             url_handle(utl: string): any;
             time_compare(frontTime: Date, backTime: Date): string;
+            time_format(utcTime: Date): string;
             cam_defauleDataSet(dataSetList: any): string;
+        };
+        $rsa: {
+            initRsaPublicKey(xmlPublicKey: string): void;
+            rsaEncrypt(data: string): string;
         };
         scan_code(): Promise<any>;
         show_loading(): void;
