@@ -18,6 +18,8 @@ getCardStore();
 interface ApiMethods {
     url_handle(url: string): any;
     time_compare(frontTime: Date, backTime: Date): string;
+    time_format(utcTime: Date): string;
+    time_pad2(n: any): any;
     cam_defauleDataSet(dataSetList: any): string;
     update_data(): void;
     del_data(): void;
@@ -109,6 +111,23 @@ const api: ApiMethods = {
         } else {
             return `${minutes}分钟`;
         }
+    },
+
+    // MARK tool 时间格式化
+    time_format: (utcTime: any): string => {
+        if (!utcTime) return "";
+        let date = new Date(Date.parse(utcTime));
+        let year = date.getFullYear();
+        let month = api.time_pad2(date.getMonth() + 1);
+        let day = api.time_pad2(date.getDate());
+        let hour = api.time_pad2(date.getHours());
+        let minute = api.time_pad2(date.getMinutes());
+        let second = api.time_pad2(date.getSeconds());
+        return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+    },
+
+    time_pad2: (n: any): any => {
+        return n < 10 ? "0" + n : n;
     },
 
     // MARK tool 获取默认相机定位目标

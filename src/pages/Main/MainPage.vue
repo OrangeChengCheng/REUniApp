@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-08-05 10:46:06
+ * @LastEditTime: 2025-08-05 18:21:00
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -261,7 +261,9 @@ const uniapp_getClipboard = () => {
 const tool_handleUrl = (e: any): Promise<any> => {
     return new Promise<any>((resolve, reject) => {
         let urlData = uni.$tool.url_handle(e);
+        
         if (urlData) {
+            console.log(urlData);
             //处理白名单配置
             const whiteList = uni.$server.getServerWhiteList();
             const hasWhiteList = whiteList.some((item: any) => e.includes(item.url));
@@ -647,6 +649,7 @@ const showModelTypeRes = async (urlInfo: any, shareInfo: any) => {
                 source: shareInfo.source,
                 shareUrl: urlInfo.url,
                 projName: urlInfo.projName,
+                sceneId: urlInfo.id,
                 dataSetList: dataSetList,
                 collect: shareData.collect,
                 shareType: 1,
@@ -697,6 +700,7 @@ const showCadTypeRes = async (urlInfo: any, shareInfo: any) => {
                 source: shareInfo.source,
                 shareUrl: urlInfo.url,
                 projName: urlInfo.projName,
+                sceneId: urlInfo.id,
                 dataSetList: cadDataSetList,
                 collect: shareData.collect,
                 shareType: 1,
@@ -1239,6 +1243,7 @@ const getTerrainDataSetList = async (sceneTree: any, nodeType: number) => {
     width: 100%;
     display: flex;
     flex-direction: column;
+    margin-bottom: 60px;
 
     .grid-container {
         position: relative;

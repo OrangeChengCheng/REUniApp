@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-14 12:21:00
- * @LastEditTime: 2025-08-05 10:39:12
+ * @LastEditTime: 2025-08-05 14:24:14
  */
 
 
@@ -20,6 +20,7 @@ export function requestPost(url: string, data?: object): Promise<any> {
             header: {
                 'content-type': 'application/json',
                 'authorization': state_store.token,
+                'App3D': true,
             },
             success: (res: any) => {
                 if (res.statusCode && res.statusCode == 200) {
@@ -69,6 +70,7 @@ export function requestGet(url: string, data?: object): Promise<any> {
             header: {
                 'content-type': 'application/json',
                 'authorization': state_store.token,
+                'App3D': true,
             },
             success: (res: any) => {
                 if (res.statusCode && res.statusCode == 200) {

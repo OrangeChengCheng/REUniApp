@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-22 11:31:42
- * @LastEditTime: 2025-08-04 15:38:12
+ * @LastEditTime: 2025-08-06 10:37:41
 -->
 <template>
     <view class="sup-card" :style="`width: ${card_width}px;`" @click="card_click">
@@ -15,7 +15,7 @@
             <text class="bottom-title" @touchstart="bottom_title_area_touchstart" @touchend="bottom_title_area_touchend">{{
                 card_proj.projName
             }}</text>
-            <text class="bottom-time"> {{ `${lastTime_computed}前&nbsp;&nbsp;查看` }}</text>
+            <text class="bottom-time"> {{ `${overdueTime_computed}&nbsp;&nbsp;到期` }}</text>
         </view>
         <view v-if="card_type !== 2" class="collect-area" @click.stop="collect_area_click">
             <icon-font v-if="card_proj.collect" name="card_icon_like_pressed1" size="20px" color="--color-main-blue"></icon-font>
@@ -104,6 +104,13 @@ const lastTime_computed = computed(() => {
     let lastTime = new Date(props.card_proj.lastTime);
     let diff = uni.$tool.time_compare(lastTime, currTime);
     return diff;
+});
+
+// MARK Computed  过期时间
+const overdueTime_computed = computed(() => {
+    let endTime = new Date(props.card_proj.endTime);
+    const formatted = uni.$tool.time_format(endTime);
+    return formatted;
 });
 
 // MARK Computed  来源名称
