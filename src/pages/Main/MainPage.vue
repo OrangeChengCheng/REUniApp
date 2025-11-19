@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-11-19 17:08:19
+ * @LastEditTime: 2025-11-19 17:30:14
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -237,17 +237,19 @@ const uniapp_getClipboard = () => {
     uni.getClipboardData({
         success: function (res) {
             uni.$re.unipluginLog('uni.getClipboardData: ' + JSON.stringify(res));
+            if (!res.data || !res.data.length) return;
             tool_handleUrl(res.data)
                 .then((result) => {
+                    if (!result) return;
                     // uni.hide_loading();
                     dialog_shareUrl.value = result.url;
                     dialog_projName.value = result.projName;
                     dialog_shareUrl_disabled.value = true;
                     ref_urlInput_dialog.value?.show_dialog();
                 })
-                .catch((errMsg) => {
+                .catch((error) => {
                     // uni.hide_loading();
-                    uni.showToast({ title: errMsg, icon: 'none' });
+                    uni.showToast({ title: error.message, icon: 'none' });
                 });
         },
         fail: (err) => {
@@ -279,7 +281,9 @@ const tool_handleUrl = async (e: any): Promise<any> => {
         urlData.projName = projName || '';
 
         return urlData;
-    } catch (error) {}
+    } catch (error) {
+        throw new Error('分享连接数据异常');
+    }
 };
 
 // MARK Topbar banner区域连续点击
