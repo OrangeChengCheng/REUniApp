@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-13 18:01:53
- * @LastEditTime: 2025-08-05 10:47:12
+ * @LastEditTime: 2025-11-19 14:55:34
  */
 
 
@@ -18,17 +18,18 @@ declare global {
             registerAppMsg(onCallBack: (data: any) => void): Promise<void>;
             sendMsgUniToApp(data: any): void;
         }
-        $server: {
+        $service: {
             commonTimeout: number,
             getServerWhiteList(): any;
             updateServerWhiteList(list: any): void;
+            getSharedUrlInfo(params: any): Promise<any>;
         };
         $tool: {
             update_data(): void;
             del_data(): void;
             getAppVersion(): string;
             initializeData(): void;
-            url_handle(utl: string): any;
+            url_handle(url: string): Promise<any>;
             time_compare(frontTime: Date, backTime: Date): string;
             time_format(utcTime: Date): string;
             cam_defauleDataSet(dataSetList: any): string;

@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-27 17:04:55
- * @LastEditTime: 2024-10-28 11:48:44
+ * @LastEditTime: 2025-11-19 16:43:07
 -->
 <template>
     <div class="sup-url-input-dialog" v-if="dialog_visible">
@@ -120,10 +120,7 @@ const bg_click = () => {
 const shareUrl_textarea_blur = (e: any) => {
     shareUrl.value = e.detail.value;
     if (shareUrl.value.length > 0 && !props.dialog_shareUrl_disabled && projName.value.length <= 0) {
-        const urlData = uni.$tool.url_handle(shareUrl.value);
-        if (urlData) {
-            projName.value = urlData.projName;
-        }
+        projName.value = '';
     }
 };
 

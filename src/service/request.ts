@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-14 12:21:00
- * @LastEditTime: 2025-08-05 14:24:14
+ * @LastEditTime: 2025-11-19 17:11:17
  */
 
 
@@ -11,12 +11,11 @@ export function requestPost(url: string, data?: object): Promise<any> {
 
     return new Promise<any>((resolve, reject) => {
         const state_store = useStateStore();
-        if (!checkToken()) { reject(new Error); return; }
         uni.request({
             url: `${state_store.baseUrl}/${state_store.sourceRoute}/project${url}`,
             data: data || {},
             method: 'POST',
-            timeout: uni.$server.commonTimeout,
+            timeout: uni.$service.commonTimeout,
             header: {
                 'content-type': 'application/json',
                 'authorization': state_store.token,
@@ -61,12 +60,11 @@ export function requestGet(url: string, data?: object): Promise<any> {
 
     return new Promise<any>((resolve, reject) => {
         const state_store = useStateStore();
-        if (!checkToken()) { reject(new Error); return; }
         uni.request({
             url: `${state_store.baseUrl}/${state_store.sourceRoute}/project${url}`,
             data: data || {},
             method: 'GET',
-            timeout: uni.$server.commonTimeout,
+            timeout: uni.$service.commonTimeout,
             header: {
                 'content-type': 'application/json',
                 'authorization': state_store.token,
@@ -108,12 +106,3 @@ export function requestGet(url: string, data?: object): Promise<any> {
 
 
 
-function checkToken() {
-    const state_store = useStateStore();
-    if (!state_store.token || state_store.token.length <= 0) {
-        uni.showToast({ title: '链接无效，请联系管理员!', icon: 'none' });
-        return false;
-    } else {
-        return true;
-    }
-}

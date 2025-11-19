@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-08-04 14:59:50
+ * @LastEditTime: 2025-10-21 12:15:21
 -->
 <template>
     <base-view :nav_bar="true" :nav_bar_title="`搜索`" :nav_bar_color="`--color-main-bg`">
@@ -190,6 +190,7 @@ const card_callback = async (e: Share) => {
     let waterList = e.waterList ? JSON.parse(JSON.stringify(e.waterList)) : [];
     let extrudeList = e.extrudeList ? JSON.parse(JSON.stringify(e.extrudeList)) : [];
     let extrudeTexList = e.extrudeTexList ? JSON.parse(JSON.stringify(e.extrudeTexList)) : [];
+    let monomerList = e.monomerList ? JSON.parse(JSON.stringify(e.monomerList)) : [];
 
     // 默认相机信息
     let defaultCamLoc = null;
@@ -218,6 +219,7 @@ const card_callback = async (e: Share) => {
             waterList: waterList,
             extrudeList: extrudeList,
             extrudeTexList: extrudeTexList,
+            monomerList: monomerList,
         })
         .then((result) => {
             console.log(result);
@@ -287,9 +289,9 @@ const card_delete_callback = (e: Share) => {
 };
 
 // MARK Dialog  查看模型/确认修改
-const dialog_UrlInputCallBack = (e: any) => {
+const dialog_UrlInputCallBack = async (e: any) => {
     console.log(e);
-    let shareParams: any = uni.$tool.url_handle(e.shareUrl);
+    let shareParams: any = await uni.$tool.url_handle(e.shareUrl);
     if (dialog_revise.value) {
         card_store.reviseProjName(shareParams, e.projName);
         dialog_revise.value = false;

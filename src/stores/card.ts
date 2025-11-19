@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-13 15:14:00
- * @LastEditTime: 2025-08-04 16:02:58
+ * @LastEditTime: 2025-10-21 11:57:21
  */
 import { defineStore } from 'pinia'
 import { type Share } from '@/types/class';
@@ -38,6 +38,7 @@ export const useCardStore = defineStore('card', {
                 find.entityList = shareData.entityList;
                 find.waterList = shareData.waterList;
                 find.extrudeList = shareData.extrudeList;
+                find.monomerList = shareData.monomerList;
                 find.worldCRS = shareData.worldCRS;
                 find.camDefaultDataSetId = shareData.camDefaultDataSetId;
                 find.shareType = shareData.shareType;

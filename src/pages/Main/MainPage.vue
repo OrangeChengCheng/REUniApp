@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-08-05 18:21:00
+ * @LastEditTime: 2025-11-19 17:08:19
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -258,32 +258,28 @@ const uniapp_getClipboard = () => {
 };
 
 // MARK uniapp 处理url内容
-const tool_handleUrl = (e: any): Promise<any> => {
-    return new Promise<any>((resolve, reject) => {
-        let urlData = uni.$tool.url_handle(e);
-        
-        if (urlData) {
-            console.log(urlData);
-            //处理白名单配置
-            const whiteList = uni.$server.getServerWhiteList();
-            const hasWhiteList = whiteList.some((item: any) => e.includes(item.url));
-            if (!hasWhiteList) {
-                reject('数据不在白名单范围');
-                return;
-            }
-            state_store.updateCurrToken(urlData.token);
-            state_store.updateCurrBaseUrl(urlData.baseUrl);
-            // 获取项目名称
-            getProjName(urlData)
-                .then((res) => {
-                    urlData.projName = res || '';
-                    resolve(urlData);
-                })
-                .catch((err) => {
-                    resolve(urlData);
-                });
+const tool_handleUrl = async (e: any): Promise<any> => {
+    try {
+        const urlData = await uni.$tool.url_handle(e);
+        if (!urlData) {
+            return null;
         }
-    });
+        console.log(urlData);
+        //处理白名单配置
+        const whiteList = uni.$service.getServerWhiteList();
+        const hasWhiteList = whiteList.some((item: any) => e.includes(item.url));
+        if (!hasWhiteList) {
+            throw new Error('数据不在白名单范围');
+        }
+        state_store.updateCurrToken(urlData.token);
+        state_store.updateCurrBaseUrl(urlData.baseUrl);
+
+        // 获取项目名称
+        const projName = await getProjName(urlData);
+        urlData.projName = projName || '';
+
+        return urlData;
+    } catch (error) {}
 };
 
 // MARK Topbar banner区域连续点击
@@ -368,6 +364,7 @@ const card_callback = async (e: Share) => {
     let waterList = e.waterList ? JSON.parse(JSON.stringify(e.waterList)) : [];
     let extrudeList = e.extrudeList ? JSON.parse(JSON.stringify(e.extrudeList)) : [];
     let extrudeTexList = e.extrudeTexList ? JSON.parse(JSON.stringify(e.extrudeTexList)) : [];
+    let monomerList = e.monomerList ? JSON.parse(JSON.stringify(e.monomerList)) : [];
 
     // 默认相机信息
     let defaultCamLoc = null;
@@ -397,6 +394,7 @@ const card_callback = async (e: Share) => {
             waterList: waterList,
             extrudeList: extrudeList,
             extrudeTexList: extrudeTexList,
+            monomerList: monomerList,
         })
         .then((result) => {
             console.log(result);
@@ -478,9 +476,9 @@ const topbar_tab_callback = (index: number) => {
 };
 
 // MARK Dialog  查看模型/确认修改
-const dialog_UrlInputCallBack = (e: any) => {
+const dialog_UrlInputCallBack = async (e: any) => {
     console.log(e);
-    let shareParams: any = uni.$tool.url_handle(e.shareUrl);
+    let shareParams: any = await uni.$tool.url_handle(e.shareUrl);
     if (dialog_revise.value) {
         card_store.reviseProjName(shareParams, e.projName);
         dialog_revise.value = false;
@@ -523,11 +521,12 @@ const showSceneRes = async (urlInfo: any, shareInfo: any) => {
         // 获取挤出纹理信息
         const extrudeTexList = await getExtrudeTexList(res_2);
         // 并行处理各种数据
-        const [terrainList, entityList, waterList, extrudeList] = await Promise.all([
+        const [terrainList, entityList, waterList, extrudeList, monomerList] = await Promise.all([
             getTerrainDataSetList(res_2, 2),
             handleEntityData(res_2, res_1.componentPosition),
             hanldleWaterData(res_2),
             hanldleExtrudeData(res_2, extrudeTexList),
+            hanldleMonomerData(res_2),
         ]);
 
         // 获取数据集信息
@@ -557,6 +556,7 @@ const showSceneRes = async (urlInfo: any, shareInfo: any) => {
             waterList: waterList,
             extrudeList: extrudeList,
             extrudeTexList: extrudeTexList,
+            monomerList: monomerList,
         });
         card_store.addCard(shareData);
         update_cardList();
@@ -582,6 +582,7 @@ const showSceneRes = async (urlInfo: any, shareInfo: any) => {
                 waterList: waterList,
                 extrudeList: extrudeList,
                 extrudeTexList: extrudeTexList,
+                monomerList: monomerList,
             })
             .then((result) => {
                 console.log(result);
@@ -597,14 +598,16 @@ const showSceneRes = async (urlInfo: any, shareInfo: any) => {
 // MARK re-api 查看分享链接资源 -- 模型资源
 const showModelRes = (urlInfo: any, shareInfo: any) => {
     switch (urlInfo.shareDataType) {
-        case 'Bim':
+        case 'bim': // 短链接请求获取
+        case 'Bim': // 长连接获取
         case 'Rs':
         case 'Wmts':
         case 'Osgb':
         case 'PointCloud':
             showModelTypeRes(urlInfo, shareInfo);
             break;
-        case 'Cad':
+        case 'CAD': // 短链接请求获取
+        case 'Cad': // 长连接获取
             showCadTypeRes(urlInfo, shareInfo);
             break;
         default:
@@ -1152,6 +1155,19 @@ const hanldleExtrudeData = async (sceneTree: any, extrudeTexList: any) => {
         extrudeList.push(extrudeInfo);
     });
     return extrudeList;
+};
+
+// MARK Service 处理数据集--单体化信息
+const hanldleMonomerData = async (sceneTree: any) => {
+    const allLeafNodes = getAllNodeByLevel(sceneTree, 2);
+    const allMonomers = allLeafNodes.filter((item) => item.dataSetType == state_store.appSupportMonomerType);
+
+    console.log(allMonomers);
+
+    let monomerList: any[] = [];
+    allMonomers.forEach((item: any) => {});
+    console.log(monomerList);
+    return monomerList;
 };
 
 // MARK Service 递归获取数据集标识集合

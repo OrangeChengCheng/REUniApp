@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-04-19 12:22:25
- * @LastEditTime: 2025-06-03 11:47:31
+ * @LastEditTime: 2025-11-19 12:01:05
  */
 import { requestPost, requestGet } from '@/service/request';
 
@@ -10,10 +10,17 @@ import { requestPost, requestGet } from '@/service/request';
 
 
 // MOD-- 分享 相关
+// 获取分享链接信息
+export function getSharedUrlInfo(shareId: string) {
+    return requestPost(`/share/v3/longUrl/${shareId}`);
+}
+
+
 // 获取分享信息
 export function getSharedInfo() {
     return requestPost(`/share/v3/getSharedInfo`);
 }
+
 
 // MOD-- 场景 相关
 // 获取场景信息

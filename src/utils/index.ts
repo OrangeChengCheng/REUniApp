@@ -1,12 +1,13 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-14 10:05:14
- * @LastEditTime: 2025-08-06 09:53:57
+ * @LastEditTime: 2025-11-19 14:55:07
  */
 import config from './config'
 import reApi from './reApi'
 import uniApi from './uniApi'
 import tool from './tool'
+import serviceApi from './serviceApi'
 import { initRsaPublicKey, rsaEncrypt } from './rsa/rsa'
 
 
@@ -15,10 +16,11 @@ export default {
         if (!uni || typeof uni !== 'object') {
             return;
         }
-        uni.$server = {
+        uni.$service = {
             commonTimeout: config.getTimeout(),
             getServerWhiteList: config.getServerWhiteList,
             updateServerWhiteList: config.updateServerWhiteList,
+            getSharedUrlInfo: serviceApi.getSharedUrlInfo,
         };
         uni.$re = {
             unipluginLog: reApi.unipluginLog,

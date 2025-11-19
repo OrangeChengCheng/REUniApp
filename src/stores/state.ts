@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-11-09 10:46:29
- * @LastEditTime: 2025-08-05 10:42:24
+ * @LastEditTime: 2025-10-21 12:02:26
  */
 import { defineStore } from 'pinia'
 
@@ -24,6 +24,8 @@ const RE_DownloadUrl = "/files";
     21 场景CAD
     22 场景矢量
     23 水面
+    24 挤出
+    25 单体化
 */
 
 interface StateMold {
@@ -39,6 +41,7 @@ interface StateMold {
     appSupportEntityType: Number,
     appSupportWaterType: Number,
     appSupportExtrudeType: Number,
+    appSupportMonomerType: Number,
     launchOnce: Boolean,
     agreePolicy: Boolean,
 }
@@ -58,6 +61,7 @@ export const useStateStore = defineStore('state', {
         appSupportEntityType: 19,
         appSupportWaterType: 23,
         appSupportExtrudeType: 24,
+        appSupportMonomerType: 25,
         launchOnce: JSON.parse(uni.getStorageSync('RE_launchOnce') || "false") || false, // 首次启动标记，避免多次创建store
         agreePolicy: JSON.parse(uni.getStorageSync('RE_agreePolicy') || "false") || false,
     }),

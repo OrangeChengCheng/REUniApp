@@ -70,7 +70,7 @@ onLoad((options) => {
     if (options && options.title) {
         title.value = options.title;
     }
-    const whiteList = uni.$server.getServerWhiteList();
+    const whiteList = uni.$service.getServerWhiteList();
     serverWhiteList.value = whiteList;
 });
 
@@ -96,7 +96,7 @@ const dialog_confirmCallBack = (e: any) => {
             return;
         }
         serverWhiteList.value.push({ url: e, type: 3 });
-        uni.$server.updateServerWhiteList(serverWhiteList.value);
+        uni.$service.updateServerWhiteList(serverWhiteList.value);
     }
 };
 
@@ -118,7 +118,7 @@ const click_delete = (index: any) => {
                 serverWhiteList.value.splice(index, 1);
                 swipe_offset.splice(index, 1);
                 isAnimating.splice(index, 1);
-                uni.$server.updateServerWhiteList(serverWhiteList.value);
+                uni.$service.updateServerWhiteList(serverWhiteList.value);
             }
         },
     });
