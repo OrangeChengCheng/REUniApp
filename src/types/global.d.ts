@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-13 18:01:53
- * @LastEditTime: 2025-11-19 14:55:34
+ * @LastEditTime: 2025-12-01 15:15:19
  */
 
 
@@ -30,6 +30,7 @@ declare global {
             getAppVersion(): string;
             initializeData(): void;
             url_handle(url: string): Promise<any>;
+            time_To_Date(timeStr: string): Date;
             time_compare(frontTime: Date, backTime: Date): string;
             time_format(utcTime: Date): string;
             cam_defauleDataSet(dataSetList: any): string;

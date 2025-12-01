@@ -34,6 +34,7 @@ export default {
             getAppVersion: tool.getAppVersion,
             initializeData: tool.initializeData,
             url_handle: tool.url_handle,
+            time_To_Date: tool.time_To_Date,
             time_compare: tool.time_compare,
             time_format: tool.time_format,
             cam_defauleDataSet: tool.cam_defauleDataSet,

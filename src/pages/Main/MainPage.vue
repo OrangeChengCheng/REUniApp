@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-11-19 17:30:14
+ * @LastEditTime: 2025-12-01 15:17:55
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -549,8 +549,8 @@ const showSceneRes = async (urlInfo: any, shareInfo: any) => {
             projName: urlInfo.projName,
             id: urlInfo.id,
             lastTime: new Date(),
-            endTime: new Date(shareInfo.endTime),
-            shareFormUserExpirationTime: new Date(shareInfo.shareFormUserExpirationTime),
+            endTime: uni.$tool.time_To_Date(shareInfo.endTime),
+            shareFormUserExpirationTime: uni.$tool.time_To_Date(shareInfo.shareFormUserExpirationTime),
             dataSetList: dataSetList,
             worldCRS: res_1.coordinates,
             shareType: 2,
@@ -638,8 +638,8 @@ const showModelTypeRes = async (urlInfo: any, shareInfo: any) => {
             projName: urlInfo.projName,
             id: urlInfo.id,
             lastTime: new Date(),
-            endTime: new Date(shareInfo.endTime),
-            shareFormUserExpirationTime: new Date(shareInfo.shareFormUserExpirationTime),
+            endTime: uni.$tool.time_To_Date(shareInfo.endTime),
+            shareFormUserExpirationTime: uni.$tool.time_To_Date(shareInfo.shareFormUserExpirationTime),
             dataSetList: dataSetList,
             shareType: 1,
             shareDataType: urlInfo.shareDataType,
@@ -689,8 +689,8 @@ const showCadTypeRes = async (urlInfo: any, shareInfo: any) => {
             projName: urlInfo.projName,
             id: urlInfo.id,
             lastTime: new Date(),
-            endTime: new Date(shareInfo.endTime),
-            shareFormUserExpirationTime: new Date(shareInfo.shareFormUserExpirationTime),
+            endTime: uni.$tool.time_To_Date(shareInfo.endTime),
+            shareFormUserExpirationTime: uni.$tool.time_To_Date(shareInfo.shareFormUserExpirationTime),
             dataSetList: cadDataSetList,
             shareType: 1,
             shareDataType: urlInfo.shareDataType,

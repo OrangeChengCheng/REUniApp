@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-23 14:42:45
- * @LastEditTime: 2025-12-01 12:10:32
+ * @LastEditTime: 2025-12-01 15:14:38
  */
 
 const RE_AppVersion = "1.0.8";
@@ -15,6 +15,7 @@ import { useStateStore } from '@/stores/state';
 interface ApiMethods {
     url_handle(url: string): Promise<any>;
     time_compare(frontTime: Date, backTime: Date): string;
+    time_To_Date(timeStr: string): Date;
     time_format(utcTime: Date): string;
     time_pad2(n: any): any;
     cam_defauleDataSet(dataSetList: any): string;
@@ -146,6 +147,12 @@ const api: ApiMethods = {
         } else {
             return `${minutes}分钟`;
         }
+    },
+
+    //  MARK tool 处理时间对象，iOS 原生只兼容 yyyy/MM/dd HH:mm:ss 或 ISO 标准格式（yyyy-MM-dd'T'HH:mm:ss）
+    time_To_Date: (timeStr: string): Date => { 
+        if (!timeStr || !timeStr.length) return new Date();
+        return new Date(timeStr.replace(/-/g, '/'));
     },
 
     // MARK tool 时间格式化
