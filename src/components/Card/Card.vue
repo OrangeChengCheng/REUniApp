@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-22 11:31:42
- * @LastEditTime: 2025-08-06 10:37:41
+ * @LastEditTime: 2025-12-01 12:20:00
 -->
 <template>
     <view class="sup-card" :style="`width: ${card_width}px;`" @click="card_click">
@@ -108,6 +108,9 @@ const lastTime_computed = computed(() => {
 
 // MARK Computed  过期时间
 const overdueTime_computed = computed(() => {
+    // 空值兜底
+    if (!props.card_proj?.endTime) return `未正确获取时间`;
+
     let endTime = new Date(props.card_proj.endTime);
     const formatted = uni.$tool.time_format(endTime);
     return formatted;

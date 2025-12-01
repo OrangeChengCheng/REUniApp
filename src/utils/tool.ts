@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-23 14:42:45
- * @LastEditTime: 2025-11-19 17:09:34
+ * @LastEditTime: 2025-12-01 12:10:32
  */
 
 const RE_AppVersion = "1.0.8";
@@ -150,8 +150,26 @@ const api: ApiMethods = {
 
     // MARK tool 时间格式化
     time_format: (utcTime: any): string => {
-        if (!utcTime) return "";
-        let date = new Date(Date.parse(utcTime));
+        // 空值直接返回空
+        if (!utcTime || utcTime === 'null' || utcTime === 'undefined') return "";
+
+        let date: Date;
+        // 处理iOS兼容：替换时间字符串中的-为/，处理T分隔符（ISO格式）
+        const timeStr = typeof utcTime === 'string'
+            ? utcTime.replace(/-/g, '/').replace('T', ' ').replace(/\.\d+Z/, '')
+            : utcTime;
+
+        try {
+            // 优先用时间戳/标准格式初始化
+            date = new Date(timeStr);
+            // 检测是否为无效日期（iOS解析失败会返回Invalid Date）
+            if (isNaN(date.getTime())) {
+                return ""; // 解析失败返回空
+            }
+        } catch (e) {
+            return ""; // 异常兜底
+        }
+
         let year = date.getFullYear();
         let month = api.time_pad2(date.getMonth() + 1);
         let day = api.time_pad2(date.getDate());
