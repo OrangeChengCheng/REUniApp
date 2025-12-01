@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-12-01 15:17:55
+ * @LastEditTime: 2025-12-01 17:05:19
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -386,6 +386,7 @@ const card_callback = async (e: Share) => {
             shareUrl: e.url,
             projName: e.projName,
             worldCRS: e.worldCRS,
+            urlHeaderList: e.urlHeaderList,
             dataSetList: dataSetList,
             collect: e.collect,
             shareType: e.shareType,
@@ -539,6 +540,7 @@ const showSceneRes = async (urlInfo: any, shareInfo: any) => {
         const dataSetList_temp1: any[] = handleDataSetTrans(res_3, res_1.dataSetPosition);
         const dataSetList_temp2 = handleTerrainLayerLev(dataSetList_temp1, terrainList);
         const dataSetList = handleDataSetId(dataSetList_temp2);
+        const urlHeaderList = handleDataSetResHeader(dataSetList_temp2, urlInfo);
 
         let cam_dataSetId = uni.$tool.cam_defauleDataSet(dataSetList);
         let shareData: Share = newShare({
@@ -551,6 +553,7 @@ const showSceneRes = async (urlInfo: any, shareInfo: any) => {
             lastTime: new Date(),
             endTime: uni.$tool.time_To_Date(shareInfo.endTime),
             shareFormUserExpirationTime: uni.$tool.time_To_Date(shareInfo.shareFormUserExpirationTime),
+            urlHeaderList: urlHeaderList,
             dataSetList: dataSetList,
             worldCRS: res_1.coordinates,
             shareType: 2,
@@ -576,6 +579,7 @@ const showSceneRes = async (urlInfo: any, shareInfo: any) => {
                 projName: urlInfo.projName,
                 collect: shareData.collect,
                 worldCRS: res_1.coordinates,
+                urlHeaderList: urlHeaderList,
                 dataSetList: dataSetList,
                 shareType: 2,
                 sceneId: urlInfo.id,
@@ -629,6 +633,7 @@ const showModelTypeRes = async (urlInfo: any, shareInfo: any) => {
     try {
         // 获取资源数据
         const dataSetList = await getDataSetList({ dataSetIds: [urlInfo.id] });
+        const urlHeaderList = handleDataSetResHeader(dataSetList, urlInfo);
 
         let shareData: Share = newShare({
             url: urlInfo.url,
@@ -640,6 +645,7 @@ const showModelTypeRes = async (urlInfo: any, shareInfo: any) => {
             lastTime: new Date(),
             endTime: uni.$tool.time_To_Date(shareInfo.endTime),
             shareFormUserExpirationTime: uni.$tool.time_To_Date(shareInfo.shareFormUserExpirationTime),
+            urlHeaderList: urlHeaderList,
             dataSetList: dataSetList,
             shareType: 1,
             shareDataType: urlInfo.shareDataType,
@@ -657,6 +663,7 @@ const showModelTypeRes = async (urlInfo: any, shareInfo: any) => {
                 shareUrl: urlInfo.url,
                 projName: urlInfo.projName,
                 sceneId: urlInfo.id,
+                urlHeaderList: urlHeaderList,
                 dataSetList: dataSetList,
                 collect: shareData.collect,
                 shareType: 1,
@@ -680,6 +687,7 @@ const showCadTypeRes = async (urlInfo: any, shareInfo: any) => {
     try {
         // 获取资源数据
         const cadDataSetList = await getCadDataSetList({ dataSetId: urlInfo.id });
+        const urlHeaderList = handleDataSetResHeader(cadDataSetList, urlInfo);
 
         let shareData: Share = newShare({
             url: urlInfo.url,
@@ -691,6 +699,7 @@ const showCadTypeRes = async (urlInfo: any, shareInfo: any) => {
             lastTime: new Date(),
             endTime: uni.$tool.time_To_Date(shareInfo.endTime),
             shareFormUserExpirationTime: uni.$tool.time_To_Date(shareInfo.shareFormUserExpirationTime),
+            urlHeaderList: urlHeaderList,
             dataSetList: cadDataSetList,
             shareType: 1,
             shareDataType: urlInfo.shareDataType,
@@ -708,6 +717,7 @@ const showCadTypeRes = async (urlInfo: any, shareInfo: any) => {
                 shareUrl: urlInfo.url,
                 projName: urlInfo.projName,
                 sceneId: urlInfo.id,
+                urlHeaderList: urlHeaderList,
                 dataSetList: cadDataSetList,
                 collect: shareData.collect,
                 shareType: 1,
@@ -1063,6 +1073,20 @@ const handleDataSetId = (dataSetList: any) => {
         }
     });
     return dataSetList;
+};
+
+// MARK Service 处理数据集--获取资源授权请求头
+const handleDataSetResHeader = (dataSetList: any, urlInfo: any) => {
+    let urlHeaderList: any = [];
+    dataSetList.forEach((dataSet: any) => {
+        const baseUrl = uni.$tool.url_base(dataSet.resourcesAddress);
+        const find_obj = urlHeaderList.find((item: any) => item.urlWildcard == baseUrl);
+        if (!find_obj) {
+            const headerParam: any = { urlWildcard: `${baseUrl}/*`, headerStr: `Auth:${urlInfo.token}` };
+            urlHeaderList.push(headerParam);
+        }
+    });
+    return urlHeaderList;
 };
 
 // MARK Service 处理数据集--单构件信息

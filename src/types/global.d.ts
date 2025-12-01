@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-13 18:01:53
- * @LastEditTime: 2025-12-01 15:15:19
+ * @LastEditTime: 2025-12-01 16:44:38
  */
 
 
@@ -29,6 +29,7 @@ declare global {
             del_data(): void;
             getAppVersion(): string;
             initializeData(): void;
+            url_base(url: string): string;
             url_handle(url: string): Promise<any>;
             time_To_Date(timeStr: string): Date;
             time_compare(frontTime: Date, backTime: Date): string;

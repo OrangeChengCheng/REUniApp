@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-14 10:05:14
- * @LastEditTime: 2025-11-19 14:55:07
+ * @LastEditTime: 2025-12-01 16:44:27
  */
 import config from './config'
 import reApi from './reApi'
@@ -33,6 +33,7 @@ export default {
             del_data: tool.del_data,
             getAppVersion: tool.getAppVersion,
             initializeData: tool.initializeData,
+            url_base: tool.url_base,
             url_handle: tool.url_handle,
             time_To_Date: tool.time_To_Date,
             time_compare: tool.time_compare,

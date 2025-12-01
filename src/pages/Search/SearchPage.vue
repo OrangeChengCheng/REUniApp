@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-10-21 12:15:21
+ * @LastEditTime: 2025-12-01 17:00:32
 -->
 <template>
     <base-view :nav_bar="true" :nav_bar_title="`搜索`" :nav_bar_color="`--color-main-bg`">
@@ -207,6 +207,7 @@ const card_callback = async (e: Share) => {
             shareUrl: e.url,
             projName: e.projName,
             worldCRS: e.worldCRS,
+            urlHeaderList: e.urlHeaderList,
             dataSetList: dataSetList,
             collect: e.collect,
             shareType: e.shareType,

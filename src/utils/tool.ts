@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-23 14:42:45
- * @LastEditTime: 2025-12-01 15:23:56
+ * @LastEditTime: 2025-12-01 16:43:45
  */
 
 const RE_AppVersion = "1.0.8";
@@ -13,6 +13,7 @@ import { useStateStore } from '@/stores/state';
 
 
 interface ApiMethods {
+    url_base(url: string): string;
     url_handle(url: string): Promise<any>;
     time_compare(frontTime: Date, backTime: Date): string;
     time_To_Date(timeStr: string): Date;
@@ -27,6 +28,27 @@ interface ApiMethods {
 }
 
 const api: ApiMethods = {
+    url_base: (url: string): string => {
+        if (url.length <= 0) return "";
+        url = url.trim();
+
+        //提取baseUrl（域名和端口号）
+        let baseUrl = '';
+        // 判断协议类型（http:// 或 https://）
+        const protocolEndIndex = url.indexOf('://');
+        if (protocolEndIndex !== -1) {
+            // 从协议结束位置（://后）开始，寻找第一个“/”
+            const pathStartIndex = url.indexOf('/', protocolEndIndex + 3);
+            if (pathStartIndex !== -1) {
+                // 截取从开头到第一个“/”的部分，即为baseUrl
+                baseUrl = url.substring(0, pathStartIndex);
+            } else {
+                // 若没有“/”，则整个URL即为baseUrl（如单独的域名）
+                baseUrl = url;
+            }
+        }
+        return baseUrl;
+    },
     // MARK tool 处理分享链接
     url_handle: async (url: string): Promise<any> => {
 
@@ -150,7 +172,7 @@ const api: ApiMethods = {
     },
 
     //  MARK tool 处理时间对象，iOS 原生只兼容 yyyy/MM/dd HH:mm:ss 或 ISO 标准格式（yyyy-MM-dd'T'HH:mm:ss）
-    time_To_Date: (timeStr: string): Date => { 
+    time_To_Date: (timeStr: string): Date => {
         if (!timeStr || !timeStr.length) return new Date();
         return new Date(timeStr.replace(/-/g, '/'));
     },
