@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-04-19 12:22:25
- * @LastEditTime: 2025-11-19 12:01:05
+ * @LastEditTime: 2025-12-09 11:44:17
  */
 import { requestPost, requestGet } from '@/service/request';
 
@@ -17,8 +17,8 @@ export function getSharedUrlInfo(shareId: string) {
 
 
 // 获取分享信息
-export function getSharedInfo() {
-    return requestPost(`/share/v3/getSharedInfo`);
+export function getSharedInfo(toast: boolean = true) {
+    return requestPost(`/share/v3/getSharedInfo`, undefined, toast);
 }
 
 

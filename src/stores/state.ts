@@ -1,13 +1,17 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-11-09 10:46:29
- * @LastEditTime: 2025-10-21 12:02:26
+ * @LastEditTime: 2025-12-09 11:48:47
  */
 import { defineStore } from 'pinia'
 
 const RE_ServerURl_HD = "https://engine3.bjblackhole.com";
 const RE_ServerSource = "App3D";
 const RE_DownloadUrl = "/files";
+const RE_AuthorTxtId = "RealEngineInitAuthorPath";
+const RE_AuthorTxt = "author/author_path02.txt";
+const RE_AuthorIndexId = "RealEngineInitPathIndex";
+const RE_AuthorIndex = "pathindex/res/index.xml";
 
 /**
     0 BIM模型
@@ -34,6 +38,10 @@ interface StateMold {
     token: string,
     source: number,
     sourceRoute: string,
+    authorTxtId: string,
+    authorTxt: string,
+    authorIndexId: string,
+    authorIndex: string,
     allDataSetType: Array<Number>,
     entityDataSetType: Array<Number>,
     sceneDataSetType: Array<Number>,
@@ -54,6 +62,10 @@ export const useStateStore = defineStore('state', {
         token: "",// app当前token
         source: 0,// 判断分享链接来源 0: 私有化 1：黑洞 2：星河 3: 星云
         sourceRoute: RE_ServerSource,// 来源路由
+        authorTxtId: RE_AuthorTxtId,// 授权文件标识
+        authorTxt: RE_AuthorTxt,// 授权文件
+        authorIndexId: RE_AuthorIndexId,// 授权文件索引标识
+        authorIndex: RE_AuthorIndex,// 授权文件索引
         allDataSetType: [0, 13, 10, 11, 14, 15, 16, 17, 18, 19, 20, 21, 22],
         entityDataSetType: [17, 18, 19],
         sceneDataSetType: [0, 13, 10, 11, 14, 15, 17, 18, 19, 21, 22],
@@ -92,7 +104,7 @@ export const useStateStore = defineStore('state', {
         },
 
         // MARK 更新当前服务来源
-        updateCurSource(source: number) {
+        updateCurSource(source: number = 0) {
             this.source = source;
             this.sourceRoute = RE_ServerSource;
         },

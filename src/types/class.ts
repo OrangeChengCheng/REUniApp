@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-23 16:54:42
- * @LastEditTime: 2025-12-01 16:27:27
+ * @LastEditTime: 2025-12-08 15:09:29
  */
 
 
@@ -14,10 +14,11 @@ export interface Share {
     projName: string;
     id: string;
     lastTime: Date;
-    endTime: Date;
-    shareFormUserExpirationTime: Date;
+    endTime: string;
+    shareFormUserExpirationTime: string;
     dataSetList: any;
     urlHeaderList: any;//请求头列表
+    authorData: any,//授权信息
     worldCRS: string;
     collect: boolean;
     shareType: number; // 0：无 1：模型 2：场景
@@ -42,9 +43,10 @@ export const newShare = (overrides?: Partial<Share>): Share => {
         source: 0,
         id: "",
         lastTime: new Date(),
-        endTime: new Date(),
-        shareFormUserExpirationTime: new Date(),
+        endTime: "",
+        shareFormUserExpirationTime: "",
         urlHeaderList: [],
+        authorData: {},
         dataSetList: [],
         worldCRS: "",
         collect: false,

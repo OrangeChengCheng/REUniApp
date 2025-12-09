@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-22 11:31:42
- * @LastEditTime: 2025-12-01 12:20:00
+ * @LastEditTime: 2025-12-08 14:29:04
 -->
 <template>
     <view class="sup-card" :style="`width: ${card_width}px;`" @click="card_click">
@@ -85,17 +85,14 @@ const overdue_computed = computed(() => {
         return false;
     }
 
-    if (props.card_proj.endTime && props.card_proj.shareFormUserExpirationTime) {
-        const endTime = new Date(props.card_proj.endTime);
-        const userEndTime = new Date(props.card_proj.shareFormUserExpirationTime);
-        if (endTime.getTime() - userEndTime.getTime() > 0) {
-            return false;
-        }
-    }
-
     const endTime = new Date(props.card_proj.endTime);
+    const userEndTime = new Date(props.card_proj.shareFormUserExpirationTime);
     const currTime = new Date();
-    return currTime.getTime() - endTime.getTime() > 0;
+    if (endTime.getTime() - userEndTime.getTime() > 0) {
+        return currTime.getTime() - userEndTime.getTime() > 0;
+    } else {
+        return currTime.getTime() - endTime.getTime() > 0;
+    }
 });
 
 // MARK Computed  最近查看

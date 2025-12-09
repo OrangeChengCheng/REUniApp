@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-23 14:42:45
- * @LastEditTime: 2025-12-01 16:43:45
+ * @LastEditTime: 2025-12-09 11:53:56
  */
 
 const RE_AppVersion = "1.0.8";
@@ -16,7 +16,7 @@ interface ApiMethods {
     url_base(url: string): string;
     url_handle(url: string): Promise<any>;
     time_compare(frontTime: Date, backTime: Date): string;
-    time_To_Date(timeStr: string): Date;
+    time_To_IOSDate(timeStr: string): string;
     time_format(utcTime: Date): string;
     time_pad2(n: any): any;
     cam_defauleDataSet(dataSetList: any): string;
@@ -93,62 +93,114 @@ const api: ApiMethods = {
 
                 const state_store = useStateStore();
                 state_store.updateCurrBaseUrl(baseUrl);
-                const urlData = await uni.$service.getSharedUrlInfo(_shareId);
-                if (!urlData || !urlData.token) return null;
-                let _shareType: number = 0; // 判断分享链接类型 0：无 1：模型 2：场景
-                if (urlData.viewMode.length > 0) {
-                    _shareType = 2;
-                } else if (urlData.viewMode == "") {
-                    _shareType = 1;
+                try {
+                    const urlData = await uni.$service.getSharedUrlInfo(_shareId);
+                    if (!urlData || !urlData.token) return null;
+                    let _shareType: number = 0; // 判断分享链接类型 0：无 1：模型 2：场景
+                    if (urlData.viewMode.length > 0) {
+                        _shareType = 2;
+                    } else if (urlData.viewMode == "") {
+                        _shareType = 1;
+                    }
+
+                    // 解构urlData，分离出需要替换的字段和剩余字段
+                    const {
+                        resourceId,
+                        viewMode,
+                        dataType,
+                        ...restUrlData
+                    } = urlData;
+
+                    // 构造最终的params，只保留你指定的参数名，无原始冲突字段
+                    const params = {
+                        url: url,
+                        baseUrl: baseUrl,
+                        shareType: _shareType,
+                        id: urlData.resourceId,
+                        shareViewMode: urlData.viewMode,
+                        shareDataType: urlData.dataType,
+                        ...restUrlData
+                    }
+
+                    uni.$re.unipluginLog('params = ' + JSON.stringify(params));
+                    return params;
+                } catch (error) {
+                    return null;
                 }
-                const params = { url: url, baseUrl: baseUrl, shareType: _shareType, shareId: _shareId, id: urlData.resourceId, token: urlData.token, shareViewMode: urlData.viewMode, shareDataType: urlData.dataType };
-                return params;
+
+            } else {
+
+                // 使用字符串截取方式，无法使用URL的方式，uniapp在真机上无法使用URL方式
+                let shareType: number = 0; // 判断分享链接类型 0：无 1：模型 2：场景
+                if (url.includes('sceneShare/view')) {
+                    shareType = 2;
+                } else if (url.includes('dataSetShare/view')) {
+                    shareType = 1;
+                }
+                if (!shareType) return null;
+                if (!url.includes('token')) return null; // 分享链接不包含token报错
+
+                let searchType = shareType === 2 ? '#/sceneShare/view' : '#/dataSetShare/view';
+                let startIndex = url.indexOf(searchType) + searchType.length; // 找到 searchType 在URL中的位置
+                let valueStartIndex = url.indexOf('/', startIndex + 1) + 1; // 计算所需值的起始位置（即第二个"/"之后的位置）
+                let valueEndIndex = url.indexOf('?', valueStartIndex + 1);
+                let _id = url.substring(valueStartIndex, valueEndIndex); // 截取所需的值
+
+                let tokenStartIndex = url.indexOf('token=') + 'token='.length; // 计算token的起始位置（即"token="之后的位置）
+                let tokenEndIndex = url.indexOf('&', tokenStartIndex); // 如果URL中有其他查询参数，找到"&"字符的位置，作为token的结束位置
+                let _token = tokenEndIndex !== -1 ? url.substring(tokenStartIndex, tokenEndIndex) : url.substring(tokenStartIndex); // 截取并输出token的
+
+                // 解析viewMode和dataType
+                let viewModeIndex = url.indexOf('viewMode=');
+                let dataTypeIndex = url.indexOf('dataType=');
+                let _viewMode = "", _dataType = "";
+
+                if (viewModeIndex !== -1) {
+                    let viewModeEndIndex = url.indexOf('&', viewModeIndex + 'viewMode='.length);
+                    _viewMode = viewModeEndIndex !== -1 ? url.substring(viewModeIndex + 'viewMode='.length, viewModeEndIndex) : url.substring(viewModeIndex + 'viewMode='.length);
+                }
+
+                if (dataTypeIndex !== -1) {
+                    let dataTypeEndIndex = url.indexOf('&', dataTypeIndex + 'dataType='.length);
+                    _dataType = dataTypeEndIndex !== -1 ? url.substring(dataTypeIndex + 'dataType='.length, dataTypeEndIndex) : url.substring(dataTypeIndex + 'dataType='.length);
+                }
+
+                const state_store = useStateStore();
+                state_store.updateCurrToken(_token);
+                state_store.updateCurrBaseUrl(baseUrl);
+                try {
+                    const shareData = await uni.$service.getSharedInfo(false);
+                    const params = {
+                        url: url,
+                        baseUrl: baseUrl,
+                        shareType: shareType,
+                        id: _id,
+                        token: _token,
+                        shareViewMode: _viewMode,
+                        shareDataType: _dataType,
+                        shareItem: shareData,
+                    };
+                    uni.$re.unipluginLog('params = ' + JSON.stringify(params));
+                    return params;
+
+                } catch (error: any) {
+                    if (error.statusCode == 404) {
+                        const params = {
+                            url: url,
+                            baseUrl: baseUrl,
+                            shareType: shareType,
+                            id: _id,
+                            token: _token,
+                            shareViewMode: _viewMode,
+                            shareDataType: _dataType,
+                        };
+                        uni.$re.unipluginLog('params = ' + JSON.stringify(params));
+                        return params;
+                    } else {
+                        return null;
+                    }
+                }
             }
-
-            // 使用字符串截取方式，无法使用URL的方式，uniapp在真机上无法使用URL方式
-            let shareType: number = 0; // 判断分享链接类型 0：无 1：模型 2：场景
-            if (url.includes('sceneShare/view')) {
-                shareType = 2;
-            } else if (url.includes('dataSetShare/view')) {
-                shareType = 1;
-            }
-            if (!shareType) return null;
-            if (!url.includes('token')) return null; // 分享链接不包含token报错
-
-            let searchType = shareType === 2 ? '#/sceneShare/view' : '#/dataSetShare/view';
-            let startIndex = url.indexOf(searchType) + searchType.length; // 找到 searchType 在URL中的位置
-            let valueStartIndex = url.indexOf('/', startIndex + 1) + 1; // 计算所需值的起始位置（即第二个"/"之后的位置）
-            // let valueEndIndex = url.indexOf('/', valueStartIndex); // 计算所需值的结束位置（即第三个"/"之前的位置）
-            let valueEndIndex = url.indexOf('?', valueStartIndex + 1);
-            let _id = url.substring(valueStartIndex, valueEndIndex); // 截取所需的值
-
-            // let projNameStartIndex = valueEndIndex + 1;
-            // let projNameEndIndex = url.indexOf('?', projNameStartIndex);
-            // let _projNameCode = url.substring(projNameStartIndex, projNameEndIndex); // 截取所需的值
-            // let _projName = decodeURIComponent(_projNameCode);
-
-            let tokenStartIndex = url.indexOf('token=') + 'token='.length; // 计算token的起始位置（即"token="之后的位置）
-            let tokenEndIndex = url.indexOf('&', tokenStartIndex); // 如果URL中有其他查询参数，找到"&"字符的位置，作为token的结束位置
-            let _token = tokenEndIndex !== -1 ? url.substring(tokenStartIndex, tokenEndIndex) : url.substring(tokenStartIndex); // 截取并输出token的
-
-            // 解析viewMode和dataType
-            let viewModeIndex = url.indexOf('viewMode=');
-            let dataTypeIndex = url.indexOf('dataType=');
-            let _viewMode = "", _dataType = "";
-
-            if (viewModeIndex !== -1) {
-                let viewModeEndIndex = url.indexOf('&', viewModeIndex + 'viewMode='.length);
-                _viewMode = viewModeEndIndex !== -1 ? url.substring(viewModeIndex + 'viewMode='.length, viewModeEndIndex) : url.substring(viewModeIndex + 'viewMode='.length);
-            }
-
-            if (dataTypeIndex !== -1) {
-                let dataTypeEndIndex = url.indexOf('&', dataTypeIndex + 'dataType='.length);
-                _dataType = dataTypeEndIndex !== -1 ? url.substring(dataTypeIndex + 'dataType='.length, dataTypeEndIndex) : url.substring(dataTypeIndex + 'dataType='.length);
-            }
-
-            let params = { url: url, baseUrl: baseUrl, shareType: shareType, projName: "", id: _id, token: _token, shareViewMode: _viewMode, shareDataType: _dataType };
-            uni.$re.unipluginLog('params = ' + JSON.stringify(params));
-            return params;
 
         } catch (error) {
             throw null;
@@ -172,9 +224,9 @@ const api: ApiMethods = {
     },
 
     //  MARK tool 处理时间对象，iOS 原生只兼容 yyyy/MM/dd HH:mm:ss 或 ISO 标准格式（yyyy-MM-dd'T'HH:mm:ss）
-    time_To_Date: (timeStr: string): Date => {
-        if (!timeStr || !timeStr.length) return new Date();
-        return new Date(timeStr.replace(/-/g, '/'));
+    time_To_IOSDate: (timeStr: string): string => {
+        if (!timeStr || !timeStr.length) return '';
+        return timeStr.replace(/-/g, '/');
     },
 
     // MARK tool 时间格式化

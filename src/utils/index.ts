@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-14 10:05:14
- * @LastEditTime: 2025-12-01 16:44:27
+ * @LastEditTime: 2025-12-08 17:37:38
  */
 import config from './config'
 import reApi from './reApi'
@@ -21,6 +21,7 @@ export default {
             getServerWhiteList: config.getServerWhiteList,
             updateServerWhiteList: config.updateServerWhiteList,
             getSharedUrlInfo: serviceApi.getSharedUrlInfo,
+            getSharedInfo: serviceApi.getSharedInfo,
         };
         uni.$re = {
             unipluginLog: reApi.unipluginLog,
@@ -35,7 +36,7 @@ export default {
             initializeData: tool.initializeData,
             url_base: tool.url_base,
             url_handle: tool.url_handle,
-            time_To_Date: tool.time_To_Date,
+            time_To_IOSDate: tool.time_To_IOSDate,
             time_compare: tool.time_compare,
             time_format: tool.time_format,
             cam_defauleDataSet: tool.cam_defauleDataSet,

@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-13 18:01:53
- * @LastEditTime: 2025-12-01 16:44:38
+ * @LastEditTime: 2025-12-09 11:53:45
  */
 
 
@@ -23,6 +23,7 @@ declare global {
             getServerWhiteList(): any;
             updateServerWhiteList(list: any): void;
             getSharedUrlInfo(params: any): Promise<any>;
+            getSharedInfo(toast: boolean): Promise<any>;
         };
         $tool: {
             update_data(): void;
@@ -31,7 +32,7 @@ declare global {
             initializeData(): void;
             url_base(url: string): string;
             url_handle(url: string): Promise<any>;
-            time_To_Date(timeStr: string): Date;
+            time_To_IOSDate(timeStr: string): string;
             time_compare(frontTime: Date, backTime: Date): string;
             time_format(utcTime: Date): string;
             cam_defauleDataSet(dataSetList: any): string;

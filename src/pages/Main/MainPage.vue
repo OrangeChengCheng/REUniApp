@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-12-01 17:05:19
+ * @LastEditTime: 2025-12-09 11:49:36
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -77,7 +77,6 @@ import UrlInputDialog from '@/components/Dialog/UrlInputDialog.vue';
 import CustomInputDialog from '@/components/Dialog/CustomInputDialog.vue';
 import SampleInputDialog from '@/components/Dialog/SampleInputDialog.vue';
 import {
-    getSharedInfo,
     getSceneById,
     getSingleSceneTreeById,
     getProjectModel,
@@ -281,8 +280,8 @@ const tool_handleUrl = async (e: any): Promise<any> => {
         urlData.projName = projName || '';
 
         return urlData;
-    } catch (error) {
-        throw new Error('分享连接数据异常');
+    } catch (error: any) {
+        throw new Error(`分享连接数据异常 ${error.message}`);
     }
 };
 
@@ -350,17 +349,6 @@ const card_callback = async (e: Share) => {
     state_store.updateCurrToken(e.token);
     state_store.updateCurrBaseUrl(e.baseUrl);
     state_store.updateCurSource(e.source);
-    const shareInfo = await getShareInfo();
-    if (shareInfo) {
-        const endTime = new Date(shareInfo.endTime);
-        const shareFormUserExpirationTime = new Date(shareInfo.shareFormUserExpirationTime);
-        const currTime = new Date();
-
-        if ((shareInfo && currTime.getTime() - endTime.getTime() > 0) || endTime.getTime() - shareFormUserExpirationTime.getTime() > 0) {
-            uni.showToast({ title: '分享数据已过期', icon: 'none' });
-            return;
-        }
-    }
 
     // 不知道什么原因导致ts的数组到安卓中变成JSONObject导致解析崩溃，这样操作可以重置属性，避免ts的属性带入
     let dataSetList = e.dataSetList ? JSON.parse(JSON.stringify(e.dataSetList)) : [];
@@ -369,6 +357,7 @@ const card_callback = async (e: Share) => {
     let extrudeList = e.extrudeList ? JSON.parse(JSON.stringify(e.extrudeList)) : [];
     let extrudeTexList = e.extrudeTexList ? JSON.parse(JSON.stringify(e.extrudeTexList)) : [];
     let monomerList = e.monomerList ? JSON.parse(JSON.stringify(e.monomerList)) : [];
+    let urlHeaderList = e.urlHeaderList ? JSON.parse(JSON.stringify(e.urlHeaderList)) : [];
 
     // 默认相机信息
     let defaultCamLoc = null;
@@ -386,7 +375,8 @@ const card_callback = async (e: Share) => {
             shareUrl: e.url,
             projName: e.projName,
             worldCRS: e.worldCRS,
-            urlHeaderList: e.urlHeaderList,
+            urlHeaderList: urlHeaderList,
+            authorData: e.authorData,
             dataSetList: dataSetList,
             collect: e.collect,
             shareType: e.shareType,
@@ -497,13 +487,12 @@ const dialog_UrlInputCallBack = async (e: any) => {
 const showShareUrlRes = async (urlInfo: any) => {
     try {
         // 获取分享信息
-        const shareInfo = await getShareInfo();
-        state_store.updateCurSource(shareInfo.source);
+        state_store.updateCurSource(urlInfo.shareItem?.source);
 
         if (urlInfo.shareType === 2) {
-            showSceneRes(urlInfo, shareInfo);
+            showSceneRes(urlInfo);
         } else {
-            showModelRes(urlInfo, shareInfo);
+            showModelRes(urlInfo);
         }
     } catch (error) {
         throw error;
@@ -511,7 +500,7 @@ const showShareUrlRes = async (urlInfo: any) => {
 };
 
 // MARK re-api 查看分享链接资源 -- 场景资源
-const showSceneRes = async (urlInfo: any, shareInfo: any) => {
+const showSceneRes = async (urlInfo: any) => {
     uni.show_loading();
     try {
         // 获取场景信息
@@ -535,25 +524,27 @@ const showSceneRes = async (urlInfo: any, shareInfo: any) => {
         ]);
 
         // 获取数据集信息
-        const res_3 = await getDataSetList({ dataSetIds: dataSetIdList });
+        const res_3 = await getDataSetList({ dataSetIds: dataSetIdList }, urlInfo);
 
         const dataSetList_temp1: any[] = handleDataSetTrans(res_3, res_1.dataSetPosition);
         const dataSetList_temp2 = handleTerrainLayerLev(dataSetList_temp1, terrainList);
         const dataSetList = handleDataSetId(dataSetList_temp2);
         const urlHeaderList = handleDataSetResHeader(dataSetList_temp2, urlInfo);
+        const authorData = handleDataSetResAuthorInfo(urlInfo);
 
         let cam_dataSetId = uni.$tool.cam_defauleDataSet(dataSetList);
         let shareData: Share = newShare({
             url: urlInfo.url,
             token: urlInfo.token,
             baseUrl: urlInfo.baseUrl,
-            source: shareInfo.source,
+            source: urlInfo.shareItem?.source,
             projName: urlInfo.projName,
             id: urlInfo.id,
             lastTime: new Date(),
-            endTime: uni.$tool.time_To_Date(shareInfo.endTime),
-            shareFormUserExpirationTime: uni.$tool.time_To_Date(shareInfo.shareFormUserExpirationTime),
+            endTime: uni.$tool.time_To_IOSDate(urlInfo.shareItem?.endTime),
+            shareFormUserExpirationTime: uni.$tool.time_To_IOSDate(urlInfo.shareItem?.shareFormUserExpirationTime),
             urlHeaderList: urlHeaderList,
+            authorData: authorData,
             dataSetList: dataSetList,
             worldCRS: res_1.coordinates,
             shareType: 2,
@@ -574,12 +565,13 @@ const showSceneRes = async (urlInfo: any, shareInfo: any) => {
                 name: 'uni-app',
                 token: urlInfo.token,
                 baseUrl: urlInfo.baseUrl,
-                source: shareInfo.source,
+                source: urlInfo.shareItem?.source,
                 shareUrl: urlInfo.url,
                 projName: urlInfo.projName,
                 collect: shareData.collect,
                 worldCRS: res_1.coordinates,
                 urlHeaderList: urlHeaderList,
+                authorData: authorData,
                 dataSetList: dataSetList,
                 shareType: 2,
                 sceneId: urlInfo.id,
@@ -604,7 +596,7 @@ const showSceneRes = async (urlInfo: any, shareInfo: any) => {
 };
 
 // MARK re-api 查看分享链接资源 -- 模型资源
-const showModelRes = (urlInfo: any, shareInfo: any) => {
+const showModelRes = (urlInfo: any) => {
     switch (urlInfo.shareDataType) {
         case 'bim': // 短链接请求获取
         case 'Bim': // 长连接获取
@@ -612,11 +604,11 @@ const showModelRes = (urlInfo: any, shareInfo: any) => {
         case 'Wmts':
         case 'Osgb':
         case 'PointCloud':
-            showModelTypeRes(urlInfo, shareInfo);
+            showModelTypeRes(urlInfo);
             break;
         case 'CAD': // 短链接请求获取
         case 'Cad': // 长连接获取
-            showCadTypeRes(urlInfo, shareInfo);
+            showCadTypeRes(urlInfo);
             break;
         default:
             // 使用延时解决弹窗关闭后的提示显示异常的问题，因为弹窗关闭有200的延迟
@@ -628,24 +620,26 @@ const showModelRes = (urlInfo: any, shareInfo: any) => {
 };
 
 // MARK re-api 查看模型类型数据
-const showModelTypeRes = async (urlInfo: any, shareInfo: any) => {
+const showModelTypeRes = async (urlInfo: any) => {
     uni.show_loading();
     try {
         // 获取资源数据
-        const dataSetList = await getDataSetList({ dataSetIds: [urlInfo.id] });
+        const dataSetList = await getDataSetList({ dataSetIds: [urlInfo.id] }, urlInfo);
         const urlHeaderList = handleDataSetResHeader(dataSetList, urlInfo);
+        const authorData = handleDataSetResAuthorInfo(urlInfo);
 
         let shareData: Share = newShare({
             url: urlInfo.url,
             token: urlInfo.token,
             baseUrl: urlInfo.baseUrl,
-            source: shareInfo.source,
+            source: urlInfo.shareItem?.source,
             projName: urlInfo.projName,
             id: urlInfo.id,
             lastTime: new Date(),
-            endTime: uni.$tool.time_To_Date(shareInfo.endTime),
-            shareFormUserExpirationTime: uni.$tool.time_To_Date(shareInfo.shareFormUserExpirationTime),
+            endTime: uni.$tool.time_To_IOSDate(urlInfo.shareItem?.endTime),
+            shareFormUserExpirationTime: uni.$tool.time_To_IOSDate(urlInfo.shareItem?.shareFormUserExpirationTime),
             urlHeaderList: urlHeaderList,
+            authorData: authorData,
             dataSetList: dataSetList,
             shareType: 1,
             shareDataType: urlInfo.shareDataType,
@@ -659,11 +653,12 @@ const showModelTypeRes = async (urlInfo: any, shareInfo: any) => {
                 name: 'uni-app',
                 token: urlInfo.token,
                 baseUrl: urlInfo.baseUrl,
-                source: shareInfo.source,
+                source: urlInfo.shareItem?.source,
                 shareUrl: urlInfo.url,
                 projName: urlInfo.projName,
                 sceneId: urlInfo.id,
                 urlHeaderList: urlHeaderList,
+                authorData: authorData,
                 dataSetList: dataSetList,
                 collect: shareData.collect,
                 shareType: 1,
@@ -681,25 +676,27 @@ const showModelTypeRes = async (urlInfo: any, shareInfo: any) => {
 };
 
 // MARK re-api 查看CAD类型数据
-const showCadTypeRes = async (urlInfo: any, shareInfo: any) => {
+const showCadTypeRes = async (urlInfo: any) => {
     uni.show_loading();
 
     try {
         // 获取资源数据
         const cadDataSetList = await getCadDataSetList({ dataSetId: urlInfo.id });
         const urlHeaderList = handleDataSetResHeader(cadDataSetList, urlInfo);
+        const authorData = handleDataSetResAuthorInfo(urlInfo);
 
         let shareData: Share = newShare({
             url: urlInfo.url,
             token: urlInfo.token,
             baseUrl: urlInfo.baseUrl,
-            source: shareInfo.source,
+            source: urlInfo.shareItem?.source,
             projName: urlInfo.projName,
             id: urlInfo.id,
             lastTime: new Date(),
-            endTime: uni.$tool.time_To_Date(shareInfo.endTime),
-            shareFormUserExpirationTime: uni.$tool.time_To_Date(shareInfo.shareFormUserExpirationTime),
+            endTime: uni.$tool.time_To_IOSDate(urlInfo.shareItem?.endTime),
+            shareFormUserExpirationTime: uni.$tool.time_To_IOSDate(urlInfo.shareItem?.shareFormUserExpirationTime),
             urlHeaderList: urlHeaderList,
+            authorData: authorData,
             dataSetList: cadDataSetList,
             shareType: 1,
             shareDataType: urlInfo.shareDataType,
@@ -713,11 +710,12 @@ const showCadTypeRes = async (urlInfo: any, shareInfo: any) => {
                 name: 'uni-app',
                 token: urlInfo.token,
                 baseUrl: urlInfo.baseUrl,
-                source: shareInfo.source,
+                source: urlInfo.shareItem?.source,
                 shareUrl: urlInfo.url,
                 projName: urlInfo.projName,
                 sceneId: urlInfo.id,
                 urlHeaderList: urlHeaderList,
+                authorData: authorData,
                 dataSetList: cadDataSetList,
                 collect: shareData.collect,
                 shareType: 1,
@@ -759,44 +757,6 @@ const showResourceAddressRes = (e: any) => {
         .then((result) => {
             uni.$re.unipluginLog(JSON.stringify(result));
         });
-};
-
-// MARK Service 获取分享信息
-const getShareInfo = (): Promise<any> => {
-    return new Promise<any>((resolve, reject) => {
-        getSharedInfo().then((res) => {
-            console.log(res);
-            if (!res.data) {
-                reject(null);
-                return;
-            }
-            let shareInfo = res.data;
-            if (!res.data || !res.data.platformMode || !res.data.loginMode) {
-                shareInfo.source = 0;
-                resolve(shareInfo);
-                return;
-            }
-            // 判断分享链接来源 0: 私有化 1：黑洞 2：星河 3: 星云
-            if (res.data.loginMode.value === 'Private') {
-                shareInfo.source = 0;
-                resolve(shareInfo);
-                return;
-            }
-            if (res.data.platformMode.value === 'BlackHole') {
-                shareInfo.source = 1;
-                resolve(shareInfo);
-            } else if (res.data.platformMode.value === 'StarRiver') {
-                shareInfo.source = 2;
-                resolve(shareInfo);
-            } else if (res.data.platformMode.value === 'Nebula') {
-                shareInfo.source = 3;
-                resolve(shareInfo);
-            } else {
-                shareInfo.source = 0;
-                resolve(shareInfo);
-            }
-        });
-    });
 };
 
 // MARK Service 获取场景信息
@@ -846,7 +806,7 @@ const getModelTree = (paran: any): Promise<any> => {
 };
 
 // MARK Service 获取数据集资源地址
-const getDataSetList = (params: any): Promise<any> => {
+const getDataSetList = (params: any, urlInfo: any): Promise<any> => {
     return new Promise<any>((resolve, reject) => {
         getProjectModel(params).then((res) => {
             let dataSetList: any[] = [];
@@ -857,7 +817,7 @@ const getDataSetList = (params: any): Promise<any> => {
                 let dataSetSGContent = item.context ? item.context : '';
                 dataSetList.push({
                     dataSetId: item.dataSetId,
-                    resourcesAddress: item.resourcesAddress,
+                    resourcesAddress: urlInfo.isMinio ? `${item.resourcesAddress}${item.resId}` : item.resourcesAddress,
                     rotate: item.rotate?.split(' ').map(Number),
                     scale: item.scale?.split(' ').map(Number),
                     offset: item.translation?.split(' ').map(Number),
@@ -1087,6 +1047,29 @@ const handleDataSetResHeader = (dataSetList: any, urlInfo: any) => {
         }
     });
     return urlHeaderList;
+};
+
+// MARK Service 处理数据集--获取资源授权地址信息
+const handleDataSetResAuthorInfo = (urlInfo: any) => {
+    if (!urlInfo.isMinio) {
+        return {};
+    }
+    const authorTxt = urlInfo.resourcesAddress.replace('res/', state_store.authorTxt);
+    const authprRes = urlInfo.resourcesAddress;
+    const authorIndex = urlInfo.resourcesAddress.replace('res/', state_store.authorIndex);;
+
+    let authorData: any = {
+        isMinio: urlInfo.isMinio,
+        resMode: urlInfo.resMode,
+        commonUrl: urlInfo.commonUrl,
+        resourcesAddress: urlInfo.resourcesAddress,
+        authorTxt: authorTxt,
+        authprRes: authprRes,
+        authorIndex: authorIndex,
+        authorTxtId: state_store.authorTxtId,
+        authorIndexId: state_store.authorIndexId,
+    };
+    return authorData;
 };
 
 // MARK Service 处理数据集--单构件信息

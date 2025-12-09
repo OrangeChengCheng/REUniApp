@@ -35,6 +35,7 @@ export const useCardStore = defineStore('card', {
             let find = this.cardList.find((e: Share) => e.id === shareData.id);
             if (find) {
                 find.urlHeaderList = shareData.urlHeaderList;
+                find.authorData = shareData.authorData;
                 find.dataSetList = shareData.dataSetList;
                 find.entityList = shareData.entityList;
                 find.waterList = shareData.waterList;
