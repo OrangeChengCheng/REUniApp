@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-12-09 11:49:36
+ * @LastEditTime: 2025-12-10 10:50:26
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -1055,7 +1055,7 @@ const handleDataSetResAuthorInfo = (urlInfo: any) => {
         return {};
     }
     const authorTxt = urlInfo.resourcesAddress.replace('res/', state_store.authorTxt);
-    const authprRes = urlInfo.resourcesAddress;
+    const authorRes = urlInfo.resourcesAddress;
     const authorIndex = urlInfo.resourcesAddress.replace('res/', state_store.authorIndex);;
 
     let authorData: any = {
@@ -1064,7 +1064,7 @@ const handleDataSetResAuthorInfo = (urlInfo: any) => {
         commonUrl: urlInfo.commonUrl,
         resourcesAddress: urlInfo.resourcesAddress,
         authorTxt: authorTxt,
-        authprRes: authprRes,
+        authorRes: authorRes,
         authorIndex: authorIndex,
         authorTxtId: state_store.authorTxtId,
         authorIndexId: state_store.authorIndexId,
