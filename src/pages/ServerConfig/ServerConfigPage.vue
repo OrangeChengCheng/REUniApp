@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2025-05-21 16:18:51
- * @LastEditTime: 2025-08-04 15:34:47
+ * @LastEditTime: 2025-12-10 11:58:19
 -->
 <template>
     <base-view :nav_bar="true" :nav_bar_title="title" :nav_bar_color="`--color-white`">
@@ -18,20 +18,8 @@
                     @touchstart="(e) => touch_start(e, index)"
                     @touchmove="(e) => touch_move(e, index)"
                     @touchend="touch_end(index)">
-                    <view
-                        class="card-area"
-                        :style="{
-                            transform: `translateX(${swipe_offset[index]}px)`,
-                        }"
-                        @click.stop="click_card(item)"
-                        >{{ item.url }}
-                    </view>
-                    <view
-                        class="delete-area"
-                        :style="{
-                            background: `${swipe_offset[index] < 0 ? '#d54941' : 'transparent'}`,
-                        }"
-                        @click.stop="click_delete(index)">
+                    <view class="card-area" :style="style_card_transform_computed(index)" @click.stop="click_card(item, index)">{{ item.url }} </view>
+                    <view class="delete-area" :style="style_delbtn_background_computed(index)" @click.stop="click_delete(index)">
                         <icon-font class="delete-icon" name="shanchu" size="18px" color="#ffffff"></icon-font>
                     </view>
                 </view>
@@ -49,7 +37,7 @@
 
 // MOD-- JavaScript
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { ref, reactive, computed } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
 import BaseView from '@/components/Base/BaseView.vue';
 import ServerConfigInputDialog from '@/components/ServerConfig/ServerConfigInputDialog.vue';
@@ -58,12 +46,27 @@ const ref_serverConfig_dialog = ref<InstanceType<typeof ServerConfigInputDialog>
 const title = ref('');
 
 const editConfigUrl = ref('');
+const isEditIndex = ref(-1);
 const serverWhiteList = ref<any[]>([]);
 
 const swipe_offset = reactive<number[]>(new Array(serverWhiteList.value.length).fill(0)); // 滑动相关状态：记录每个 card 的位移
 const startX = ref(0); // 记录触摸起始位置
 const isAnimating = reactive<boolean[]>(new Array(serverWhiteList.value.length).fill(false)); // 用于标记是否正在动画过程中
 const isScrolling = ref(false);
+
+const style_card_transform_computed = computed(() => (index: number) => {
+    const offset = typeof swipe_offset[index] === 'undefined' ? 0 : swipe_offset[index];
+    return {
+        transform: `translateX(${offset}px)`,
+    };
+});
+
+const style_delbtn_background_computed = computed(() => (index: number) => {
+    const offset = typeof swipe_offset[index] === 'undefined' ? 0 : swipe_offset[index];
+    return {
+        background: `${offset < 0 ? '#d54941' : 'transparent'}`,
+    };
+});
 
 // 获取页面跳转时传递的url参数
 onLoad((options) => {
@@ -75,14 +78,16 @@ onLoad((options) => {
 });
 
 // MARK Click 添加服务配置白名单地址
-const click_card = (e: any) => {
+const click_card = (e: any, index: any) => {
     editConfigUrl.value = e.url;
+    isEditIndex.value = index;
     ref_serverConfig_dialog.value?.show_dialog();
 };
 
 // MARK Click 添加服务配置白名单地址
 const click_addServerConfig = (e: any) => {
     editConfigUrl.value = '';
+    isEditIndex.value = -1;
     ref_serverConfig_dialog.value?.show_dialog();
 };
 
@@ -95,7 +100,11 @@ const dialog_confirmCallBack = (e: any) => {
             uni.showToast({ title: '配置已存在', icon: 'none' });
             return;
         }
-        serverWhiteList.value.push({ url: e, type: 3 });
+        if (isEditIndex.value < 0) {
+            serverWhiteList.value.push({ url: e, type: 3 });
+        } else {
+            serverWhiteList.value[isEditIndex.value].url = e;
+        }
         uni.$service.updateServerWhiteList(serverWhiteList.value);
     }
 };
