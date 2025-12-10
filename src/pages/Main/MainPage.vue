@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-12-10 10:50:26
+ * @LastEditTime: 2025-12-10 11:21:56
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -270,7 +270,7 @@ const tool_handleUrl = async (e: any): Promise<any> => {
         const whiteList = uni.$service.getServerWhiteList();
         const hasWhiteList = whiteList.some((item: any) => e.includes(item.url));
         if (!hasWhiteList) {
-            throw new Error('数据不在白名单范围');
+            throw new Error('数据不在白名单范围, 请前往服务配置中设置');
         }
         state_store.updateCurrToken(urlData.token);
         state_store.updateCurrBaseUrl(urlData.baseUrl);
@@ -281,7 +281,7 @@ const tool_handleUrl = async (e: any): Promise<any> => {
 
         return urlData;
     } catch (error: any) {
-        throw new Error(`分享连接数据异常 ${error.message}`);
+        throw error;
     }
 };
 
@@ -1056,7 +1056,7 @@ const handleDataSetResAuthorInfo = (urlInfo: any) => {
     }
     const authorTxt = urlInfo.resourcesAddress.replace('res/', state_store.authorTxt);
     const authorRes = urlInfo.resourcesAddress;
-    const authorIndex = urlInfo.resourcesAddress.replace('res/', state_store.authorIndex);;
+    const authorIndex = urlInfo.resourcesAddress.replace('res/', state_store.authorIndex);
 
     let authorData: any = {
         isMinio: urlInfo.isMinio,
