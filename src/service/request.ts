@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-14 12:21:00
- * @LastEditTime: 2025-12-09 11:42:52
+ * @LastEditTime: 2025-12-15 15:47:48
  */
 
 
@@ -11,8 +11,12 @@ export function requestPost(url: string, data?: object, toast: boolean = true): 
 
     return new Promise<any>((resolve, reject) => {
         const state_store = useStateStore();
+        let baseUrl = state_store.baseUrl;
+        if (baseUrl.includes("/BlackHole") || baseUrl.includes("/StarRiver")) {
+            baseUrl = baseUrl.replace("/BlackHole", "").replace("/StarRiver", "");
+        }
         uni.request({
-            url: `${state_store.baseUrl}/${state_store.sourceRoute}/project${url}`,
+            url: `${baseUrl}/${state_store.sourceRoute}/project${url}`,
             data: data || {},
             method: 'POST',
             timeout: uni.$service.commonTimeout,
@@ -39,7 +43,7 @@ export function requestPost(url: string, data?: object, toast: boolean = true): 
                     } else {
                         if (toast) uni.showToast({ title: '未知错误!', icon: 'none' });
                     }
-                    res.url = `${state_store.baseUrl}/${state_store.sourceRoute}/project${url}`;
+                    res.url = `${baseUrl}/${state_store.sourceRoute}/project${url}`;
                     res.authorization = state_store.token;
                     res.data = data;
                     uni.$re.unipluginLog(JSON.stringify(res));
@@ -60,8 +64,12 @@ export function requestGet(url: string, data?: object, toast: boolean = true): P
 
     return new Promise<any>((resolve, reject) => {
         const state_store = useStateStore();
+        let baseUrl = state_store.baseUrl;
+        if (baseUrl.includes("/BlackHole") || baseUrl.includes("/StarRiver")) {
+            baseUrl = baseUrl.replace("/BlackHole", "").replace("/StarRiver", "");
+        }
         uni.request({
-            url: `${state_store.baseUrl}/${state_store.sourceRoute}/project${url}`,
+            url: `${baseUrl}/${state_store.sourceRoute}/project${url}`,
             data: data || {},
             method: 'GET',
             timeout: uni.$service.commonTimeout,
@@ -88,7 +96,7 @@ export function requestGet(url: string, data?: object, toast: boolean = true): P
                     } else {
                         if (toast) uni.showToast({ title: '未知错误!', icon: 'none' });
                     }
-                    res.url = `${state_store.baseUrl}/${state_store.sourceRoute}/project${url}`;
+                    res.url = `${baseUrl}/${state_store.sourceRoute}/project${url}`;
                     res.authorization = state_store.token;
                     res.data = data;
                     uni.$re.unipluginLog(JSON.stringify(res));

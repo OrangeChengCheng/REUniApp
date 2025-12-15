@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-12-08 17:22:50
+ * @LastEditTime: 2025-12-15 11:35:23
 -->
 <template>
     <base-view :nav_bar="true" :nav_bar_title="`搜索`" :nav_bar_color="`--color-main-bg`">
@@ -190,6 +190,7 @@ const card_callback = async (e: Share) => {
     uni.$re
         .realEngineRender({
             name: 'uni-app',
+            noExternalNetwork: state_store.noExternalNetwork,
             token: e.token,
             baseUrl: e.baseUrl,
             shareUrl: e.url,
@@ -287,6 +288,8 @@ const dialog_UrlInputCallBack = async (e: any) => {
         dialog_revise.value = false;
     }
 };
+
+
 </script>
 
 // MOD-- CSS

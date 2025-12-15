@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-12-10 11:21:56
+ * @LastEditTime: 2025-12-15 15:05:10
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -366,9 +366,11 @@ const card_callback = async (e: Share) => {
         defaultCamLoc = JSON.parse(defaultCamLocJson);
     }
 
+
     uni.$re
         .realEngineRender({
             name: 'uni-app',
+            noExternalNetwork: state_store.noExternalNetwork,
             token: e.token,
             baseUrl: e.baseUrl,
             source: e.source,
@@ -563,6 +565,7 @@ const showSceneRes = async (urlInfo: any) => {
         uni.$re
             .realEngineRender({
                 name: 'uni-app',
+                noExternalNetwork: state_store.noExternalNetwork,
                 token: urlInfo.token,
                 baseUrl: urlInfo.baseUrl,
                 source: urlInfo.shareItem?.source,
@@ -651,6 +654,7 @@ const showModelTypeRes = async (urlInfo: any) => {
         uni.$re
             .realEngineRender({
                 name: 'uni-app',
+                noExternalNetwork: state_store.noExternalNetwork,
                 token: urlInfo.token,
                 baseUrl: urlInfo.baseUrl,
                 source: urlInfo.shareItem?.source,
@@ -708,6 +712,7 @@ const showCadTypeRes = async (urlInfo: any) => {
         uni.$re
             .realEngineRender({
                 name: 'uni-app',
+                noExternalNetwork: state_store.noExternalNetwork,
                 token: urlInfo.token,
                 baseUrl: urlInfo.baseUrl,
                 source: urlInfo.shareItem?.source,
@@ -1245,6 +1250,8 @@ const getTerrainDataSetList = async (sceneTree: any, nodeType: number) => {
     let terrainDataSets = allDataSets.filter((el) => terrainType.includes(el.dataSetType));
     return terrainDataSets;
 };
+
+
 </script>
 
 // MOD-- CSS

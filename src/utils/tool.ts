@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-23 14:42:45
- * @LastEditTime: 2025-12-09 11:53:56
+ * @LastEditTime: 2025-12-15 15:33:24
  */
 
 const RE_AppVersion = "1.0.8";
@@ -32,21 +32,62 @@ const api: ApiMethods = {
         if (url.length <= 0) return "";
         url = url.trim();
 
-        //提取baseUrl（域名和端口号）
-        let baseUrl = '';
-        // 判断协议类型（http:// 或 https://）
+        // 定义需要忽略的路径关键词数组
+        // const ignorePathKeywords = ["BlackHole", "StarRiver"];
+        const ignorePathKeywords: Array<string> = [];
+
+        // 步骤1：截断 # 及之后的hash部分（如#/dataSetShare/...）
+        const hashIndex = url.indexOf('#');
+        if (hashIndex !== -1) {
+            url = url.substring(0, hashIndex);
+        }
+
+        // 步骤2：截断 index.html 及之后的内容
+        const indexHtmlStr = "index.html";
+        const indexHtmlIndex = url.indexOf(indexHtmlStr);
+        if (indexHtmlIndex !== -1) {
+            url = url.substring(0, indexHtmlIndex);
+        }
+
+        // 步骤3：提取协议（http:///https://）
         const protocolEndIndex = url.indexOf('://');
-        if (protocolEndIndex !== -1) {
-            // 从协议结束位置（://后）开始，寻找第一个“/”
-            const pathStartIndex = url.indexOf('/', protocolEndIndex + 3);
-            if (pathStartIndex !== -1) {
-                // 截取从开头到第一个“/”的部分，即为baseUrl
-                baseUrl = url.substring(0, pathStartIndex);
+        if (protocolEndIndex === -1) return ""; // 无合法协议，返回空
+        const protocol = url.substring(0, protocolEndIndex + 3); // 如 "https://"
+
+        // 步骤4：提取协议后的部分（域名/端口+路径）
+        const afterProtocol = url.substring(protocolEndIndex + 3);
+        // 找到协议后第一个 "/" 的位置（区分域名/端口和路径）
+        const firstSlashAfterProtocol = afterProtocol.indexOf('/');
+
+        let baseUrl = "";
+        if (firstSlashAfterProtocol === -1) {
+            // 无路径，直接返回 协议+域名/端口
+            baseUrl = protocol + afterProtocol;
+        } else {
+            // 拆分 域名/端口 和 后续路径
+            const domainAndPort = afterProtocol.substring(0, firstSlashAfterProtocol); // 如 "test.com" 或 "192.168.31.7:9012"
+            const pathPart = afterProtocol.substring(firstSlashAfterProtocol); // 如 "/StarRiver/sub" 或 "/bimhlw"
+
+            // 步骤5：判断路径中是否包含需要忽略的关键词（任意层级都匹配）
+            const isIgnorePath = ignorePathKeywords.some(keyword =>
+                pathPart.includes(keyword)
+            );
+
+            if (isIgnorePath) {
+                // 包含忽略关键词，仅保留 协议+域名/端口
+                baseUrl = protocol + domainAndPort;
             } else {
-                // 若没有“/”，则整个URL即为baseUrl（如单独的域名）
-                baseUrl = url;
+                // 不包含忽略关键词，保留 协议+域名/端口+路径（清理末尾/）
+                const cleanPath = pathPart.endsWith('/') ? pathPart.slice(0, -1) : pathPart;
+                baseUrl = protocol + domainAndPort + cleanPath;
             }
         }
+
+        // 步骤6：最终清理末尾多余的 /（保证格式统一）
+        if (baseUrl.endsWith('/')) {
+            baseUrl = baseUrl.slice(0, -1);
+        }
+
         return baseUrl;
     },
     // MARK tool 处理分享链接
@@ -59,20 +100,7 @@ const api: ApiMethods = {
             if (url.length <= 0) return null;
 
             //提取baseUrl（域名和端口号）
-            let baseUrl = '';
-            // 判断协议类型（http:// 或 https://）
-            const protocolEndIndex = url.indexOf('://');
-            if (protocolEndIndex !== -1) {
-                // 从协议结束位置（://后）开始，寻找第一个“/”
-                const pathStartIndex = url.indexOf('/', protocolEndIndex + 3);
-                if (pathStartIndex !== -1) {
-                    // 截取从开头到第一个“/”的部分，即为baseUrl
-                    baseUrl = url.substring(0, pathStartIndex);
-                } else {
-                    // 若没有“/”，则整个URL即为baseUrl（如单独的域名）
-                    baseUrl = url;
-                }
-            }
+            let baseUrl = api.url_base(url);
 
             // 短链接分享数据
             if (url.includes("#/shareViews/") || url.includes("#/shareView/")) {

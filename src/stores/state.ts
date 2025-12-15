@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-11-09 10:46:29
- * @LastEditTime: 2025-12-09 11:48:47
+ * @LastEditTime: 2025-12-15 11:27:23
  */
 import { defineStore } from 'pinia'
 
@@ -33,6 +33,7 @@ const RE_AuthorIndex = "pathindex/res/index.xml";
 */
 
 interface StateMold {
+    noExternalNetwork: boolean,
     baseUrl: string,
     downloadUrl: string,
     token: string,
@@ -57,6 +58,7 @@ interface StateMold {
 
 export const useStateStore = defineStore('state', {
     state: (): StateMold => ({
+        noExternalNetwork: JSON.parse(uni.getStorageSync('RE_noExternalNetwork') || "false") || false,// app无外部网络
         baseUrl: "",// app当前服务配置
         downloadUrl: "",// app当前资源下载服务配置
         token: "",// app当前token
@@ -90,6 +92,11 @@ export const useStateStore = defineStore('state', {
         clearAgree() {
             this.agreePolicy = false;
             uni.setStorageSync('RE_agreePolicy', JSON.stringify(false));
+        },
+
+        updateNoExternalNetwork(noExternalNetwork: boolean) {
+            this.noExternalNetwork = noExternalNetwork;
+            uni.setStorageSync('RE_noExternalNetwork', JSON.stringify(noExternalNetwork));
         },
 
         // MARK 更新当前的服务配置

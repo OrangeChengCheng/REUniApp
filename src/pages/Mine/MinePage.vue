@@ -1,17 +1,18 @@
 <!--
  * @Author: Lemon C
  * @Date: 2025-02-13 10:55:26
- * @LastEditTime: 2025-08-04 16:26:56
+ * @LastEditTime: 2025-12-15 11:31:05
 -->
 <template>
     <base-view :nav_bar="true" :nav_bar_item_back="false" :nav_bar_title="`我的`" :nav_bar_color="`--color-white`">
         <view class="sup-mine-page">
             <view class="list-container">
-                <view class="list-item" v-for="(item, index) in type_list" :key="index" @click="handleItemClick(item)">
+                <view class="list-item" v-for="(item, index) in type_list" :key="index" @click.stop="handleItemClick(item)">
                     <icon-font :name="item.icon" size="24px" color="--color-main-blue"></icon-font>
                     <text class="item-name">{{ item.name }}</text>
                     <text class="item-detail" v-if="item.detailText && item.detail.length > 0">{{ item.detail }}</text>
                     <icon-font class="item-jump-icon" v-if="item.detailJump" name="nav_icon_back_default" size="24px" color="#86909C"></icon-font>
+                    <switch v-if="item.switch" :checked="noExternalNetwork" style="transform:scale(0.8)" @change="switchChange" />
                 </view>
             </view>
         </view>
@@ -22,6 +23,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import BaseView from '@/components/Base/BaseView.vue';
+import { useStateStore } from '@/stores/state';
+
+const state_store = useStateStore();
+const noExternalNetwork = ref(state_store.noExternalNetwork)
 
 const type_list = ref([
     {
@@ -43,6 +48,12 @@ const type_list = ref([
         icon: 'a-serviceconfiguration',
         detailJump: true,
         jumpType: 2,
+    },
+    {
+        name: '无外网环境',
+        icon: 'pop_icon_link_default',
+        detailJump: false,
+        switch: true,
     },
     {
         name: '初始化数据',
@@ -93,6 +104,11 @@ const handleItemClick = (item: any) => {
                 break;
         }
     }
+};
+
+const switchChange = (e: any) => {
+    console.log(e.detail.value);
+    state_store.updateNoExternalNetwork(e.detail.value);
 };
 </script>
 
