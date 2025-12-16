@@ -1,15 +1,16 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-23 14:42:45
- * @LastEditTime: 2025-12-15 15:33:24
+ * @LastEditTime: 2025-12-16 10:14:02
  */
 
-const RE_AppVersion = "1.0.8";
+const RE_AppVersion = "2.0.1";
 const RE_NeedUpdate = true;
 
 import { useCardStore } from '@/stores/card';
 import { useDeviceStore } from '@/stores/device';
 import { useStateStore } from '@/stores/state';
+import uniApi from '@/utils/uniApi';
 
 
 interface ApiMethods {
@@ -355,7 +356,8 @@ const api: ApiMethods = {
 
     // MARK config 获取AppVersion
     getAppVersion: (): string => {
-        return RE_AppVersion;
+        const info = uniApi.get_SystemInfo();
+        return info.appVersion || RE_AppVersion;
     },
 
     // MARK config 初始化数据

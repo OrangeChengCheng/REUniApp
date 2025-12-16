@@ -9,6 +9,7 @@ interface ApiMethods {
     show_loading(): void;
     hide_loading(): void;
     get_deviceInfo(): void;
+    get_SystemInfo(): any;
 }
 
 const api: ApiMethods = {
@@ -132,6 +133,12 @@ const api: ApiMethods = {
                 uni.$re.unipluginLog('uni.getSystemInfo: ' + JSON.stringify(err));
             },
         });
+    },
+
+    // MARK uni-app  获取系统信息
+    get_SystemInfo: (): any => {
+        const info = uni.getSystemInfoSync();
+        return info;
     },
 
 }
