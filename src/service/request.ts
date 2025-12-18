@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-14 12:21:00
- * @LastEditTime: 2025-12-15 15:47:48
+ * @LastEditTime: 2025-12-18 15:28:52
  */
 
 
@@ -12,9 +12,8 @@ export function requestPost(url: string, data?: object, toast: boolean = true): 
     return new Promise<any>((resolve, reject) => {
         const state_store = useStateStore();
         let baseUrl = state_store.baseUrl;
-        if (baseUrl.includes("/BlackHole") || baseUrl.includes("/StarRiver")) {
-            baseUrl = baseUrl.replace("/BlackHole", "").replace("/StarRiver", "");
-        }
+        const ignorePathKeywords = ["/BlackHole", "/StarRiver", "/blackHole", "/starRiver"];
+        ignorePathKeywords.forEach((item: string) => baseUrl = baseUrl.replace(item, ""));
         uni.request({
             url: `${baseUrl}/${state_store.sourceRoute}/project${url}`,
             data: data || {},
@@ -65,9 +64,8 @@ export function requestGet(url: string, data?: object, toast: boolean = true): P
     return new Promise<any>((resolve, reject) => {
         const state_store = useStateStore();
         let baseUrl = state_store.baseUrl;
-        if (baseUrl.includes("/BlackHole") || baseUrl.includes("/StarRiver")) {
-            baseUrl = baseUrl.replace("/BlackHole", "").replace("/StarRiver", "");
-        }
+        const ignorePathKeywords = ["/BlackHole", "/StarRiver", "/blackHole", "/starRiver"];
+        ignorePathKeywords.forEach((item: string) => baseUrl = baseUrl.replace(item, ""));
         uni.request({
             url: `${baseUrl}/${state_store.sourceRoute}/project${url}`,
             data: data || {},
