@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-12-15 15:05:10
+ * @LastEditTime: 2026-01-13 18:10:10
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -366,7 +366,6 @@ const card_callback = async (e: Share) => {
         defaultCamLoc = JSON.parse(defaultCamLocJson);
     }
 
-
     uni.$re
         .realEngineRender({
             name: 'uni-app',
@@ -508,7 +507,7 @@ const showSceneRes = async (urlInfo: any) => {
         // 获取场景信息
         const res_1 = await getSceneInfo(urlInfo.id);
         // 获取场景树
-        const res_2 = await getSceneTree({ sceneId: urlInfo.id, isPublished: true });
+        const res_2 = await getSceneTree({ sceneId: urlInfo.id, isPublished: true }, res_1);
         // 处理数据集ID列表
         let dataSetIdList = getDataSetIds(res_2);
         if (res_1.componentTreeId && res_1.componentTreeId.length > 0) {
@@ -785,11 +784,12 @@ const getSceneInfo = (paran: any): Promise<any> => {
 };
 
 // MARK Service 获取场景目录树
-const getSceneTree = (paran: any): Promise<any> => {
+const getSceneTree = (paran: any, sceneInfo: any): Promise<any> => {
     return new Promise<any>((resolve, reject) => {
         getSingleSceneTreeById(paran).then((res) => {
             if (res.data) {
-                resolve(res.data);
+                const treeList = handle_formatSceneTree(res.data, sceneInfo);
+                resolve(treeList);
             } else {
                 reject('场景目录树获取失败！');
             }
@@ -904,8 +904,8 @@ const getCadDataSetList = (params: any): Promise<any> => {
 // MARK Service 获取开挖纹理列表
 const getExtrudeTexList = (sceneTree: any): Promise<any> => {
     return new Promise<any>((resolve, reject) => {
-        const allLeafNodes = getAllNodeByLevel(sceneTree, 2);
-        const allExtrudes = allLeafNodes.filter((item) => item.dataSetType == state_store.appSupportExtrudeType);
+        const allLeafNodes = handle_findAllNodeByLevel(sceneTree, 2);
+        const allExtrudes = allLeafNodes.filter((item: any) => item.dataSetType == state_store.appSupportExtrudeType);
         if (!allExtrudes.length) {
             resolve([]);
             return;
@@ -932,6 +932,116 @@ const getExtrudeTexList = (sceneTree: any): Promise<any> => {
             }
         });
     });
+};
+
+// MARK data 格式化-场景树
+const handle_formatSceneTree = (list: any, sceneInfo: any) => {
+    if (!list) return [];
+    let sceneData = list;
+    let rootFolders = handle_findAllNodeByLevel(sceneData, 3);
+    let folders = handle_findAllNodeByLevel(sceneData, 1);
+    let allFolders = [...rootFolders, ...folders];
+    allFolders.forEach((item) => {
+        let rootNodeId = item.levelCode.split('/')[0];
+        let find = rootFolders.find((el: any) => el.sceneNodeId === rootNodeId);
+        item.dataSetType = find.dataSetType;
+        item.srcDataSetType = find.srcDataSetType;
+        item['nodeName'] = item.sceneNodeName;
+        item['nodeId'] = item.sceneNodeId;
+    });
+
+    let allDatasets = handle_findAllNodeByLevel(sceneData, 2);
+    let { componentPosition } = sceneInfo;
+    allDatasets.forEach((item: any) => {
+        item['customNodeType'] = 'dataSet';
+        item['nodeId'] = item.sceneNodeId;
+        item['nodeName'] = item.sceneNodeName;
+
+        if (item.viewStatus === 2) {
+            item['disabled'] = true;
+        }
+
+        if (item.dataSetType === 0 && item.viewStatus !== 2) {
+            item.subNodes.push({ nodeName: '' });
+        }
+
+        if (item.dataSetType === 19) {
+            let componentInfo = item.componentInfo;
+            componentInfo.id = componentInfo.treeNodeId;
+            let find = componentPosition.find((el: any) => el.id === componentInfo.id);
+            if (find) {
+                componentInfo.location = {
+                    rotate: find.rotate,
+                    scale: find.scale,
+                    translation: find.translation,
+                };
+            }
+            let { hostFileId, instanceIndex, isPublished } = componentInfo;
+            if (isPublished) {
+                componentInfo.dataSetId = sceneInfo.componentTreeId;
+                componentInfo.elemId = Number(`${hostFileId}${instanceIndex}`);
+            }
+        }
+
+        // 水面类型，将waterId提升一级，方便调用
+        if (item.dataSetType === 23) {
+            let waterInfo = item.waterInfo;
+            item.waterId = waterInfo.id;
+        }
+
+        // 开挖类型，将extrudeId提升一级，方便调用
+        if (item.dataSetType === 24) {
+            let extrudeInfo = item.excavateInfo;
+            item.extrudeId = extrudeInfo.id;
+        }
+
+        if (item.dataSetType === 25) {
+            item.customNodeType = 'monomer';
+            item.monomerId = item.nodeId;
+            item.monomerName = item.nodeName;
+            item.monomerizationInfo = handle_formatMonomerInfo(item.monomerizationInfo);
+            const monomerInfo = item.monomerizationInfo;
+            if (monomerInfo.monomerizationType === 2) {
+                // 构建伪节点，用于展开单体化子节点
+                item.subNodes = [{ nodeId: `tempNode-${item.nodeId}`, nodeName: '', viewStatus: item.viewStatus }];
+            }
+        }
+    });
+
+    // 隐藏没有数据的根节点
+    sceneData = sceneData.filter((el: any) => el.subNodes.length);
+    return sceneData;
+};
+
+// MARK data 格式化-单体化信息对象
+const handle_formatMonomerInfo = (monomerInfo: any) => {
+    const units = monomerInfo.levelJson;
+    const firstRoom = units[0].floors[0].rooms[0];
+    const firstRoomGeoJson = JSON.parse(firstRoom.geoJson);
+    if (firstRoomGeoJson.rgnList) return monomerInfo;
+
+    const dataSetId = monomerInfo.dataSetId;
+    const rooms = units.flatMap((unit: any) => unit.floors.flatMap((floor: any) => floor.rooms));
+    rooms.forEach((room: any) => {
+        const roomGeoJson = JSON.parse(room.geoJson);
+        const fenceClr = roomGeoJson.fenceClr;
+        const { red, green, blue, alpha } = fenceClr;
+        const monomerClr = { red, green, blue, alpha: 128 };
+        const heightMin = roomGeoJson.potList[0][2];
+        const heightMax = roomGeoJson.potList[0][2] + roomGeoJson.potList[0][3];
+        const pointList = roomGeoJson.potList.map((el: any) => el.slice(0, 3));
+
+        const groJson = {
+            dataSetId,
+            rgnList: [pointList],
+            heightMin,
+            heightMax,
+            monomerClr,
+        };
+        room.geoJson = JSON.stringify(groJson);
+    });
+
+    return monomerInfo;
 };
 
 // MARK Service 处理数据集偏移信息
@@ -1118,8 +1228,8 @@ const handleEntityData = async (sceneTree: any, entityEditTranList: any = []) =>
 
 // MARK Service 处理数据集--水面信息
 const hanldleWaterData = async (sceneTree: any) => {
-    const allLeafNodes = getAllNodeByLevel(sceneTree, 2);
-    const allWaters = allLeafNodes.filter((item) => item.dataSetType == state_store.appSupportWaterType);
+    const allLeafNodes = handle_findAllNodeByLevel(sceneTree, 2);
+    const allWaters = allLeafNodes.filter((item: any) => item.dataSetType == state_store.appSupportWaterType);
 
     let waterList: any[] = [];
     allWaters.forEach((item: any) => {
@@ -1150,7 +1260,7 @@ const hanldleWaterData = async (sceneTree: any) => {
 
 // MARK Service 处理数据集--挤出信息
 const hanldleExtrudeData = async (sceneTree: any, extrudeTexList: any) => {
-    const allLeafNodes = getAllNodeByLevel(sceneTree, 2);
+    const allLeafNodes = handle_findAllNodeByLevel(sceneTree, 2);
     const allExtrudes = allLeafNodes.filter((item) => item.dataSetType == state_store.appSupportExtrudeType);
 
     let extrudeList: any[] = [];
@@ -1175,14 +1285,78 @@ const hanldleExtrudeData = async (sceneTree: any, extrudeTexList: any) => {
 
 // MARK Service 处理数据集--单体化信息
 const hanldleMonomerData = async (sceneTree: any) => {
-    const allLeafNodes = getAllNodeByLevel(sceneTree, 2);
-    const allMonomers = allLeafNodes.filter((item) => item.dataSetType == state_store.appSupportMonomerType);
+    const allLeafNodes = handle_findAllNodeByLevel(sceneTree, 2);
+    const allMonomers = allLeafNodes.filter((item: any) => item.dataSetType == state_store.appSupportMonomerType);
+    if (!allMonomers.length) return [];
 
-    console.log(allMonomers);
+    const monomerList: any[] = service_getMonomerByNodes(allMonomers);
 
+    let roomMonomerList: any[] = [];
+    monomerList.forEach((item: any) => {
+        const roomShp = JSON.parse(item.geoJson);
+        const { red, green, blue, alpha } = roomShp.monomerClr;
+        let monomerClr = [red, green, blue, alpha];
+        if (item.displayMode === 3) {
+            monomerClr = [255, 255, 255, 10];
+        } else {
+            monomerClr = [red, green, blue, 128];
+        }
+
+        let roomMonomerInfo: any = {};
+        roomMonomerInfo.monomerId = item.monomerId;
+        roomMonomerInfo.dataSetId = roomShp.dataSetId;
+        roomMonomerInfo.rgnList = roomShp.rgnList;
+        roomMonomerInfo.heightMin = roomShp.heightMin;
+        roomMonomerInfo.heightMax = roomShp.heightMax;
+        roomMonomerInfo.faceClr = monomerClr;
+        roomMonomerInfo.lineClr = monomerClr;
+        roomMonomerInfo.showState = item.displayMode === 1 ? 2 : 1;
+
+        roomMonomerList.push(roomMonomerInfo);
+    });
+    return roomMonomerList;
+};
+
+// MARK service 根据节点列表获取单体化对象列表
+const service_getMonomerByNodes = (nodeData: any) => {
     let monomerList: any[] = [];
-    allMonomers.forEach((item: any) => {});
-    console.log(monomerList);
+
+    const flattenRooms = (rooms: any, source: any) => rooms.map((room: any) => createMonomerObj(source, room));
+    const flattenFloors = (floors: any, source: any) => floors.flatMap((floor: any) => flattenRooms(floor.rooms, source));
+    const flattenUnits = (units: any, source: any) => units.flatMap((unit: any) => flattenFloors(unit.floors, source));
+
+    const createMonomerObj = (source: any, room: any) => ({
+        displayMode: source.displayMode,
+        dataSetId: source.dataSetId,
+        monomerId: room.id,
+        geoJson: room.geoJson,
+    });
+
+    // 主处理逻辑
+    nodeData.forEach((item: any) => {
+        switch (item.customNodeType) {
+            case 'monomer': {
+                const monomers = flattenUnits(item.monomerizationInfo.levelJson, item.monomerizationInfo);
+                monomerList.push(...monomers);
+                break;
+            }
+            case 'monomerUnit': {
+                const unitMonomers = flattenFloors(item.floors, item);
+                monomerList.push(...unitMonomers);
+                break;
+            }
+            case 'monomerFloor': {
+                const floorMonomers = flattenRooms(item.rooms, item);
+                monomerList.push(...floorMonomers);
+                break;
+            }
+            case 'monomerRoom': {
+                monomerList.push(createMonomerObj(item, item));
+                break;
+            }
+        }
+    });
+
     return monomerList;
 };
 
@@ -1208,11 +1382,12 @@ const getDataSetIds = (sceneTree: any) => {
     return dataSetIdList;
 };
 
-// MARK Service 递归获取树节点按照级别
-const getAllNodeByLevel = (sceneeTree: any, level: number) => {
-    const array: any[] = [];
+// MARK data 查找-节点级别数据
+const handle_findAllNodeByLevel = (nodeData: any, level: number) => {
+    const array: any = [];
+
     const traverse = (item: any) => {
-        if (item.nodeType === level) {
+        if (item.nodeType && item.nodeType === level) {
             array.push(item);
         }
         if (item.subNodes && item.subNodes.length) {
@@ -1221,9 +1396,11 @@ const getAllNodeByLevel = (sceneeTree: any, level: number) => {
             });
         }
     };
-    sceneeTree.forEach((item: any) => {
+
+    nodeData.forEach((item: any) => {
         traverse(item);
     });
+
     return array;
 };
 
@@ -1250,8 +1427,6 @@ const getTerrainDataSetList = async (sceneTree: any, nodeType: number) => {
     let terrainDataSets = allDataSets.filter((el) => terrainType.includes(el.dataSetType));
     return terrainDataSets;
 };
-
-
 </script>
 
 // MOD-- CSS
