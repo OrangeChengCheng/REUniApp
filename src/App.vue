@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-14 10:24:21
- * @LastEditTime: 2025-08-06 10:37:08
+ * @LastEditTime: 2026-01-20 16:48:46
 -->
 <script setup lang="ts">
 import { onLaunch, onShow, onHide, onExit } from '@dcloudio/uni-app';
@@ -22,11 +22,6 @@ onLaunch(() => {
     uni.$re.registerAppMsg((data) => {
         const message_store = useMessageStore();
         message_store.sendMessage(message_store.M_AppToUni, data);
-        // setTimeout(() => {
-        //     let postData = { data: { key: '666', value: [1, 2, 3, 4, 5] }, msg: '---', item: data };
-        //     uni.$re.unipluginLog('reSendMessageToApp: ' + JSON.stringify(postData));
-        //     uni.$re.reSendMessageToApp(postData);
-        // }, 2000);
     });
 
     uni.$tool.update_data(); //是否重置数据，处理版本导致的数据异常

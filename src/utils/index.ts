@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-14 10:05:14
- * @LastEditTime: 2025-12-08 17:37:38
+ * @LastEditTime: 2026-01-20 12:15:09
  */
 import config from './config'
 import reApi from './reApi'
@@ -28,6 +28,7 @@ export default {
             realEngineRender: reApi.realEngineRender,
             registerAppMsg: reApi.registerAppMsg,
             sendMsgUniToApp: reApi.sendMsgUniToApp,
+            showShareRes: reApi.showShareRes,
         };
         uni.$tool = {
             update_data: tool.update_data,
@@ -40,6 +41,10 @@ export default {
             time_compare: tool.time_compare,
             time_format: tool.time_format,
             cam_defauleDataSet: tool.cam_defauleDataSet,
+            card_getProjName: tool.card_getProjName,
+            card_getSceneData: tool.card_getSceneData,
+            card_getBimData: tool.card_getBimData,
+            card_getCadData: tool.card_getCadData,
         };
         uni.$rsa = {
             initRsaPublicKey: initRsaPublicKey,

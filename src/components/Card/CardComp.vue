@@ -1,10 +1,10 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-22 11:31:42
- * @LastEditTime: 2025-12-08 14:29:04
+ * @LastEditTime: 2026-01-20 17:02:12
 -->
 <template>
-    <view class="sup-card" :style="`width: ${card_width}px;`" @click="card_click">
+    <view class="sup-card-comp" :style="`width: ${card_width}px;`" @click="card_click">
         <view class="top-area" @touchstart="top_area_touchstart" @touchend="top_area_touchend">
             <image src="../../static/Main/card_bg.png" class="top-area-bg" />
             <view class="source-area" :style="source_style_computed">
@@ -15,14 +15,14 @@
             <text class="bottom-title" @touchstart="bottom_title_area_touchstart" @touchend="bottom_title_area_touchend">{{
                 card_proj.projName
             }}</text>
-            <text class="bottom-time"> {{ `${overdueTime_computed}&nbsp;&nbsp;到期` }}</text>
+            <text v-if="card_type !== 2" class="bottom-time"> {{ `${overdueTime_computed}&nbsp;&nbsp;到期` }}</text>
         </view>
         <view v-if="card_type !== 2" class="collect-area" @click.stop="collect_area_click">
             <icon-font v-if="card_proj.collect" name="card_icon_like_pressed1" size="20px" color="--color-main-blue"></icon-font>
             <icon-font v-else name="card_icon_like_default1" size="20px" color="--color-white"></icon-font>
         </view>
         <view class="overdue-area" v-if="overdue_computed" @click.stop="delete_click">
-            <text class="overdue-text">已过期</text>
+            <text class="overdue-text">{{ tip }}</text>
             <view class="aux-area">
                 <view class="icon-area">
                     <icon-font class="delete-icon" name="shanchu" size="26px" color="#ffffff"></icon-font>
@@ -36,20 +36,20 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import type { PropType } from 'vue';
-import { type Share } from '@/types/class';
+import { type Card } from '@/types/class';
 
 const props = defineProps({
     card_type: {
         type: Number,
-        default: 0,
+        default: 0, // 0：最近打开 1：收藏 2：示例
     },
     card_width: {
         type: Number,
         default: 0,
     },
     card_proj: {
-        type: Object as PropType<Share>,
-        default: () => ({} as Share),
+        type: Object as PropType<Card>,
+        default: () => ({} as Card),
     },
     card_callback: {
         type: Function,
@@ -79,8 +79,16 @@ const touch_longpress_bottom_title = 500; // 长按时间阈值
 const touch_timer_top_img = ref<number | null>(null);
 const touch_longpress_top_img = 4000; // 长按时间阈值
 
+const tip = ref('已过期');
+
 // MARK Computed  过期
 const overdue_computed = computed(() => {
+    if (!props.card_proj.shareUrl) {
+        tip.value = '已作废';
+        return true; // 剔除老数据
+    } else {
+        tip.value = '已过期';
+    }
     if (!props.card_proj.endTime) {
         return false;
     }
@@ -193,7 +201,7 @@ const delete_click = () => {
 
 // MOD-- CSS
 <style lang="scss" scoped>
-.sup-card {
+.sup-card-comp {
     position: relative;
     display: flex;
     flex-direction: column;

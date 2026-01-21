@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2025-12-15 11:35:23
+ * @LastEditTime: 2026-01-21 11:53:54
 -->
 <template>
     <base-view :nav_bar="true" :nav_bar_title="`搜索`" :nav_bar_color="`--color-main-bg`">
@@ -15,7 +15,7 @@
                 <view class="content">
                     <view class="grid-container" :style="style_grid_computed" v-if="list_show.length > 0">
                         <view class="grid-item" v-for="(item, index) in list_show" :key="index">
-                            <card
+                            <card-comp
                                 :card_type="tb_tab_index"
                                 :card_width="grid_columnWidth"
                                 :card_proj="item"
@@ -23,7 +23,7 @@
                                 :card_title_longpress_callback="card_title_longpress_callback"
                                 :card_img_longpress_callback="card_img_longpress_callback"
                                 :card_collect_callback="card_collect_callback"
-                                :card_delete_callback="card_delete_callback"></card>
+                                :card_delete_callback="card_delete_callback"></card-comp>
                         </view>
                     </view>
                     <view class="empty-area" v-else>
@@ -48,20 +48,20 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import BaseView from '@/components/Base/BaseView.vue';
 import SearchBar from '@/components/TopBar/SearchBar.vue';
-import Card from '@/components/Card/Card.vue';
+import CardComp from '@/components/Card/CardComp.vue';
 import UrlInputDialog from '@/components/Dialog/UrlInputDialog.vue';
 
-import { type Share } from '@/types/class';
+import { type Card } from '@/types/class';
 import { useCardStore } from '@/stores/card';
 import { useStateStore } from '@/stores/state';
 
 const state_store = useStateStore();
 const card_store = useCardStore();
-const list_show = ref<Share[]>([]); // 当前内容展示列表
-const list_recently_viewed = ref<Share[]>([]); // 最近浏览列表
-const list_collect = ref<Share[]>([]); // 收藏列表
-const list_saple = ref<Share[]>([]); // 模板示例列表
-const tb_tab_index = ref(0); // 顶部模块是否固定显示
+const list_show = ref<Card[]>([]); // 当前内容展示列表
+const list_recently_viewed = ref<Card[]>([]); // 最近浏览列表
+const list_collect = ref<Card[]>([]); // 收藏列表
+const list_saple = ref<Card[]>([]); // 模板示例列表
+const tb_tab_index = ref(0); // 顶部模块是否固定显示 0：最近打开 1：收藏 2：示例
 const uniapi_windowWidth = ref(0); // 屏幕宽度
 const uniapi_windowHeight = ref(0); // 屏幕高度
 const grid_columns = ref(2);
@@ -164,62 +164,20 @@ const topbar_tab_callback = (index: number) => {
 };
 
 // MARK Click  卡片点击
-const card_callback = async (e: Share) => {
-    uni.$re.unipluginLog('card_callback: ' + JSON.stringify(e.dataSetList));
-
-    state_store.updateCurrToken(e.token);
-    state_store.updateCurrBaseUrl(e.baseUrl);
-    state_store.updateCurSource(e.source);
-
-    // 不知道什么原因导致ts的数组到安卓中变成JSONObject导致解析崩溃，这样操作可以重置属性，避免ts的属性带入
-    let dataSetList = e.dataSetList ? JSON.parse(JSON.stringify(e.dataSetList)) : [];
-    let entityList = e.entityList ? JSON.parse(JSON.stringify(e.entityList)) : [];
-    let waterList = e.waterList ? JSON.parse(JSON.stringify(e.waterList)) : [];
-    let extrudeList = e.extrudeList ? JSON.parse(JSON.stringify(e.extrudeList)) : [];
-    let extrudeTexList = e.extrudeTexList ? JSON.parse(JSON.stringify(e.extrudeTexList)) : [];
-    let monomerList = e.monomerList ? JSON.parse(JSON.stringify(e.monomerList)) : [];
-    let urlHeaderList = e.urlHeaderList ? JSON.parse(JSON.stringify(e.urlHeaderList)) : [];
-
-    // 默认相机信息
-    let defaultCamLoc = null;
-    if (e.defaultCamLoc) {
-        let defaultCamLocJson = JSON.stringify(e.defaultCamLoc);
-        defaultCamLoc = JSON.parse(defaultCamLocJson);
+const card_callback = async (e: Card) => {
+    console.log('卡片信息: ', JSON.stringify(e));
+    const urlData: any = await uni.$tool.url_handle(e.shareUrl);
+    if (!urlData) {
+        uni.showToast({ title: '分享信息获取失败', icon: 'none' });
+        return;
     }
-
-    uni.$re
-        .realEngineRender({
-            name: 'uni-app',
-            noExternalNetwork: state_store.noExternalNetwork,
-            token: e.token,
-            baseUrl: e.baseUrl,
-            shareUrl: e.url,
-            projName: e.projName,
-            worldCRS: e.worldCRS,
-            urlHeaderList: urlHeaderList,
-            authorData: e.authorData,
-            dataSetList: dataSetList,
-            collect: e.collect,
-            shareType: e.shareType,
-            sceneId: e.id,
-            camDefaultDataSetId: e.camDefaultDataSetId,
-            shareViewMode: e.shareViewMode,
-            shareDataType: e.shareDataType,
-            defaultCamLoc: defaultCamLoc,
-            entityList: entityList,
-            waterList: waterList,
-            extrudeList: extrudeList,
-            extrudeTexList: extrudeTexList,
-            monomerList: monomerList,
-        })
-        .then((result) => {
-            console.log(result);
-            uni.$re.unipluginLog(JSON.stringify(result));
-        });
+    state_store.updateCurrToken(urlData.token);
+    state_store.updateCurrBaseUrl(urlData.baseUrl);
+    uni.$re.showShareRes(urlData, () => {});
 };
 
 // MARK Click  卡片名称长按
-const card_title_longpress_callback = (e: Share) => {
+const card_title_longpress_callback = (e: Card) => {
     console.log('卡片名称长按', e);
     uni.$re.unipluginLog('card_title_longpress_callback: ' + JSON.stringify(e));
 
@@ -228,7 +186,7 @@ const card_title_longpress_callback = (e: Share) => {
         return;
     }
 
-    dialog_shareUrl.value = e.url;
+    dialog_shareUrl.value = e.shareUrl;
     dialog_projName.value = e.projName;
     dialog_revise.value = true;
     dialog_shareUrl_disabled.value = true;
@@ -236,7 +194,7 @@ const card_title_longpress_callback = (e: Share) => {
 };
 
 // MARK Click  卡片图片长按
-const card_img_longpress_callback = (e: Share) => {
+const card_img_longpress_callback = (e: Card) => {
     console.log('卡片图片长按', JSON.stringify(e));
     uni.$re.unipluginLog('card_title_longpress_callback: ' + JSON.stringify(e));
 
@@ -248,20 +206,20 @@ const card_img_longpress_callback = (e: Share) => {
         content: '是否删除卡片',
         success: function (res) {
             if (res.confirm) {
-                card_store.removeCard(e.id);
+                card_store.removeCard(e.shareId);
             }
         },
     });
 };
 
 // MARK Click  收藏
-const card_collect_callback = (e: Share) => {
+const card_collect_callback = (e: Card) => {
     card_store.addCollect(e, !e.collect);
     update_cardList();
 };
 
 // MARK Click  删除卡片
-const card_delete_callback = (e: Share) => {
+const card_delete_callback = (e: Card) => {
     if (tb_tab_index.value == 2) {
         return; //模板不能删除
     }
@@ -270,7 +228,7 @@ const card_delete_callback = (e: Share) => {
         content: '是否删除卡片',
         success: function (res) {
             if (res.confirm) {
-                card_store.removeCard(e.id);
+                card_store.removeCard(e.shareId);
                 if (tb_tab_index.value == 1) {
                     update_cardList();
                 }
@@ -288,8 +246,6 @@ const dialog_UrlInputCallBack = async (e: any) => {
         dialog_revise.value = false;
     }
 };
-
-
 </script>
 
 // MOD-- CSS

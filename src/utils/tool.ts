@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-23 14:42:45
- * @LastEditTime: 2025-12-16 10:14:02
+ * @LastEditTime: 2026-01-21 10:36:00
  */
 
 const RE_AppVersion = "2.0.1";
@@ -11,7 +11,9 @@ import { useCardStore } from '@/stores/card';
 import { useDeviceStore } from '@/stores/device';
 import { useStateStore } from '@/stores/state';
 import uniApi from '@/utils/uniApi';
-
+import serviceApi from '@/utils/serviceApi';
+import dataTool from '@/utils/dataTool';
+import { newShare, type Share } from '@/types/class';
 
 interface ApiMethods {
     url_base(url: string): string;
@@ -26,6 +28,10 @@ interface ApiMethods {
     compareVersions(version1: string, version2: string): number;
     getAppVersion(): string;
     initializeData(): void;
+    card_getProjName(urlInfo: any): Promise<any>;
+    card_getSceneData(urlInfo: any): Promise<any>;
+    card_getBimData(urlInfo: any): Promise<any>;
+    card_getCadData(urlInfo: any): Promise<any>;
 }
 
 const api: ApiMethods = {
@@ -143,6 +149,7 @@ const api: ApiMethods = {
                     // 构造最终的params，只保留你指定的参数名，无原始冲突字段
                     const params = {
                         url: url,
+                        shareId: _shareId,
                         baseUrl: baseUrl,
                         shareType: _shareType,
                         id: urlData.resourceId,
@@ -150,6 +157,11 @@ const api: ApiMethods = {
                         shareDataType: urlData.dataType,
                         ...restUrlData
                     }
+
+                    // 获取项目名称
+                    state_store.updateCurrToken(urlData.token);
+                    const projName = await api.card_getProjName(params);
+                    params.projName = projName || '';
 
                     uni.$re.unipluginLog('params = ' + JSON.stringify(params));
                     return params;
@@ -365,6 +377,132 @@ const api: ApiMethods = {
         const card_store = useCardStore();
         uni.$service.updateServerWhiteList([]);//清空白名单数据
         card_store.clearCardList();//清空卡片列表
+    },
+
+    // MARK Service 获取项目名称
+    card_getProjName: async (urlInfo: any): Promise<any> => {
+        if (urlInfo.shareType === 2) {
+            const sceneInfo = await serviceApi.getSceneInfo(urlInfo.id);
+            return sceneInfo?.sceneName;
+        } else {
+            const modelInfo = await serviceApi.getModelTree({ dataSetId: urlInfo.id });
+            const find_obj = modelInfo?.find((item: any) => item.dataSetId === urlInfo.id);
+            return find_obj ? find_obj.dataSetName : '项目查询失败';
+        }
+    },
+
+    // MARK tool 处理场景分享的卡片数据
+    card_getSceneData: async (urlInfo: any): Promise<any> => {
+        // 获取场景信息
+        const res_1 = await serviceApi.getSceneInfo(urlInfo.id);
+        // 获取场景树
+        const res_2 = await serviceApi.getSceneTree({ sceneId: urlInfo.id, isPublished: true }, res_1);
+        // 处理数据集ID列表
+        const dataSetIdList = dataTool.handle_dataSetIdList(res_2, res_1);
+        // 获取挤出纹理信息
+        const extrudeTexList = await serviceApi.getExtrudeTexList(res_2);
+        // 并行处理各种数据
+        const [terrainList, entityList, waterList, extrudeList, monomerList] = await Promise.all([
+            dataTool.handle_terrainDataSetList(res_2, 2),
+            dataTool.handle_entityData(res_2, res_1.componentPosition),
+            dataTool.handle_waterData(res_2),
+            dataTool.handle_extrudeData(res_2, extrudeTexList),
+            dataTool.handle_monomerData(res_2),
+        ]);
+
+        // 获取数据集信息
+        const res_3 = await serviceApi.getDataSetList({ dataSetIds: dataSetIdList }, urlInfo);
+
+        const dataSetList_temp1: any[] = dataTool.handle_dataSetTrans(res_3, res_1.dataSetPosition);
+        const dataSetList_temp2 = dataTool.handle_terrainLayerLev(dataSetList_temp1, terrainList);
+        const dataSetList = dataTool.handle_dataSetId(dataSetList_temp2);
+        const urlHeaderList = dataTool.handle_dataSetResHeader(dataSetList_temp2, urlInfo);
+        const authorData = dataTool.handle_dataSetResAuthorInfo(urlInfo);
+
+        const cam_dataSetId = api.cam_defauleDataSet(dataSetList);
+
+        const shareData: Share = newShare({
+            url: urlInfo.url,
+            shareId: urlInfo.shareId,
+            token: urlInfo.token,
+            baseUrl: urlInfo.baseUrl,
+            source: urlInfo.shareItem?.source,
+            projName: urlInfo.projName,
+            id: urlInfo.id,
+            lastTime: new Date(),
+            endTime: api.time_To_IOSDate(urlInfo.shareItem?.endTime),
+            shareFormUserExpirationTime: api.time_To_IOSDate(urlInfo.shareItem?.shareFormUserExpirationTime),
+            urlHeaderList: urlHeaderList,
+            authorData: authorData,
+            dataSetList: dataSetList,
+            worldCRS: res_1.coordinates,
+            shareType: 2,
+            camDefaultDataSetId: cam_dataSetId,
+            shareViewMode: urlInfo.shareViewMode,
+            entityList: entityList,
+            waterList: waterList,
+            extrudeList: extrudeList,
+            extrudeTexList: extrudeTexList,
+            monomerList: monomerList,
+        });
+
+        return shareData;
+    },
+
+    // MARK tool 处理单模型分享的卡片数据
+    card_getBimData: async (urlInfo: any): Promise<any> => {
+        // 获取资源数据
+        const dataSetList = await serviceApi.getDataSetList({ dataSetIds: [urlInfo.id] }, urlInfo);
+        const urlHeaderList = dataTool.handle_dataSetResHeader(dataSetList, urlInfo);
+        const authorData = dataTool.handle_dataSetResAuthorInfo(urlInfo);
+
+        const shareData: Share = newShare({
+            url: urlInfo.url,
+            shareId: urlInfo.shareId,
+            token: urlInfo.token,
+            baseUrl: urlInfo.baseUrl,
+            source: urlInfo.shareItem?.source,
+            projName: urlInfo.projName,
+            id: urlInfo.id,
+            lastTime: new Date(),
+            endTime: api.time_To_IOSDate(urlInfo.shareItem?.endTime),
+            shareFormUserExpirationTime: api.time_To_IOSDate(urlInfo.shareItem?.shareFormUserExpirationTime),
+            urlHeaderList: urlHeaderList,
+            authorData: authorData,
+            dataSetList: dataSetList,
+            shareType: 1,
+            shareDataType: urlInfo.shareDataType,
+        });
+
+        return shareData;
+    },
+
+    // MARK tool 处理CAD分享的卡片数据
+    card_getCadData: async (urlInfo: any): Promise<any> => {
+        // 获取资源数据
+        const cadDataSetList = await serviceApi.getCadDataSetList({ dataSetId: urlInfo.id });
+        const urlHeaderList = dataTool.handle_dataSetResHeader(cadDataSetList, urlInfo);
+        const authorData = dataTool.handle_dataSetResAuthorInfo(urlInfo);
+
+        const shareData: Share = newShare({
+            url: urlInfo.url,
+            shareId: urlInfo.shareId,
+            token: urlInfo.token,
+            baseUrl: urlInfo.baseUrl,
+            source: urlInfo.shareItem?.source,
+            projName: urlInfo.projName,
+            id: urlInfo.id,
+            lastTime: new Date(),
+            endTime: api.time_To_IOSDate(urlInfo.shareItem?.endTime),
+            shareFormUserExpirationTime: api.time_To_IOSDate(urlInfo.shareItem?.shareFormUserExpirationTime),
+            urlHeaderList: urlHeaderList,
+            authorData: authorData,
+            dataSetList: cadDataSetList,
+            shareType: 1,
+            shareDataType: urlInfo.shareDataType,
+        });
+
+        return shareData;
     },
 }
 

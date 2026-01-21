@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2026-01-13 18:10:10
+ * @LastEditTime: 2026-01-21 11:10:33
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -35,7 +35,7 @@
                         :topbar_tab_callback="topbar_tab_callback"></top-bar>
                     <view class="grid-container" :style="style_grid_computed" v-if="list_show.length > 0">
                         <view class="grid-item" v-for="(item, index) in list_show" :key="index">
-                            <card
+                            <card-comp
                                 :card_type="tb_tab_index"
                                 :card_width="grid_columnWidth"
                                 :card_proj="item"
@@ -43,7 +43,7 @@
                                 :card_title_longpress_callback="card_title_longpress_callback"
                                 :card_img_longpress_callback="card_img_longpress_callback"
                                 :card_collect_callback="card_collect_callback"
-                                :card_delete_callback="card_delete_callback"></card>
+                                :card_delete_callback="card_delete_callback"></card-comp>
                         </view>
                     </view>
                     <view class="empty-area" v-else>
@@ -72,36 +72,27 @@ import { ref, onMounted, onUnmounted, nextTick, computed } from 'vue';
 import BaseView from '@/components/Base/BaseView.vue';
 import BannerComp from '@/components/Banner/BannerComp.vue';
 import TopBar from '@/components/TopBar/TopBar.vue';
-import Card from '@/components/Card/Card.vue';
+import CardComp from '@/components/Card/CardComp.vue';
 import UrlInputDialog from '@/components/Dialog/UrlInputDialog.vue';
 import CustomInputDialog from '@/components/Dialog/CustomInputDialog.vue';
 import SampleInputDialog from '@/components/Dialog/SampleInputDialog.vue';
-import {
-    getSceneById,
-    getSingleSceneTreeById,
-    getProjectModel,
-    getCadDatasetFiles,
-    getProjectTree,
-    getSharedExtrudeTexturesList,
-} from '@/service/interface';
-import { newShare, type Share } from '@/types/class';
+import { type Card } from '@/types/class';
 import { useCardStore } from '@/stores/card';
 import { useDeviceStore } from '@/stores/device';
 import { useMessageStore } from '@/stores/message';
 import { useStateStore } from '@/stores/state';
 
-const SETCRS_DATA_TYPE = [0, 11, 15]; // 需要设置坐标系和基点的数据类型
 const device_store = useDeviceStore();
 const card_store = useCardStore();
 const message_store = useMessageStore();
 const state_store = useStateStore();
 const TopBar_fixedSpace = ref(230);
-const list_show = ref<Share[]>([]); // 当前内容展示列表
-const list_recently_viewed = ref<Share[]>([]); // 最近浏览列表
-const list_collect = ref<Share[]>([]); // 收藏列表
-const list_saple = ref<Share[]>([]); // 模板示例列表
+const list_show = ref<Card[]>([]); // 当前内容展示列表
+const list_recently_viewed = ref<Card[]>([]); // 最近浏览列表
+const list_collect = ref<Card[]>([]); // 收藏列表
+const list_saple = ref<Card[]>([]); // 模板示例列表
 const tb_isFixed = ref(false); // 顶部模块是否固定显示
-const tb_tab_index = ref(0); // 顶部模块是否固定显示
+const tb_tab_index = ref(0); // 顶部模块是否固定显示 0：最近打开 1：收藏 2：示例
 const sw_contain_scrollTop = ref(0); // 设置滚动
 const sw_contain_scrollTop_curr = ref(0); // 记录当前滚动
 const uniapi_windowWidth = ref(0); // 屏幕宽度
@@ -171,15 +162,7 @@ const appToUni = (e: any) => {
 const update_cardList = () => {
     list_recently_viewed.value = card_store.getCardList();
     list_collect.value = card_store.getCollectCardList();
-    if (card_store.getSampleCardList().length <= 0) {
-        card_store.updateSample().then((res) => {
-            nextTick(() => {
-                list_saple.value = card_store.getSampleCardList();
-            });
-        });
-    } else {
-        list_saple.value = card_store.getSampleCardList();
-    }
+    list_saple.value = card_store.getSampleCardList();
 
     if (tb_tab_index.value == 1) {
         list_show.value = list_collect.value;
@@ -232,57 +215,48 @@ const update_gridColumns = () => {
 
 // MARK uniapp 获取粘贴板内容
 const uniapp_getClipboard = () => {
-    // uni.show_loading();
     uni.getClipboardData({
         success: function (res) {
             uni.$re.unipluginLog('uni.getClipboardData: ' + JSON.stringify(res));
             if (!res.data || !res.data.length) return;
-            tool_handleUrl(res.data)
-                .then((result) => {
-                    if (!result) return;
-                    // uni.hide_loading();
-                    dialog_shareUrl.value = result.url;
-                    dialog_projName.value = result.projName;
-                    dialog_shareUrl_disabled.value = true;
-                    ref_urlInput_dialog.value?.show_dialog();
-                })
-                .catch((error) => {
-                    // uni.hide_loading();
-                    uni.showToast({ title: error.message, icon: 'none' });
-                });
+            tool_handleUrl(res.data);
         },
         fail: (err) => {
-            // uni.hide_loading();
             console.log(err);
         },
     });
 };
 
-// MARK uniapp 处理url内容
-const tool_handleUrl = async (e: any): Promise<any> => {
-    try {
-        const urlData = await uni.$tool.url_handle(e);
-        if (!urlData) {
-            return null;
-        }
-        console.log(urlData);
-        //处理白名单配置
-        const whiteList = uni.$service.getServerWhiteList();
-        const hasWhiteList = whiteList.some((item: any) => e.includes(item.url));
-        if (!hasWhiteList) {
-            throw new Error('数据不在白名单范围, 请前往服务配置中设置');
-        }
-        state_store.updateCurrToken(urlData.token);
-        state_store.updateCurrBaseUrl(urlData.baseUrl);
+// MARK Topbar 扫码
+const topbar_scan_callback = () => {
+    uni.scan_code()
+        .then((res: any) => {
+            uni.$re.unipluginLog('uni.scan_code: ' + JSON.stringify(res.data));
+            tool_handleUrl(res.data);
+        })
+        .catch((err: any) => {
+            console.log(err);
+        });
+};
 
-        // 获取项目名称
-        const projName = await getProjName(urlData);
-        urlData.projName = projName || '';
-
-        return urlData;
-    } catch (error: any) {
-        throw error;
+// MARK Url 处理url内容
+const tool_handleUrl = async (e: any) => {
+    const urlData = await uni.$tool.url_handle(e);
+    if (!urlData) return null;
+    console.log(urlData);
+    //处理白名单配置
+    const whiteList = uni.$service.getServerWhiteList();
+    const hasWhiteList = whiteList.some((item: any) => e.includes(item.url));
+    if (!hasWhiteList) {
+        uni.showToast({ title: '数据不在白名单范围, 请前往服务配置中设置', icon: 'none' });
+        return;
     }
+
+    //打开弹窗
+    dialog_shareUrl.value = urlData.url;
+    dialog_projName.value = urlData.projName;
+    dialog_shareUrl_disabled.value = true;
+    ref_urlInput_dialog.value?.show_dialog();
 };
 
 // MARK Topbar banner区域连续点击
@@ -308,26 +282,6 @@ const topbar_houerArea_callback = () => {
     ref_urlInput_dialog.value?.show_dialog();
 };
 
-// MARK Topbar 扫码
-const topbar_scan_callback = () => {
-    uni.scan_code()
-        .then((res: any) => {
-            tool_handleUrl(res)
-                .then((result) => {
-                    uni.hide_loading();
-                    dialog_shareUrl.value = result.url;
-                    dialog_projName.value = result.projName;
-                    dialog_shareUrl_disabled.value = true;
-                    ref_urlInput_dialog.value?.show_dialog();
-                })
-                .catch((errMsg) => {
-                    uni.hide_loading();
-                    uni.showToast({ title: errMsg, icon: 'none' });
-                });
-        })
-        .catch((err: any) => {});
-};
-
 // MARK Topbar 搜索
 const topbar_search_callback = () => {
     uni.navigateTo({
@@ -341,65 +295,8 @@ const topbar_search_callback = () => {
     });
 };
 
-// MARK Click  卡片点击
-const card_callback = async (e: Share) => {
-    console.log('卡片点击', JSON.stringify(e));
-    uni.$re.unipluginLog('card_callback: ' + JSON.stringify(e.dataSetList));
-
-    state_store.updateCurrToken(e.token);
-    state_store.updateCurrBaseUrl(e.baseUrl);
-    state_store.updateCurSource(e.source);
-
-    // 不知道什么原因导致ts的数组到安卓中变成JSONObject导致解析崩溃，这样操作可以重置属性，避免ts的属性带入
-    let dataSetList = e.dataSetList ? JSON.parse(JSON.stringify(e.dataSetList)) : [];
-    let entityList = e.entityList ? JSON.parse(JSON.stringify(e.entityList)) : [];
-    let waterList = e.waterList ? JSON.parse(JSON.stringify(e.waterList)) : [];
-    let extrudeList = e.extrudeList ? JSON.parse(JSON.stringify(e.extrudeList)) : [];
-    let extrudeTexList = e.extrudeTexList ? JSON.parse(JSON.stringify(e.extrudeTexList)) : [];
-    let monomerList = e.monomerList ? JSON.parse(JSON.stringify(e.monomerList)) : [];
-    let urlHeaderList = e.urlHeaderList ? JSON.parse(JSON.stringify(e.urlHeaderList)) : [];
-
-    // 默认相机信息
-    let defaultCamLoc = null;
-    if (e.defaultCamLoc) {
-        let defaultCamLocJson = JSON.stringify(e.defaultCamLoc);
-        defaultCamLoc = JSON.parse(defaultCamLocJson);
-    }
-
-    uni.$re
-        .realEngineRender({
-            name: 'uni-app',
-            noExternalNetwork: state_store.noExternalNetwork,
-            token: e.token,
-            baseUrl: e.baseUrl,
-            source: e.source,
-            shareUrl: e.url,
-            projName: e.projName,
-            worldCRS: e.worldCRS,
-            urlHeaderList: urlHeaderList,
-            authorData: e.authorData,
-            dataSetList: dataSetList,
-            collect: e.collect,
-            shareType: e.shareType,
-            sceneId: e.id,
-            camDefaultDataSetId: e.camDefaultDataSetId,
-            shareViewMode: e.shareViewMode,
-            shareDataType: e.shareDataType,
-            defaultCamLoc: defaultCamLoc,
-            entityList: entityList,
-            waterList: waterList,
-            extrudeList: extrudeList,
-            extrudeTexList: extrudeTexList,
-            monomerList: monomerList,
-        })
-        .then((result) => {
-            console.log(result);
-            uni.$re.unipluginLog(JSON.stringify(result));
-        });
-};
-
 // MARK Click  卡片名称长按
-const card_title_longpress_callback = (e: Share) => {
+const card_title_longpress_callback = (e: Card) => {
     console.log('卡片名称长按', JSON.stringify(e));
     uni.$re.unipluginLog('card_title_longpress_callback: ' + JSON.stringify(e));
 
@@ -408,7 +305,7 @@ const card_title_longpress_callback = (e: Share) => {
         return;
     }
 
-    dialog_shareUrl.value = e.url;
+    dialog_shareUrl.value = e.shareUrl;
     dialog_projName.value = e.projName;
     dialog_revise.value = true;
     dialog_shareUrl_disabled.value = true;
@@ -416,7 +313,7 @@ const card_title_longpress_callback = (e: Share) => {
 };
 
 // MARK Click  卡片图片长按
-const card_img_longpress_callback = (e: Share) => {
+const card_img_longpress_callback = (e: Card) => {
     console.log('卡片图片长按', JSON.stringify(e));
     uni.$re.unipluginLog('card_title_longpress_callback: ' + JSON.stringify(e));
 
@@ -428,20 +325,20 @@ const card_img_longpress_callback = (e: Share) => {
         content: '是否删除卡片',
         success: function (res) {
             if (res.confirm) {
-                card_store.removeCard(e.id);
+                card_store.removeCard(e.shareId);
             }
         },
     });
 };
 
 // MARK Click  收藏
-const card_collect_callback = (e: Share) => {
+const card_collect_callback = (e: Card) => {
     card_store.addCollect(e, !e.collect);
     update_cardList();
 };
 
 // MARK Click  删除卡片
-const card_delete_callback = (e: Share) => {
+const card_delete_callback = (e: Card) => {
     if (tb_tab_index.value == 2) {
         return; //模板不能删除
     }
@@ -450,7 +347,7 @@ const card_delete_callback = (e: Share) => {
         content: '是否删除卡片',
         success: function (res) {
             if (res.confirm) {
-                card_store.removeCard(e.id);
+                card_store.removeCard(e.shareId);
                 if (tb_tab_index.value == 1) {
                     update_cardList();
                 }
@@ -471,267 +368,31 @@ const topbar_tab_callback = (index: number) => {
     // });
 };
 
+// MARK Click  卡片点击
+const card_callback = async (e: Card) => {
+    console.log('卡片信息: ', JSON.stringify(e));
+    const urlData: any = await uni.$tool.url_handle(e.shareUrl);
+    if (!urlData) {
+        uni.showToast({ title: '分享信息获取失败', icon: 'none' });
+        return;
+    }
+    state_store.updateCurrToken(urlData.token);
+    state_store.updateCurrBaseUrl(urlData.baseUrl);
+    uni.$re.showShareRes(urlData, () => {});
+};
+
 // MARK Dialog  查看模型/确认修改
 const dialog_UrlInputCallBack = async (e: any) => {
     console.log(e);
-    let shareParams: any = await uni.$tool.url_handle(e.shareUrl);
+    let urlData: any = await uni.$tool.url_handle(e.shareUrl);
     if (dialog_revise.value) {
-        card_store.reviseProjName(shareParams, e.projName);
+        card_store.reviseProjName(urlData, e.projName);
         dialog_revise.value = false;
     } else {
-        shareParams.projName = e.projName;
-        if (shareParams) showShareUrlRes(shareParams);
-    }
-};
-
-// MARK 查看分享链接资源
-const showShareUrlRes = async (urlInfo: any) => {
-    try {
-        // 获取分享信息
-        state_store.updateCurSource(urlInfo.shareItem?.source);
-
-        if (urlInfo.shareType === 2) {
-            showSceneRes(urlInfo);
-        } else {
-            showModelRes(urlInfo);
+        urlData.projName = e.projName;
+        if (urlData) {
+            uni.$re.showShareRes(urlData, update_cardList);
         }
-    } catch (error) {
-        throw error;
-    }
-};
-
-// MARK re-api 查看分享链接资源 -- 场景资源
-const showSceneRes = async (urlInfo: any) => {
-    uni.show_loading();
-    try {
-        // 获取场景信息
-        const res_1 = await getSceneInfo(urlInfo.id);
-        // 获取场景树
-        const res_2 = await getSceneTree({ sceneId: urlInfo.id, isPublished: true }, res_1);
-        // 处理数据集ID列表
-        let dataSetIdList = getDataSetIds(res_2);
-        if (res_1.componentTreeId && res_1.componentTreeId.length > 0) {
-            dataSetIdList.push(res_1.componentTreeId); //单构件需要单独添加，不在模型数据中获取
-        }
-        // 获取挤出纹理信息
-        const extrudeTexList = await getExtrudeTexList(res_2);
-        // 并行处理各种数据
-        const [terrainList, entityList, waterList, extrudeList, monomerList] = await Promise.all([
-            getTerrainDataSetList(res_2, 2),
-            handleEntityData(res_2, res_1.componentPosition),
-            hanldleWaterData(res_2),
-            hanldleExtrudeData(res_2, extrudeTexList),
-            hanldleMonomerData(res_2),
-        ]);
-
-        // 获取数据集信息
-        const res_3 = await getDataSetList({ dataSetIds: dataSetIdList }, urlInfo);
-
-        const dataSetList_temp1: any[] = handleDataSetTrans(res_3, res_1.dataSetPosition);
-        const dataSetList_temp2 = handleTerrainLayerLev(dataSetList_temp1, terrainList);
-        const dataSetList = handleDataSetId(dataSetList_temp2);
-        const urlHeaderList = handleDataSetResHeader(dataSetList_temp2, urlInfo);
-        const authorData = handleDataSetResAuthorInfo(urlInfo);
-
-        let cam_dataSetId = uni.$tool.cam_defauleDataSet(dataSetList);
-        let shareData: Share = newShare({
-            url: urlInfo.url,
-            token: urlInfo.token,
-            baseUrl: urlInfo.baseUrl,
-            source: urlInfo.shareItem?.source,
-            projName: urlInfo.projName,
-            id: urlInfo.id,
-            lastTime: new Date(),
-            endTime: uni.$tool.time_To_IOSDate(urlInfo.shareItem?.endTime),
-            shareFormUserExpirationTime: uni.$tool.time_To_IOSDate(urlInfo.shareItem?.shareFormUserExpirationTime),
-            urlHeaderList: urlHeaderList,
-            authorData: authorData,
-            dataSetList: dataSetList,
-            worldCRS: res_1.coordinates,
-            shareType: 2,
-            camDefaultDataSetId: cam_dataSetId,
-            shareViewMode: urlInfo.shareViewMode,
-            entityList: entityList,
-            waterList: waterList,
-            extrudeList: extrudeList,
-            extrudeTexList: extrudeTexList,
-            monomerList: monomerList,
-        });
-        card_store.addCard(shareData);
-        update_cardList();
-
-        uni.hide_loading();
-        uni.$re
-            .realEngineRender({
-                name: 'uni-app',
-                noExternalNetwork: state_store.noExternalNetwork,
-                token: urlInfo.token,
-                baseUrl: urlInfo.baseUrl,
-                source: urlInfo.shareItem?.source,
-                shareUrl: urlInfo.url,
-                projName: urlInfo.projName,
-                collect: shareData.collect,
-                worldCRS: res_1.coordinates,
-                urlHeaderList: urlHeaderList,
-                authorData: authorData,
-                dataSetList: dataSetList,
-                shareType: 2,
-                sceneId: urlInfo.id,
-                camDefaultDataSetId: cam_dataSetId,
-                shareViewMode: urlInfo.shareViewMode,
-                defaultCamLoc: shareData.defaultCamLoc,
-                entityList: entityList,
-                waterList: waterList,
-                extrudeList: extrudeList,
-                extrudeTexList: extrudeTexList,
-                monomerList: monomerList,
-            })
-            .then((result) => {
-                console.log(result);
-                uni.$re.unipluginLog(JSON.stringify(result));
-            });
-    } catch (error: any) {
-        uni.hide_loading();
-        uni.showToast({ title: error.message || '获取数据失败', icon: 'none' });
-        throw error; // 向上抛出错误
-    }
-};
-
-// MARK re-api 查看分享链接资源 -- 模型资源
-const showModelRes = (urlInfo: any) => {
-    switch (urlInfo.shareDataType) {
-        case 'bim': // 短链接请求获取
-        case 'Bim': // 长连接获取
-        case 'Rs':
-        case 'Wmts':
-        case 'Osgb':
-        case 'PointCloud':
-            showModelTypeRes(urlInfo);
-            break;
-        case 'CAD': // 短链接请求获取
-        case 'Cad': // 长连接获取
-            showCadTypeRes(urlInfo);
-            break;
-        default:
-            // 使用延时解决弹窗关闭后的提示显示异常的问题，因为弹窗关闭有200的延迟
-            setTimeout(() => {
-                uni.showToast({ title: '暂不支持该数据类型', icon: 'none' });
-            }, 210);
-            break;
-    }
-};
-
-// MARK re-api 查看模型类型数据
-const showModelTypeRes = async (urlInfo: any) => {
-    uni.show_loading();
-    try {
-        // 获取资源数据
-        const dataSetList = await getDataSetList({ dataSetIds: [urlInfo.id] }, urlInfo);
-        const urlHeaderList = handleDataSetResHeader(dataSetList, urlInfo);
-        const authorData = handleDataSetResAuthorInfo(urlInfo);
-
-        let shareData: Share = newShare({
-            url: urlInfo.url,
-            token: urlInfo.token,
-            baseUrl: urlInfo.baseUrl,
-            source: urlInfo.shareItem?.source,
-            projName: urlInfo.projName,
-            id: urlInfo.id,
-            lastTime: new Date(),
-            endTime: uni.$tool.time_To_IOSDate(urlInfo.shareItem?.endTime),
-            shareFormUserExpirationTime: uni.$tool.time_To_IOSDate(urlInfo.shareItem?.shareFormUserExpirationTime),
-            urlHeaderList: urlHeaderList,
-            authorData: authorData,
-            dataSetList: dataSetList,
-            shareType: 1,
-            shareDataType: urlInfo.shareDataType,
-        });
-        card_store.addCard(shareData);
-        update_cardList();
-
-        uni.hide_loading();
-        uni.$re
-            .realEngineRender({
-                name: 'uni-app',
-                noExternalNetwork: state_store.noExternalNetwork,
-                token: urlInfo.token,
-                baseUrl: urlInfo.baseUrl,
-                source: urlInfo.shareItem?.source,
-                shareUrl: urlInfo.url,
-                projName: urlInfo.projName,
-                sceneId: urlInfo.id,
-                urlHeaderList: urlHeaderList,
-                authorData: authorData,
-                dataSetList: dataSetList,
-                collect: shareData.collect,
-                shareType: 1,
-                shareDataType: urlInfo.shareDataType,
-                defaultCamLoc: shareData.defaultCamLoc,
-            })
-            .then((result) => {
-                uni.$re.unipluginLog(JSON.stringify(result));
-            });
-    } catch (error: any) {
-        uni.hide_loading();
-        uni.showToast({ title: error.message || '获取数据失败', icon: 'none' });
-        throw error;
-    }
-};
-
-// MARK re-api 查看CAD类型数据
-const showCadTypeRes = async (urlInfo: any) => {
-    uni.show_loading();
-
-    try {
-        // 获取资源数据
-        const cadDataSetList = await getCadDataSetList({ dataSetId: urlInfo.id });
-        const urlHeaderList = handleDataSetResHeader(cadDataSetList, urlInfo);
-        const authorData = handleDataSetResAuthorInfo(urlInfo);
-
-        let shareData: Share = newShare({
-            url: urlInfo.url,
-            token: urlInfo.token,
-            baseUrl: urlInfo.baseUrl,
-            source: urlInfo.shareItem?.source,
-            projName: urlInfo.projName,
-            id: urlInfo.id,
-            lastTime: new Date(),
-            endTime: uni.$tool.time_To_IOSDate(urlInfo.shareItem?.endTime),
-            shareFormUserExpirationTime: uni.$tool.time_To_IOSDate(urlInfo.shareItem?.shareFormUserExpirationTime),
-            urlHeaderList: urlHeaderList,
-            authorData: authorData,
-            dataSetList: cadDataSetList,
-            shareType: 1,
-            shareDataType: urlInfo.shareDataType,
-        });
-        card_store.addCard(shareData);
-        update_cardList();
-
-        uni.hide_loading();
-        uni.$re
-            .realEngineRender({
-                name: 'uni-app',
-                noExternalNetwork: state_store.noExternalNetwork,
-                token: urlInfo.token,
-                baseUrl: urlInfo.baseUrl,
-                source: urlInfo.shareItem?.source,
-                shareUrl: urlInfo.url,
-                projName: urlInfo.projName,
-                sceneId: urlInfo.id,
-                urlHeaderList: urlHeaderList,
-                authorData: authorData,
-                dataSetList: cadDataSetList,
-                collect: shareData.collect,
-                shareType: 1,
-                shareDataType: urlInfo.shareDataType,
-            })
-            .then((result) => {
-                uni.$re.unipluginLog(JSON.stringify(result));
-            });
-    } catch (error: any) {
-        uni.hide_loading();
-        uni.showToast({ title: error.message || '获取数据失败', icon: 'none' });
-        throw error;
     }
 };
 
@@ -761,671 +422,6 @@ const showResourceAddressRes = (e: any) => {
         .then((result) => {
             uni.$re.unipluginLog(JSON.stringify(result));
         });
-};
-
-// MARK Service 获取场景信息
-const getSceneInfo = (paran: any): Promise<any> => {
-    return new Promise<any>((resolve, reject) => {
-        getSceneById(paran).then((res) => {
-            if (res.data) {
-                let info = {
-                    coordinates: res.data.coordinates,
-                    dataSetPosition: res.data.dataSetPosition,
-                    sceneName: res.data.sceneName,
-                    componentTreeId: res.data.componentTreeId,
-                    componentPosition: res.data.componentPosition,
-                };
-                resolve(info);
-            } else {
-                reject('位置偏移信息获取失败！');
-            }
-        });
-    });
-};
-
-// MARK Service 获取场景目录树
-const getSceneTree = (paran: any, sceneInfo: any): Promise<any> => {
-    return new Promise<any>((resolve, reject) => {
-        getSingleSceneTreeById(paran).then((res) => {
-            if (res.data) {
-                const treeList = handle_formatSceneTree(res.data, sceneInfo);
-                resolve(treeList);
-            } else {
-                reject('场景目录树获取失败！');
-            }
-        });
-    });
-};
-
-// MARK Service 获取模型目录树
-const getModelTree = (paran: any): Promise<any> => {
-    return new Promise<any>((resolve, reject) => {
-        getProjectTree(paran).then((res) => {
-            if (res.data) {
-                resolve(res.data);
-            } else {
-                reject('模型目录树获取失败！');
-            }
-        });
-    });
-};
-
-// MARK Service 获取数据集资源地址
-const getDataSetList = (params: any, urlInfo: any): Promise<any> => {
-    return new Promise<any>((resolve, reject) => {
-        getProjectModel(params).then((res) => {
-            let dataSetList: any[] = [];
-            res.data.forEach((item: any) => {
-                let dataSetCRS = handleDataSetCRS(item);
-                let dataSetCRSNorth = handleDataSetCRSNorth(item);
-                let engineOrigin = handleEngineOrigin(item);
-                let dataSetSGContent = item.context ? item.context : '';
-                dataSetList.push({
-                    dataSetId: item.dataSetId,
-                    resourcesAddress: urlInfo.isMinio ? `${item.resourcesAddress}${item.resId}` : item.resourcesAddress,
-                    rotate: item.rotate?.split(' ').map(Number),
-                    scale: item.scale?.split(' ').map(Number),
-                    offset: item.translation?.split(' ').map(Number),
-                    dataSetCRS: dataSetCRS,
-                    dataSetCRSNorth: dataSetCRSNorth,
-                    engineOrigin: engineOrigin,
-                    dataSetSGContent: dataSetSGContent,
-                    dataSetType: item.dataSetType,
-                });
-            });
-            if (dataSetList.length > 0) {
-                resolve(dataSetList);
-            } else {
-                reject('资源地址获取失败！');
-            }
-        });
-    });
-};
-
-// MARK Service 获取项目名称
-const getProjName = (urlInfo: any): Promise<any> => {
-    return new Promise<any>((resolve, reject) => {
-        if (urlInfo.shareType === 2) {
-            getSceneInfo(urlInfo.id)
-                .then((res) => {
-                    resolve(res?.sceneName);
-                })
-                .catch((err) => {
-                    reject(err);
-                });
-        } else {
-            getModelTree({ dataSetId: urlInfo.id })
-                .then((res) => {
-                    let find_obj = res?.find((item: any) => item.dataSetId === urlInfo.id);
-                    if (find_obj) {
-                        resolve(find_obj.dataSetName);
-                    } else {
-                        reject('项目查询失败');
-                    }
-                })
-                .catch((err) => {
-                    reject(err);
-                });
-        }
-    });
-};
-
-// MARK Service 获取数据集下CAD资源地址
-const getCadDataSetList = (params: any): Promise<any> => {
-    return new Promise<any>((resolve, reject) => {
-        getCadDatasetFiles(params).then((res) => {
-            let dataSetList: any[] = [];
-            if (res.data.items && res.data.items.length > 0) {
-                let cad_file = res.data.items[0];
-                const cadUnitMap: any = {
-                    Meter: 'CAD_UNIT_Meter',
-                    Centimeter: 'CAD_UNIT_Centimeter',
-                    Millimeter: 'CAD_UNIT_Millimeter',
-                    Kilometer: 'CAD_UNIT_Kilometer',
-                    Inch: 'CAD_UNIT_Inch',
-                    Foot: 'CAD_UNIT_Foot',
-                    Mile: 'CAD_UNIT_Mile',
-                };
-                dataSetList.push({
-                    dataSetId: 're_cad',
-                    resourcesAddress: cad_file.resourcesAddress,
-                    unit: cadUnitMap[cad_file.unit || 'Meter'],
-                });
-            }
-            if (dataSetList.length > 0) {
-                resolve(dataSetList);
-            } else {
-                reject('资源地址获取失败！');
-            }
-        });
-    });
-};
-
-// MARK Service 获取开挖纹理列表
-const getExtrudeTexList = (sceneTree: any): Promise<any> => {
-    return new Promise<any>((resolve, reject) => {
-        const allLeafNodes = handle_findAllNodeByLevel(sceneTree, 2);
-        const allExtrudes = allLeafNodes.filter((item: any) => item.dataSetType == state_store.appSupportExtrudeType);
-        if (!allExtrudes.length) {
-            resolve([]);
-            return;
-        }
-
-        getSharedExtrudeTexturesList().then((res) => {
-            const intrinsicTextures = res?.data.intrinsicTextures;
-            let textureList: any[] = [];
-            if (intrinsicTextures && intrinsicTextures.length) {
-                textureList = intrinsicTextures.map((item: any) => {
-                    const picPath = `${state_store.downloadUrl}/${item.fileDataId}?token=${state_store.token}`;
-                    const size = [5.0, 5.0];
-                    return {
-                        picPath: picPath,
-                        picSize: size,
-                        textureGuid: item.TextureImageId,
-                    };
-                });
-            }
-            if (textureList.length > 0) {
-                resolve(textureList);
-            } else {
-                reject([]);
-            }
-        });
-    });
-};
-
-// MARK data 格式化-场景树
-const handle_formatSceneTree = (list: any, sceneInfo: any) => {
-    if (!list) return [];
-    let sceneData = list;
-    let rootFolders = handle_findAllNodeByLevel(sceneData, 3);
-    let folders = handle_findAllNodeByLevel(sceneData, 1);
-    let allFolders = [...rootFolders, ...folders];
-    allFolders.forEach((item) => {
-        let rootNodeId = item.levelCode.split('/')[0];
-        let find = rootFolders.find((el: any) => el.sceneNodeId === rootNodeId);
-        item.dataSetType = find.dataSetType;
-        item.srcDataSetType = find.srcDataSetType;
-        item['nodeName'] = item.sceneNodeName;
-        item['nodeId'] = item.sceneNodeId;
-    });
-
-    let allDatasets = handle_findAllNodeByLevel(sceneData, 2);
-    let { componentPosition } = sceneInfo;
-    allDatasets.forEach((item: any) => {
-        item['customNodeType'] = 'dataSet';
-        item['nodeId'] = item.sceneNodeId;
-        item['nodeName'] = item.sceneNodeName;
-
-        if (item.viewStatus === 2) {
-            item['disabled'] = true;
-        }
-
-        if (item.dataSetType === 0 && item.viewStatus !== 2) {
-            item.subNodes.push({ nodeName: '' });
-        }
-
-        if (item.dataSetType === 19) {
-            let componentInfo = item.componentInfo;
-            componentInfo.id = componentInfo.treeNodeId;
-            let find = componentPosition.find((el: any) => el.id === componentInfo.id);
-            if (find) {
-                componentInfo.location = {
-                    rotate: find.rotate,
-                    scale: find.scale,
-                    translation: find.translation,
-                };
-            }
-            let { hostFileId, instanceIndex, isPublished } = componentInfo;
-            if (isPublished) {
-                componentInfo.dataSetId = sceneInfo.componentTreeId;
-                componentInfo.elemId = Number(`${hostFileId}${instanceIndex}`);
-            }
-        }
-
-        // 水面类型，将waterId提升一级，方便调用
-        if (item.dataSetType === 23) {
-            let waterInfo = item.waterInfo;
-            item.waterId = waterInfo.id;
-        }
-
-        // 开挖类型，将extrudeId提升一级，方便调用
-        if (item.dataSetType === 24) {
-            let extrudeInfo = item.excavateInfo;
-            item.extrudeId = extrudeInfo.id;
-        }
-
-        if (item.dataSetType === 25) {
-            item.customNodeType = 'monomer';
-            item.monomerId = item.nodeId;
-            item.monomerName = item.nodeName;
-            item.monomerizationInfo = handle_formatMonomerInfo(item.monomerizationInfo);
-            const monomerInfo = item.monomerizationInfo;
-            if (monomerInfo.monomerizationType === 2) {
-                // 构建伪节点，用于展开单体化子节点
-                item.subNodes = [{ nodeId: `tempNode-${item.nodeId}`, nodeName: '', viewStatus: item.viewStatus }];
-            }
-        }
-    });
-
-    // 隐藏没有数据的根节点
-    sceneData = sceneData.filter((el: any) => el.subNodes.length);
-    return sceneData;
-};
-
-// MARK data 格式化-单体化信息对象
-const handle_formatMonomerInfo = (monomerInfo: any) => {
-    const units = monomerInfo.levelJson;
-    const firstRoom = units[0].floors[0].rooms[0];
-    const firstRoomGeoJson = JSON.parse(firstRoom.geoJson);
-    if (firstRoomGeoJson.rgnList) return monomerInfo;
-
-    const dataSetId = monomerInfo.dataSetId;
-    const rooms = units.flatMap((unit: any) => unit.floors.flatMap((floor: any) => floor.rooms));
-    rooms.forEach((room: any) => {
-        const roomGeoJson = JSON.parse(room.geoJson);
-        const fenceClr = roomGeoJson.fenceClr;
-        const { red, green, blue, alpha } = fenceClr;
-        const monomerClr = { red, green, blue, alpha: 128 };
-        const heightMin = roomGeoJson.potList[0][2];
-        const heightMax = roomGeoJson.potList[0][2] + roomGeoJson.potList[0][3];
-        const pointList = roomGeoJson.potList.map((el: any) => el.slice(0, 3));
-
-        const groJson = {
-            dataSetId,
-            rgnList: [pointList],
-            heightMin,
-            heightMax,
-            monomerClr,
-        };
-        room.geoJson = JSON.stringify(groJson);
-    });
-
-    return monomerInfo;
-};
-
-// MARK Service 处理数据集偏移信息
-const handleDataSetTrans = (dataSetList: any, dataSetTrans: any): any => {
-    dataSetList.forEach((dataSet: any) => {
-        let dataSetTranData = dataSetTrans.find((obj: any) => obj.dataSetId == dataSet.dataSetId);
-        if (dataSetTranData) {
-            dataSet.rotate = dataSetTranData.rotate?.split(' ').map(Number);
-            dataSet.scale = dataSetTranData.scale?.split(' ').map(Number);
-            dataSet.offset = dataSetTranData.translation?.split(' ').map(Number);
-        }
-    });
-    return dataSetList;
-};
-
-// MARK Service 处理数据集--坐标系标识符
-const handleDataSetCRS = (dataSetInfo: any) => {
-    if (!SETCRS_DATA_TYPE.includes(dataSetInfo.dataSetType)) return '';
-
-    let crsConfig = dataSetInfo.coordinatesConfig;
-    if (crsConfig.coordinatesType === 'None') return '';
-
-    if (crsConfig.coordinatesType === 'CalibrationPoint') {
-        let crsPoint = crsConfig.coordinatesPoint;
-        let crs = `ENU:${crsPoint.latitude},${crsPoint.longitude}`;
-        return crs;
-    } else {
-        return crsConfig.coordinates;
-    }
-};
-
-// MARK Service 处理数据集--基点坐标
-const handleEngineOrigin = (dataSetInfo: any) => {
-    if (!SETCRS_DATA_TYPE.includes(dataSetInfo.dataSetType)) return [0, 0, 0];
-
-    let engineOrigin = [];
-    let crsConfig = dataSetInfo.coordinatesConfig;
-
-    let origin = crsConfig.basePoint;
-    let originArray = [];
-    if (origin) {
-        originArray = origin.split(',').map(Number);
-    }
-
-    if (crsConfig.coordinatesType === 'CalibrationPoint') {
-        let crsPoint = crsConfig.coordinatesPoint;
-        let point = crsPoint.coordinates;
-        let pointArray = [];
-        if (point) {
-            pointArray = point.split(',').map(Number);
-        } else {
-            pointArray = [0, 0, 0];
-        }
-
-        if (originArray.length) {
-            originArray.forEach((item: any, index: any) => {
-                let result = item - pointArray[index];
-                engineOrigin.push(result);
-            });
-        } else {
-            engineOrigin = pointArray;
-        }
-    } else {
-        engineOrigin = originArray;
-    }
-
-    if (engineOrigin.length) {
-        return engineOrigin;
-    } else {
-        return [0, 0, 0];
-    }
-};
-
-// MARK Service 处理数据集--正北夹角
-const handleDataSetCRSNorth = (dataSetInfo: any) => {
-    if (!SETCRS_DATA_TYPE.includes(dataSetInfo.dataSetType)) return 0;
-    let crsConfig = dataSetInfo.coordinatesConfig;
-    if (crsConfig.northAngle) {
-        return Number(crsConfig.northAngle);
-    } else {
-        return 0;
-    }
-};
-
-// MARK Service 处理数据集--地形层级
-const handleTerrainLayerLev = (dataSetList: any, dataSetTerrain: any) => {
-    dataSetList.forEach((dataSet: any) => {
-        let dataSetTranData = dataSetTerrain.find((obj: any) => obj.dataSetId == dataSet.dataSetId);
-        if (dataSetTranData) {
-            dataSet.terrainLayerLev = dataSetTranData.sortNum;
-        } else {
-            dataSet.terrainLayerLev = 0;
-        }
-    });
-    return dataSetList;
-};
-
-// MARK Service 处理数据集--数据集标识横杠
-const handleDataSetId = (dataSetList: any) => {
-    return dataSetList; // 不处理横杠了，不然业务太多使用横杠的接口，去除会导致数据不对
-    dataSetList.forEach((dataSet: any) => {
-        if (dataSet.dataSetId && dataSet.dataSetId.length) {
-            dataSet.dataSetId = dataSet.dataSetId.replace(/-/g, ''); //不能使用replaceAll,app端异常
-        }
-    });
-    return dataSetList;
-};
-
-// MARK Service 处理数据集--获取资源授权请求头
-const handleDataSetResHeader = (dataSetList: any, urlInfo: any) => {
-    let urlHeaderList: any = [];
-    dataSetList.forEach((dataSet: any) => {
-        const baseUrl = uni.$tool.url_base(dataSet.resourcesAddress);
-        const find_obj = urlHeaderList.find((item: any) => item.urlWildcard == baseUrl);
-        if (!find_obj) {
-            const headerParam: any = { urlWildcard: `${baseUrl}/*`, headerStr: `Auth:${urlInfo.token}` };
-            urlHeaderList.push(headerParam);
-        }
-    });
-    return urlHeaderList;
-};
-
-// MARK Service 处理数据集--获取资源授权地址信息
-const handleDataSetResAuthorInfo = (urlInfo: any) => {
-    if (!urlInfo.isMinio) {
-        return {};
-    }
-    const authorTxt = urlInfo.resourcesAddress.replace('res/', state_store.authorTxt);
-    const authorRes = urlInfo.resourcesAddress;
-    const authorIndex = urlInfo.resourcesAddress.replace('res/', state_store.authorIndex);
-
-    let authorData: any = {
-        isMinio: urlInfo.isMinio,
-        resMode: urlInfo.resMode,
-        commonUrl: urlInfo.commonUrl,
-        resourcesAddress: urlInfo.resourcesAddress,
-        authorTxt: authorTxt,
-        authorRes: authorRes,
-        authorIndex: authorIndex,
-        authorTxtId: state_store.authorTxtId,
-        authorIndexId: state_store.authorIndexId,
-    };
-    return authorData;
-};
-
-// MARK Service 处理数据集--单构件信息
-const handleEntityData = async (sceneTree: any, entityEditTranList: any = []) => {
-    let entityList: any[] = [];
-    const entity_server_obj = sceneTree.find((item: any) => item.dataSetType == state_store.appSupportEntityType);
-    if (entity_server_obj && entity_server_obj.subNodes.length > 0) {
-        const entity_server_list = entity_server_obj.subNodes.filter((item: any) => {
-            if (item.componentInfo && item.componentInfo.isPublished && item.nodeType == 2 && item.viewStatus !== 2) {
-                return true;
-            } else {
-                return false;
-            }
-        });
-        entity_server_list.forEach((item: any) => {
-            let { hostFileId, instanceIndex, location, treeNodeId } = item.componentInfo;
-            let scale = JSON.parse(location.scale);
-            let rotate = JSON.parse(location.rotate);
-            let offset = JSON.parse(location.translation);
-            const editTran_obj = entityEditTranList.find((edit_item: any) => item.dataSetId === edit_item.id);
-            if (editTran_obj) {
-                scale = JSON.parse(editTran_obj.scale);
-                rotate = JSON.parse(editTran_obj.rotate);
-                offset = JSON.parse(editTran_obj.translation);
-            }
-            let entity_obj: any = {};
-            // entity_obj.dataSetId = item.parentId.replace(/-/g, '');
-            entity_obj.dataSetId = item.parentId; // 不处理横杠了，不然业务太多使用横杠的接口，去除会导致数据不对
-            entity_obj.entityType = String(hostFileId);
-            entity_obj.elemId = Number(`${hostFileId}${instanceIndex}`);
-            entity_obj.scale = scale;
-            entity_obj.rotate = rotate;
-            entity_obj.offset = offset;
-            entity_obj.dataSetCRS = location.DataSetCRS;
-            entity_obj.entityId = treeNodeId; // 单构件id保存，后期服务接口需要调用
-            entityList.push(entity_obj);
-        });
-    }
-    return entityList;
-};
-
-// MARK Service 处理数据集--水面信息
-const hanldleWaterData = async (sceneTree: any) => {
-    const allLeafNodes = handle_findAllNodeByLevel(sceneTree, 2);
-    const allWaters = allLeafNodes.filter((item: any) => item.dataSetType == state_store.appSupportWaterType);
-
-    let waterList: any[] = [];
-    allWaters.forEach((item: any) => {
-        const waterGeoJson: any = JSON.parse(item.waterInfo.geoJson);
-        const rgnList = waterGeoJson.rgnList;
-        const rgnInfo = rgnList[0];
-        let cornerRgnInfo: any = {};
-        cornerRgnInfo.pointList = rgnInfo.pointList;
-        cornerRgnInfo.indexList = rgnInfo.indexList;
-
-        const waterRgnList = [cornerRgnInfo];
-        const { red, green, blue, alpha } = waterGeoJson.waterClr;
-        const waterClr = [red, green, blue, alpha];
-
-        let waterInfo: any = {};
-        waterInfo.waterName = item.waterInfo.id;
-        waterInfo.waterClr = waterClr;
-        waterInfo.blendDist = waterGeoJson.blendDist;
-        waterInfo.visible = waterGeoJson.visible;
-        waterInfo.expandDist = waterGeoJson.expandDist;
-        waterInfo.depthBias = waterGeoJson.depthBias;
-        waterInfo.visDist = waterGeoJson.visDist;
-        waterInfo.rgnList = waterRgnList;
-        waterList.push(waterInfo);
-    });
-    return waterList;
-};
-
-// MARK Service 处理数据集--挤出信息
-const hanldleExtrudeData = async (sceneTree: any, extrudeTexList: any) => {
-    const allLeafNodes = handle_findAllNodeByLevel(sceneTree, 2);
-    const allExtrudes = allLeafNodes.filter((item) => item.dataSetType == state_store.appSupportExtrudeType);
-
-    let extrudeList: any[] = [];
-    allExtrudes.forEach((item: any) => {
-        const extrudeGeoJson = JSON.parse(item.excavateInfo.geoJson);
-        const rgnList = extrudeGeoJson.rgnList;
-        let extrudeInfo: any = {};
-        extrudeInfo.extrudeId = item.excavateInfo.id;
-        extrudeInfo.dataSetIdList = extrudeGeoJson.dataSetIdList;
-        extrudeInfo.rgnList = rgnList;
-        extrudeInfo.depthLimitRange = extrudeGeoJson.depthLimitRange;
-        extrudeInfo.type = extrudeGeoJson.type;
-        if (extrudeGeoJson.type === 2) {
-            const find = extrudeTexList.find((el: any) => el.textureGuid === item.excavateInfo.textureFileDataId);
-            extrudeInfo.texSize = JSON.parse(JSON.stringify(find.picSize));
-            extrudeInfo.texPath = find.picPath;
-        }
-        extrudeList.push(extrudeInfo);
-    });
-    return extrudeList;
-};
-
-// MARK Service 处理数据集--单体化信息
-const hanldleMonomerData = async (sceneTree: any) => {
-    const allLeafNodes = handle_findAllNodeByLevel(sceneTree, 2);
-    const allMonomers = allLeafNodes.filter((item: any) => item.dataSetType == state_store.appSupportMonomerType);
-    if (!allMonomers.length) return [];
-
-    const monomerList: any[] = service_getMonomerByNodes(allMonomers);
-
-    let roomMonomerList: any[] = [];
-    monomerList.forEach((item: any) => {
-        const roomShp = JSON.parse(item.geoJson);
-        const { red, green, blue, alpha } = roomShp.monomerClr;
-        let monomerClr = [red, green, blue, alpha];
-        if (item.displayMode === 3) {
-            monomerClr = [255, 255, 255, 10];
-        } else {
-            monomerClr = [red, green, blue, 128];
-        }
-
-        let roomMonomerInfo: any = {};
-        roomMonomerInfo.monomerId = item.monomerId;
-        roomMonomerInfo.dataSetId = roomShp.dataSetId;
-        roomMonomerInfo.rgnList = roomShp.rgnList;
-        roomMonomerInfo.heightMin = roomShp.heightMin;
-        roomMonomerInfo.heightMax = roomShp.heightMax;
-        roomMonomerInfo.faceClr = monomerClr;
-        roomMonomerInfo.lineClr = monomerClr;
-        roomMonomerInfo.showState = item.displayMode === 1 ? 2 : 1;
-
-        roomMonomerList.push(roomMonomerInfo);
-    });
-    return roomMonomerList;
-};
-
-// MARK service 根据节点列表获取单体化对象列表
-const service_getMonomerByNodes = (nodeData: any) => {
-    let monomerList: any[] = [];
-
-    const flattenRooms = (rooms: any, source: any) => rooms.map((room: any) => createMonomerObj(source, room));
-    const flattenFloors = (floors: any, source: any) => floors.flatMap((floor: any) => flattenRooms(floor.rooms, source));
-    const flattenUnits = (units: any, source: any) => units.flatMap((unit: any) => flattenFloors(unit.floors, source));
-
-    const createMonomerObj = (source: any, room: any) => ({
-        displayMode: source.displayMode,
-        dataSetId: source.dataSetId,
-        monomerId: room.id,
-        geoJson: room.geoJson,
-    });
-
-    // 主处理逻辑
-    nodeData.forEach((item: any) => {
-        switch (item.customNodeType) {
-            case 'monomer': {
-                const monomers = flattenUnits(item.monomerizationInfo.levelJson, item.monomerizationInfo);
-                monomerList.push(...monomers);
-                break;
-            }
-            case 'monomerUnit': {
-                const unitMonomers = flattenFloors(item.floors, item);
-                monomerList.push(...unitMonomers);
-                break;
-            }
-            case 'monomerFloor': {
-                const floorMonomers = flattenRooms(item.rooms, item);
-                monomerList.push(...floorMonomers);
-                break;
-            }
-            case 'monomerRoom': {
-                monomerList.push(createMonomerObj(item, item));
-                break;
-            }
-        }
-    });
-
-    return monomerList;
-};
-
-// MARK Service 递归获取数据集标识集合
-const getDataSetIds = (sceneTree: any) => {
-    let dataSetIdList: string[] = [];
-    if (sceneTree && sceneTree.length > 0) {
-        sceneTree.forEach((item: any) => {
-            if (
-                item.nodeType == 2 &&
-                item.viewStatus !== 2 &&
-                state_store.sceneDataSetType.includes(item.dataSetType) &&
-                state_store.appSupportDataSetType.includes(item.dataSetType)
-            ) {
-                dataSetIdList.push(item.dataSetId);
-            }
-            if (item.subNodes && item.subNodes.length > 0) {
-                let childrenDataSetList = getDataSetIds(item.subNodes);
-                dataSetIdList = dataSetIdList.concat(childrenDataSetList);
-            }
-        });
-    }
-    return dataSetIdList;
-};
-
-// MARK data 查找-节点级别数据
-const handle_findAllNodeByLevel = (nodeData: any, level: number) => {
-    const array: any = [];
-
-    const traverse = (item: any) => {
-        if (item.nodeType && item.nodeType === level) {
-            array.push(item);
-        }
-        if (item.subNodes && item.subNodes.length) {
-            item.subNodes.forEach((subNode: any) => {
-                traverse(subNode);
-            });
-        }
-    };
-
-    nodeData.forEach((item: any) => {
-        traverse(item);
-    });
-
-    return array;
-};
-
-// MARK Service 递归获取地形数据集合
-const getTerrainDataSetList = async (sceneTree: any, nodeType: number) => {
-    const array: any[] = [];
-    const traverse = (item: any) => {
-        if (item.nodeType === nodeType) {
-            array.push(item);
-        }
-        if (item.subNodes && item.subNodes.length) {
-            item.subNodes.forEach((subNode: any) => {
-                traverse(subNode);
-            });
-        }
-    };
-
-    sceneTree.forEach((item: any) => {
-        traverse(item);
-    });
-
-    var allDataSets = array.filter((el) => el.viewStatus !== 2);
-    const terrainType = [10, 13, 21, 22];
-    let terrainDataSets = allDataSets.filter((el) => terrainType.includes(el.dataSetType));
-    return terrainDataSets;
 };
 </script>
 
