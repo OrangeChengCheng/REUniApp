@@ -1,20 +1,18 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-22 11:31:42
- * @LastEditTime: 2026-01-20 17:02:12
+ * @LastEditTime: 2026-02-24 18:32:39
 -->
 <template>
-    <view class="sup-card-comp" :style="`width: ${card_width}px;`" @click="card_click">
-        <view class="top-area" @touchstart="top_area_touchstart" @touchend="top_area_touchend">
+    <view class="sup-card-comp" :style="`width: ${card_width}px;`">
+        <view class="top-area" @touchstart="top_area_touchstart" @touchend="top_area_touchend" @click.stop="card_click">
             <image src="../../static/Main/card_bg.png" class="top-area-bg" />
             <view class="source-area" :style="source_style_computed">
                 <text class="source-text">{{ source_computed }}</text>
             </view>
         </view>
-        <view class="bottom-area">
-            <text class="bottom-title" @touchstart="bottom_title_area_touchstart" @touchend="bottom_title_area_touchend">{{
-                card_proj.projName
-            }}</text>
+        <view class="bottom-area" @click.stop="card_bottom_area_click">
+            <text class="bottom-title">{{ card_proj.projName }}</text>
             <text v-if="card_type !== 2" class="bottom-time"> {{ `${overdueTime_computed}&nbsp;&nbsp;到期` }}</text>
         </view>
         <view v-if="card_type !== 2" class="collect-area" @click.stop="collect_area_click">
@@ -55,11 +53,11 @@ const props = defineProps({
         type: Function,
         default: () => {},
     },
-    card_title_longpress_callback: {
+    card_bottom_area_callback: {
         type: Function,
         default: () => {},
     },
-    card_img_longpress_callback: {
+    card_top_area_longpress_callback: {
         type: Function,
         default: () => {},
     },
@@ -73,11 +71,8 @@ const props = defineProps({
     },
 });
 
-const touch_timer_bottom_title = ref<number | null>(null);
-const touch_longpress_bottom_title = 500; // 长按时间阈值
-
 const touch_timer_top_img = ref<number | null>(null);
-const touch_longpress_top_img = 4000; // 长按时间阈值
+const touch_longpress_top_img = 1000; // 长按时间阈值
 
 const tip = ref('已过期');
 
@@ -159,28 +154,17 @@ const card_click = () => {
     props.card_callback(props.card_proj);
 };
 
-// MARK Click  开始点击
-const bottom_title_area_touchstart = () => {
-    // 设置定时器，如果触摸时间超过阈值，则认为是长按
-    touch_timer_bottom_title.value = setTimeout(() => {
-        props.card_title_longpress_callback(props.card_proj);
-    }, touch_longpress_bottom_title);
+// MARK Click  卡片底部点击
+const card_bottom_area_click = () => {
+    props.card_bottom_area_callback(props.card_proj);
 };
 
-// MARK Click  结束点击
-const bottom_title_area_touchend = () => {
-    // 如果触摸结束，且定时器存在，则清除定时器
-    if (touch_timer_bottom_title.value !== null) {
-        clearTimeout(touch_timer_bottom_title.value);
-        touch_timer_bottom_title.value = null;
-    }
-};
 
 // MARK Click  开始点击
 const top_area_touchstart = () => {
     // 设置定时器，如果触摸时间超过阈值，则认为是长按
     touch_timer_top_img.value = setTimeout(() => {
-        props.card_img_longpress_callback(props.card_proj);
+        props.card_top_area_longpress_callback(props.card_proj);
     }, touch_longpress_top_img);
 };
 

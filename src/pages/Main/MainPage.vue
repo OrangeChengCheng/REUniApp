@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2026-01-21 11:10:33
+ * @LastEditTime: 2026-02-25 14:36:30
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -40,8 +40,8 @@
                                 :card_width="grid_columnWidth"
                                 :card_proj="item"
                                 :card_callback="card_callback"
-                                :card_title_longpress_callback="card_title_longpress_callback"
-                                :card_img_longpress_callback="card_img_longpress_callback"
+                                :card_bottom_area_callback="card_bottom_area_callback"
+                                :card_top_area_longpress_callback="card_top_area_longpress_callback"
                                 :card_collect_callback="card_collect_callback"
                                 :card_delete_callback="card_delete_callback"></card-comp>
                         </view>
@@ -231,8 +231,8 @@ const uniapp_getClipboard = () => {
 const topbar_scan_callback = () => {
     uni.scan_code()
         .then((res: any) => {
-            uni.$re.unipluginLog('uni.scan_code: ' + JSON.stringify(res.data));
-            tool_handleUrl(res.data);
+            uni.$re.unipluginLog('uni.scan_code: ' + JSON.stringify(res));
+            tool_handleUrl(res);
         })
         .catch((err: any) => {
             console.log(err);
@@ -261,7 +261,7 @@ const tool_handleUrl = async (e: any) => {
 
 // MARK Topbar banner区域连续点击
 const banner_re_callback = () => {
-    ref_customInput_dialog.value?.show_dialog();
+    // ref_customInput_dialog.value?.show_dialog();
 };
 
 // MARK Topbar banner区域长按
@@ -275,10 +275,12 @@ const dialog_SampleInputCallBack = (e: any) => {
 };
 
 // MARK Topbar 占位区域点击
-const topbar_houerArea_callback = () => {
+const topbar_houerArea_callback = async () => {
     dialog_shareUrl_disabled.value = false;
     dialog_shareUrl.value = '';
     dialog_projName.value = '';
+
+    await nextTick();
     ref_urlInput_dialog.value?.show_dialog();
 };
 
@@ -295,10 +297,10 @@ const topbar_search_callback = () => {
     });
 };
 
-// MARK Click  卡片名称长按
-const card_title_longpress_callback = (e: Card) => {
-    console.log('卡片名称长按', JSON.stringify(e));
-    uni.$re.unipluginLog('card_title_longpress_callback: ' + JSON.stringify(e));
+// MARK Click  卡片底部区域点击
+const card_bottom_area_callback = async (e: Card) => {
+    console.log('卡片底部区域点击', JSON.stringify(e));
+    uni.$re.unipluginLog('card_bottom_area_callback: ' + JSON.stringify(e));
 
     if (tb_tab_index.value === 2) {
         uni.showToast({ title: '模板示例无法修改名称', icon: 'none' });
@@ -309,13 +311,15 @@ const card_title_longpress_callback = (e: Card) => {
     dialog_projName.value = e.projName;
     dialog_revise.value = true;
     dialog_shareUrl_disabled.value = true;
+
+    await nextTick();
     ref_urlInput_dialog.value?.show_dialog();
 };
 
 // MARK Click  卡片图片长按
-const card_img_longpress_callback = (e: Card) => {
+const card_top_area_longpress_callback = (e: Card) => {
     console.log('卡片图片长按', JSON.stringify(e));
-    uni.$re.unipluginLog('card_title_longpress_callback: ' + JSON.stringify(e));
+    uni.$re.unipluginLog('card_top_area_longpress_callback: ' + JSON.stringify(e));
 
     if (tb_tab_index.value !== 0) {
         return;
@@ -371,9 +375,11 @@ const topbar_tab_callback = (index: number) => {
 // MARK Click  卡片点击
 const card_callback = async (e: Card) => {
     console.log('卡片信息: ', JSON.stringify(e));
+    uni.show_loading();
     const urlData: any = await uni.$tool.url_handle(e.shareUrl);
     if (!urlData) {
         uni.showToast({ title: '分享信息获取失败', icon: 'none' });
+        uni.hide_loading();
         return;
     }
     state_store.updateCurrToken(urlData.token);

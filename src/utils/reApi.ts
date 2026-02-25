@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-14 14:22:08
- * @LastEditTime: 2026-01-21 11:52:13
+ * @LastEditTime: 2026-02-24 17:45:55
  */
 
 import { useStateStore } from '@/stores/state';
@@ -78,6 +78,7 @@ const api: ApiMethods = {
                 await api.showModelRes(urlInfo, onUpdate);
             }
         } catch (error) {
+            uni.hide_loading();
             throw error;
         }
     },
@@ -157,6 +158,7 @@ const api: ApiMethods = {
                 await api.showCadTypeRes(urlInfo, onUpdate);
                 break;
             default:
+                uni.hide_loading();
                 // 使用延时解决弹窗关闭后的提示显示异常的问题，因为弹窗关闭有200的延迟
                 setTimeout(() => {
                     uni.showToast({ title: '暂不支持该数据类型', icon: 'none' });

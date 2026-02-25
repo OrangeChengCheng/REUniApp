@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-27 17:04:55
- * @LastEditTime: 2025-11-19 16:43:07
+ * @LastEditTime: 2026-02-25 14:29:48
 -->
 <template>
     <div class="sup-url-input-dialog" v-if="dialog_visible">
@@ -42,7 +42,7 @@
 
 // MOD-- JavaScript
 <script setup lang="ts">
-import { ref, onMounted, nextTick, watch } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 
 const props = defineProps({
     dialog_projName: {
@@ -72,11 +72,6 @@ const content_box_visible = ref(false);
 const projName = ref('');
 const shareUrl = ref('');
 
-watch([() => props.dialog_projName, () => props.dialog_shareUrl], () => {
-    projName.value = props.dialog_projName;
-    shareUrl.value = props.dialog_shareUrl;
-});
-
 onMounted(() => {
     projName.value = props.dialog_projName;
     shareUrl.value = props.dialog_shareUrl;
@@ -94,9 +89,11 @@ const uniapp_clearClipboard = () => {
     });
 };
 
-// MARK Expose 隐藏
+// MARK Expose 显示
 const show_dialog = () => {
     dialog_visible.value = true;
+    projName.value = props.dialog_projName;
+    shareUrl.value = props.dialog_shareUrl;
     nextTick(() => {
         content_box_visible.value = true;
     });
