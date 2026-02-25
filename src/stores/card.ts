@@ -1,11 +1,10 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-13 15:14:00
- * @LastEditTime: 2026-01-20 16:48:10
+ * @LastEditTime: 2026-02-25 17:19:13
  */
 import { defineStore } from 'pinia'
-import { type Card } from '@/types/class';
-
+import { newCard, type Card } from '@/types/class';
 
 
 interface CardMold {
@@ -22,16 +21,31 @@ export const useCardStore = defineStore('card', {
         sample_cardList: JSON.parse(uni.getStorageSync('RE_sample_cardList') || '[]') || [],
     }),
     actions: {
-        addCard(cardData: Card) {
-            if (this.checkRepeat(cardData)) {
-                console.log("已覆盖原有数据");
+        handleCardData(urlInfo: any, shareData: any, changeName: boolean = false): Card {
+            const cardData: Card = newCard({
+                shareUrl: shareData.url,
+                shareId: shareData.shareId,
+                source: shareData.source,
+                projName: shareData.projName,
+                lastTime: new Date(),
+                endTime: uni.$tool.time_To_IOSDate(urlInfo.shareItem?.endTime),
+                shareFormUserExpirationTime: uni.$tool.time_To_IOSDate(urlInfo.shareItem?.shareFormUserExpirationTime),
+            });
+            const find = this.cardList.find((e: Card) => e.shareUrl === cardData.shareUrl || e.shareId === cardData.shareId);
+            if (find) {
+                if (!changeName) cardData.projName = find.projName;
                 this.updateCard(cardData);
-                return;
+            } else {
+                this.addCard(cardData);
             }
+            return cardData;
+        },
+        addCard(cardData: Card) {
             this.cardList.push(cardData);
             this.saveToLocalStorage();
         },
         updateCard(cardData: Card) {
+            console.log("已覆盖原有数据");
             let find = this.cardList.find((e: Card) => e.shareId === cardData.shareId);
             if (find) {
                 find.shareUrl = cardData.shareUrl;
@@ -161,8 +175,8 @@ export const useCardStore = defineStore('card', {
             }
         },
         // MARK 重复校验
-        checkRepeat(cardData: Card): boolean {
-            return this.cardList.find((e: Card) => e.shareUrl === cardData.shareUrl || e.shareId === cardData.shareId) ? true : false;
+        checkRepeat(cardData: Card): any {
+            return this.cardList.find((e: Card) => e.shareUrl === cardData.shareUrl || e.shareId === cardData.shareId);
         },
     },
 });

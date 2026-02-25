@@ -113,6 +113,7 @@ const api: ApiMethods = {
     show_loading: () => {
         uni.showLoading({
             title: '加载中...',
+            mask: true,
         });
     },
 

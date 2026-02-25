@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2026-02-25 14:36:30
+ * @LastEditTime: 2026-02-25 15:29:55
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -256,6 +256,8 @@ const tool_handleUrl = async (e: any) => {
     dialog_shareUrl.value = urlData.url;
     dialog_projName.value = urlData.projName;
     dialog_shareUrl_disabled.value = true;
+
+    await nextTick();
     ref_urlInput_dialog.value?.show_dialog();
 };
 
@@ -384,20 +386,26 @@ const card_callback = async (e: Card) => {
     }
     state_store.updateCurrToken(urlData.token);
     state_store.updateCurrBaseUrl(urlData.baseUrl);
-    uni.$re.showShareRes(urlData, () => {});
+    uni.$re.showShareRes(urlData, true, () => {});
 };
 
 // MARK Dialog  查看模型/确认修改
 const dialog_UrlInputCallBack = async (e: any) => {
     console.log(e);
+    uni.show_loading();
     let urlData: any = await uni.$tool.url_handle(e.shareUrl);
+    if (!urlData) {
+        uni.hide_loading();
+        return;
+    }
     if (dialog_revise.value) {
         card_store.reviseProjName(urlData, e.projName);
         dialog_revise.value = false;
+        uni.hide_loading();
     } else {
         urlData.projName = e.projName;
         if (urlData) {
-            uni.$re.showShareRes(urlData, update_cardList);
+            uni.$re.showShareRes(urlData, false, update_cardList);
         }
     }
 };

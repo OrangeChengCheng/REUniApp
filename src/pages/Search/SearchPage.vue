@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2026-01-21 11:53:54
+ * @LastEditTime: 2026-02-25 17:30:43
 -->
 <template>
     <base-view :nav_bar="true" :nav_bar_title="`搜索`" :nav_bar_color="`--color-main-bg`">
@@ -20,8 +20,8 @@
                                 :card_width="grid_columnWidth"
                                 :card_proj="item"
                                 :card_callback="card_callback"
-                                :card_title_longpress_callback="card_title_longpress_callback"
-                                :card_img_longpress_callback="card_img_longpress_callback"
+                                :card_bottom_area_callback="card_bottom_area_callback"
+                                :card_top_area_longpress_callback="card_top_area_longpress_callback"
                                 :card_collect_callback="card_collect_callback"
                                 :card_delete_callback="card_delete_callback"></card-comp>
                         </view>
@@ -45,7 +45,7 @@
 
 // MOD-- JavaScript
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed, nextTick } from 'vue';
 import BaseView from '@/components/Base/BaseView.vue';
 import SearchBar from '@/components/TopBar/SearchBar.vue';
 import CardComp from '@/components/Card/CardComp.vue';
@@ -166,20 +166,22 @@ const topbar_tab_callback = (index: number) => {
 // MARK Click  卡片点击
 const card_callback = async (e: Card) => {
     console.log('卡片信息: ', JSON.stringify(e));
+    uni.show_loading();
     const urlData: any = await uni.$tool.url_handle(e.shareUrl);
     if (!urlData) {
         uni.showToast({ title: '分享信息获取失败', icon: 'none' });
+        uni.hide_loading();
         return;
     }
     state_store.updateCurrToken(urlData.token);
     state_store.updateCurrBaseUrl(urlData.baseUrl);
-    uni.$re.showShareRes(urlData, () => {});
+    uni.$re.showShareRes(urlData, true, () => {});
 };
 
-// MARK Click  卡片名称长按
-const card_title_longpress_callback = (e: Card) => {
-    console.log('卡片名称长按', e);
-    uni.$re.unipluginLog('card_title_longpress_callback: ' + JSON.stringify(e));
+// MARK Click  卡片底部区域点击
+const card_bottom_area_callback = async (e: Card) => {
+    console.log('卡片底部区域点击', JSON.stringify(e));
+    uni.$re.unipluginLog('card_bottom_area_callback: ' + JSON.stringify(e));
 
     if (tb_tab_index.value === 2) {
         uni.showToast({ title: '模板示例无法修改名称', icon: 'none' });
@@ -190,13 +192,15 @@ const card_title_longpress_callback = (e: Card) => {
     dialog_projName.value = e.projName;
     dialog_revise.value = true;
     dialog_shareUrl_disabled.value = true;
+
+    await nextTick();
     ref_urlInput_dialog.value?.show_dialog();
 };
 
 // MARK Click  卡片图片长按
-const card_img_longpress_callback = (e: Card) => {
+const card_top_area_longpress_callback = (e: Card) => {
     console.log('卡片图片长按', JSON.stringify(e));
-    uni.$re.unipluginLog('card_title_longpress_callback: ' + JSON.stringify(e));
+    uni.$re.unipluginLog('card_top_area_longpress_callback: ' + JSON.stringify(e));
 
     if (tb_tab_index.value !== 0) {
         return;
@@ -240,7 +244,9 @@ const card_delete_callback = (e: Card) => {
 // MARK Dialog  查看模型/确认修改
 const dialog_UrlInputCallBack = async (e: any) => {
     console.log(e);
+    uni.show_loading();
     let shareParams: any = await uni.$tool.url_handle(e.shareUrl);
+    uni.hide_loading();
     if (dialog_revise.value) {
         card_store.reviseProjName(shareParams, e.projName);
         dialog_revise.value = false;

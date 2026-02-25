@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-14 14:22:08
- * @LastEditTime: 2026-02-24 17:45:55
+ * @LastEditTime: 2026-02-25 17:23:43
  */
 
 import { useStateStore } from '@/stores/state';
@@ -14,11 +14,11 @@ interface ApiMethods {
     getREModule(): any;
     registerAppMsg(onCallBack: (data: any) => void): Promise<void>; // 添加一个回调参数来处理每条消息
     sendMsgUniToApp(data: any): void;
-    showShareRes(urlInfo: any, onUpdate: () => void): void;//查看分享资源
-    showSceneRes(urlInfo: any, onUpdate: () => void): Promise<void>;
-    showModelRes(urlInfo: any, onUpdate: () => void): Promise<void>;
-    showModelTypeRes(urlInfo: any, onUpdate: () => void): Promise<void>;
-    showCadTypeRes(urlInfo: any, onUpdate: () => void): Promise<void>;
+    showShareRes(urlInfo: any, isClick: boolean, onUpdate: () => void): void;//查看分享资源
+    showSceneRes(urlInfo: any, isClick: boolean, onUpdate: () => void): Promise<void>;
+    showModelRes(urlInfo: any, isClick: boolean, onUpdate: () => void): Promise<void>;
+    showModelTypeRes(urlInfo: any, isClick: boolean, onUpdate: () => void): Promise<void>;
+    showCadTypeRes(urlInfo: any, isClick: boolean, onUpdate: () => void): Promise<void>;
 }
 
 const api: ApiMethods = {
@@ -66,16 +66,16 @@ const api: ApiMethods = {
     },
 
     // MARK re-api 查看分享链接资源
-    showShareRes: async (urlInfo: any, onUpdate: () => void) => {
+    showShareRes: async (urlInfo: any, isClick: boolean, onUpdate: () => void) => {
         const state_store = useStateStore();
         try {
             // 获取分享信息
             state_store.updateCurSource(urlInfo.shareItem?.source);
 
             if (urlInfo.shareType === 2) {
-                await api.showSceneRes(urlInfo, onUpdate);
+                await api.showSceneRes(urlInfo, isClick, onUpdate);
             } else {
-                await api.showModelRes(urlInfo, onUpdate);
+                await api.showModelRes(urlInfo, isClick, onUpdate);
             }
         } catch (error) {
             uni.hide_loading();
@@ -83,25 +83,18 @@ const api: ApiMethods = {
         }
     },
     // MARK re-api 查看分享链接资源 -- 场景资源
-    showSceneRes: async (urlInfo: any, onUpdate: () => void): Promise<void> => {
+    showSceneRes: async (urlInfo: any, isClick: boolean, onUpdate: () => void): Promise<void> => {
         const card_store = useCardStore();
         const state_store = useStateStore();
-        uni.show_loading();
+        // uni.show_loading();
         try {
             const shareData = await uni.$tool.card_getSceneData(urlInfo);
+            const cardData: Card = card_store.handleCardData(urlInfo, shareData, !isClick);
+            let projName = cardData.projName;
 
             // 新添加的分享数据更新到缓存列表
+            // 这个方法肯定会被调用，只不过一个是空函数，一个是有操作的函数
             if (onUpdate) {
-                const cardData: Card = newCard({
-                    shareUrl: shareData.url,
-                    shareId: shareData.shareId,
-                    source: shareData.source,
-                    projName: shareData.projName,
-                    lastTime: new Date(),
-                    endTime: uni.$tool.time_To_IOSDate(urlInfo.shareItem?.endTime),
-                    shareFormUserExpirationTime: uni.$tool.time_To_IOSDate(urlInfo.shareItem?.shareFormUserExpirationTime),
-                });
-                card_store.addCard(cardData);
                 onUpdate();
             }
 
@@ -114,7 +107,7 @@ const api: ApiMethods = {
                 baseUrl: shareData.baseUrl,
                 source: shareData.source,
                 shareUrl: shareData.url,
-                projName: shareData.projName,
+                projName: projName,
                 worldCRS: shareData.worldCRS,
                 urlHeaderList: shareData.urlHeaderList,
                 authorData: shareData.authorData,
@@ -143,7 +136,7 @@ const api: ApiMethods = {
     },
 
     // MARK re-api 查看分享链接资源 -- 模型资源
-    showModelRes: async (urlInfo: any, onUpdate: () => void): Promise<void> => {
+    showModelRes: async (urlInfo: any, isClick: boolean, onUpdate: () => void): Promise<void> => {
         switch (urlInfo.shareDataType) {
             case 'bim': // 短链接请求获取
             case 'Bim': // 长连接获取
@@ -151,11 +144,11 @@ const api: ApiMethods = {
             case 'Wmts':
             case 'Osgb':
             case 'PointCloud':
-                await api.showModelTypeRes(urlInfo, onUpdate);
+                await api.showModelTypeRes(urlInfo, isClick, onUpdate);
                 break;
             case 'CAD': // 短链接请求获取
             case 'Cad': // 长连接获取
-                await api.showCadTypeRes(urlInfo, onUpdate);
+                await api.showCadTypeRes(urlInfo, isClick, onUpdate);
                 break;
             default:
                 uni.hide_loading();
@@ -168,24 +161,18 @@ const api: ApiMethods = {
     },
 
     // MARK re-api 查看模型类型数据
-    showModelTypeRes: async (urlInfo: any, onUpdate: () => void): Promise<void> => {
+    showModelTypeRes: async (urlInfo: any, isClick: boolean, onUpdate: () => void): Promise<void> => {
         const card_store = useCardStore();
         const state_store = useStateStore();
-        uni.show_loading();
+        // uni.show_loading();
         try {
             const shareData = await uni.$tool.card_getBimData(urlInfo);
+            const cardData: Card = card_store.handleCardData(urlInfo, shareData, !isClick);
+            let projName = cardData.projName;
+
             // 新添加的分享数据更新到缓存列表
+            // 这个方法肯定会被调用，只不过一个是空函数，一个是有操作的函数
             if (onUpdate) {
-                const cardData: Card = newCard({
-                    shareUrl: shareData.url,
-                    shareId: shareData.shareId,
-                    source: shareData.source,
-                    projName: shareData.projName,
-                    lastTime: new Date(),
-                    endTime: uni.$tool.time_To_IOSDate(urlInfo.shareItem?.endTime),
-                    shareFormUserExpirationTime: uni.$tool.time_To_IOSDate(urlInfo.shareItem?.shareFormUserExpirationTime),
-                });
-                card_store.addCard(cardData);
                 onUpdate();
             }
 
@@ -198,7 +185,7 @@ const api: ApiMethods = {
                 baseUrl: shareData.baseUrl,
                 source: shareData.source,
                 shareUrl: shareData.url,
-                projName: shareData.projName,
+                projName: projName,
                 sceneId: shareData.id,
                 urlHeaderList: shareData.urlHeaderList,
                 authorData: shareData.authorData,
@@ -219,24 +206,18 @@ const api: ApiMethods = {
     },
 
     // MARK re-api 查看CAD类型数据
-    showCadTypeRes: async (urlInfo: any, onUpdate: () => void): Promise<void> => {
+    showCadTypeRes: async (urlInfo: any, isClick: boolean, onUpdate: () => void): Promise<void> => {
         const card_store = useCardStore();
         const state_store = useStateStore();
-        uni.show_loading();
+        // uni.show_loading();
         try {
             const shareData = await uni.$tool.card_getCadData(urlInfo);
+            const cardData: Card = card_store.handleCardData(urlInfo, shareData, !isClick);
+            let projName = cardData.projName;
+
             // 新添加的分享数据更新到缓存列表
+            // 这个方法肯定会被调用，只不过一个是空函数，一个是有操作的函数
             if (onUpdate) {
-                const cardData: Card = newCard({
-                    shareUrl: shareData.url,
-                    shareId: shareData.shareId,
-                    source: shareData.source,
-                    projName: shareData.projName,
-                    lastTime: new Date(),
-                    endTime: uni.$tool.time_To_IOSDate(urlInfo.shareItem?.endTime),
-                    shareFormUserExpirationTime: uni.$tool.time_To_IOSDate(urlInfo.shareItem?.shareFormUserExpirationTime),
-                });
-                card_store.addCard(cardData);
                 onUpdate();
             }
 
@@ -249,7 +230,7 @@ const api: ApiMethods = {
                 baseUrl: shareData.baseUrl,
                 source: shareData.source,
                 shareUrl: shareData.url,
-                projName: shareData.projName,
+                projName: projName,
                 sceneId: shareData.id,
                 urlHeaderList: shareData.urlHeaderList,
                 authorData: shareData.authorData,

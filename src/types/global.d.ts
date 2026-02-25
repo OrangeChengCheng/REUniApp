@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-13 18:01:53
- * @LastEditTime: 2026-01-21 11:47:51
+ * @LastEditTime: 2026-02-25 15:13:44
  */
 
 
@@ -17,7 +17,7 @@ declare global {
             realEngineRender(data: any): Promise<any>;
             registerAppMsg(onCallBack: (data: any) => void): Promise<void>;
             sendMsgUniToApp(data: any): void;
-            showShareRes(urlInfo: any, onUpdate: () => void): void;
+            showShareRes(urlInfo: any, isClick:boolean, onUpdate: () => void): void;
         }
         $service: {
             commonTimeout: number,
