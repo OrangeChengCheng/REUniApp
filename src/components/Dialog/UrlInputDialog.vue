@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-27 17:04:55
- * @LastEditTime: 2026-02-25 14:29:48
+ * @LastEditTime: 2026-02-27 15:04:50
 -->
 <template>
     <div class="sup-url-input-dialog" v-if="dialog_visible">
@@ -240,6 +240,7 @@ defineExpose({
             font-size: 14px;
             color: #86909c;
             line-height: 27px;
+            border-radius: 32px 32px 32px 32px;
         }
 
         .confirm {
@@ -265,10 +266,6 @@ defineExpose({
     .content_box_fade-enter-from,
     .content_box_fade-leave-to {
         opacity: 0;
-    }
-
-    .el-button {
-        border-color: transparent;
     }
 }
 </style>
