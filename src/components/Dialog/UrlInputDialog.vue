@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-27 17:04:55
- * @LastEditTime: 2026-02-27 15:04:50
+ * @LastEditTime: 2026-02-27 16:40:26
 -->
 <template>
     <div class="sup-url-input-dialog" v-if="dialog_visible">
@@ -17,7 +17,7 @@
                         :value="projName"
                         placeholder="请输入项目名称"
                         @blur="projName_textarea_blur"
-                        :maxlength="-1"
+                        :maxlength="50"
                         auto-height />
                 </view>
                 <view class="modules-item">
@@ -28,7 +28,7 @@
                         :value="shareUrl"
                         placeholder="请输入分享链接"
                         @blur="shareUrl_textarea_blur"
-                        :maxlength="-1"
+                        :maxlength="150"
                         auto-height />
                 </view>
                 <view class="btn-group">
