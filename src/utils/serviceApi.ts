@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2025-11-19 14:50:45
- * @LastEditTime: 2026-01-20 16:50:04
+ * @LastEditTime: 2026-03-06 11:12:43
  */
 import {
     getSharedUrlInfo,
@@ -202,7 +202,8 @@ const api: ApiMethods = {
                     let dataSetCRS = dataTool.handle_dataSetCRS(item);
                     let dataSetCRSNorth = dataTool.handle_dataSetCRSNorth(item);
                     let engineOrigin = dataTool.handle_engineOrigin(item);
-                    let dataSetSGContent = item.context ? item.context : '';
+                    // let dataSetSGContent = item.context ? item.context : '';
+                    let dataSetSGContent = '';// 该数据太大了，栋哥说只有同一个场景中的新地形数据超过10以上才会有效果上的区别，app不使用，数据量太大超出通信的1M限制协议
                     dataSetList.push({
                         dataSetId: item.dataSetId,
                         resourcesAddress: urlInfo.isMinio ? `${item.resourcesAddress}${item.resId}` : item.resourcesAddress,
