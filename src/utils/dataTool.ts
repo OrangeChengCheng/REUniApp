@@ -21,6 +21,7 @@ interface ApiMethods {
     handle_extrudeData(sceneTree: any, extrudeTexList: any): any;
     handle_monomerData(sceneTree: any): any;
     handle_monomerByNodes(nodeData: any): any;
+    handle_projectionData(sceneTree: any): any;
 }
 
 const api: ApiMethods = {
@@ -131,6 +132,15 @@ const api: ApiMethods = {
                     // 构建伪节点，用于展开单体化子节点
                     item.subNodes = [{ nodeId: `tempNode-${item.nodeId}`, nodeName: '', viewStatus: item.viewStatus }];
                 }
+            }
+
+            // 视频投射类型
+            if (item.dataSetType === 29 && item.projectionConfig) {
+                item.customNodeType = 'projection'
+                item.projectionId = item.dataSetId
+                item.projectionName = item.nodeName
+                item.projectionConfig.projectionId = item.dataSetId
+                item.projectionConfig.projectionName = item.nodeName
             }
         });
 
@@ -531,6 +541,72 @@ const api: ApiMethods = {
         });
 
         return monomerList;
+    },
+
+    // MARK data 处理数据集--视频投射信息
+    handle_projectionData: async (sceneTree: any) => {
+        const state_store = useStateStore();
+        const allLeafNodes = api.handle_findAllNodeByLevel(sceneTree, 2);
+        const allProjections = allLeafNodes.filter((item: any) => item.dataSetType == state_store.appSupportProjectionType);
+        if (!allProjections.length) return [];
+
+        const aspectRatioList = [
+            { id: 1, name: '原始尺寸', value: 0 },
+            { id: 2, name: '16:9', value: 16 / 9 },
+            { id: 3, name: '4:3', value: 4 / 3 },
+            { id: 4, name: '1:1', value: 1 }
+        ]
+        const getSourceUrlByProjectionInfo = (mediaType: any, projectionInfo: any) => {
+            if (mediaType === 2) return projectionInfo.liveUrl
+            if (!(projectionInfo && projectionInfo.sourceMediaFileDataId)) return ''
+            const sourceUrl = `${state_store.downloadUrl}/${projectionInfo.sourceMediaFileDataId}?token=${state_store.token}`;
+            return sourceUrl;
+        };
+        const convertArrayToNumber = (arr: any) => {
+            if (!Array.isArray(arr)) return arr
+            return arr.map(el => Number(el))
+        }
+        const convertNestedArrayToNumber = (nestedArr: any) => {
+            if (!Array.isArray(nestedArr)) return nestedArr
+            return nestedArr.map(item => {
+                if (Array.isArray(item)) {
+                    return item.map(el => Number(el))
+                }
+                return Number(item)
+            })
+        }
+        let projectionList: any[] = [];
+        allProjections.map((item: any) => item.projectionConfig).forEach((projectionInfo: any) => {
+            const findAspectRatio = aspectRatioList.find(item => item.name === projectionInfo.aspectRatio)
+            const texPath = getSourceUrlByProjectionInfo(projectionInfo.mediaType, projectionInfo)
+
+            const projectionObj: any = {};
+            projectionObj.projectionId = projectionInfo.projectionId
+            projectionObj.camPos = convertArrayToNumber(projectionInfo.camPos)
+            projectionObj.targetPos = convertArrayToNumber(projectionInfo.targetPos)
+            projectionObj.type = projectionInfo.type
+            projectionObj.planeNormal = convertArrayToNumber(projectionInfo.planeNormal)
+            projectionObj.planeRight = convertArrayToNumber(projectionInfo.planeRight)
+            projectionObj.nearFarPlaneOffset = convertArrayToNumber(projectionInfo.nearFarPlaneOffset)
+            projectionObj.nearPlaneRect = convertArrayToNumber(projectionInfo.nearPlaneRect)
+            projectionObj.aspectRatio = findAspectRatio ? findAspectRatio.value : Number(projectionInfo.aspectRatio)
+            projectionObj.fieldAngle = Number(projectionInfo.fieldAngle)
+            projectionObj.texType = projectionInfo.mediaType === 0 ? 1 : 2
+            projectionObj.texPath = texPath
+            projectionObj.uvRect = projectionInfo.uvRect
+            projectionObj.uvMapPtNum = projectionInfo.uvMapPtNum
+            projectionObj.uvMapPtPosList = convertNestedArrayToNumber(projectionInfo.uvMapPtPosList)
+            projectionObj.showState = 0
+            projectionObj.clipPlaneValid = projectionInfo.clipPlaneValid
+            projectionObj.clipBoxGeom = convertNestedArrayToNumber(projectionInfo.clipBoxGeom)
+            projectionObj.picth = projectionInfo.picth ? Number(projectionInfo.picth) : 0
+            if (projectionInfo.texClrMult) {
+                const { red, green, blue, alpha } = projectionInfo.texClrMult;
+                projectionObj.texClrMult = [red, green, blue, alpha];
+            }
+            projectionList.push(projectionObj)
+        });
+        return projectionList;
     },
 }
 

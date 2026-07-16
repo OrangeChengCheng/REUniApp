@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-14 14:22:08
- * @LastEditTime: 2026-02-25 17:23:43
+ * @LastEditTime: 2026-07-13 11:22:37
  */
 
 import { useStateStore } from '@/stores/state';
@@ -122,6 +122,7 @@ const api: ApiMethods = {
                 extrudeList: shareData.extrudeList,
                 extrudeTexList: shareData.extrudeTexList,
                 monomerList: shareData.monomerList,
+                projectionList: shareData.projectionList,
             };
             console.log('引擎信息: ', JSON.stringify(engineData));
             uni.$re.realEngineRender(engineData).then((result) => {

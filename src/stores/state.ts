@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-11-09 10:46:29
- * @LastEditTime: 2025-12-15 11:27:23
+ * @LastEditTime: 2026-07-14 16:18:23
  */
 import { defineStore } from 'pinia'
 
@@ -30,6 +30,7 @@ const RE_AuthorIndex = "pathindex/res/index.xml";
     23 水面
     24 挤出
     25 单体化
+    29 视频投射
 */
 
 interface StateMold {
@@ -51,6 +52,7 @@ interface StateMold {
     appSupportWaterType: Number,
     appSupportExtrudeType: Number,
     appSupportMonomerType: Number,
+    appSupportProjectionType: Number,
     launchOnce: Boolean,
     agreePolicy: Boolean,
 }
@@ -76,6 +78,7 @@ export const useStateStore = defineStore('state', {
         appSupportWaterType: 23,
         appSupportExtrudeType: 24,
         appSupportMonomerType: 25,
+        appSupportProjectionType: 29,
         launchOnce: JSON.parse(uni.getStorageSync('RE_launchOnce') || "false") || false, // 首次启动标记，避免多次创建store
         agreePolicy: JSON.parse(uni.getStorageSync('RE_agreePolicy') || "false") || false,
     }),
@@ -101,6 +104,8 @@ export const useStateStore = defineStore('state', {
 
         // MARK 更新当前的服务配置
         updateCurrBaseUrl(baseUrl: string) {
+            const ignorePathKeywords = ["/BlackHole", "/StarRiver", "/blackHole", "/starRiver"];
+            ignorePathKeywords.forEach((item: string) => baseUrl = baseUrl.replace(item, ""));
             this.baseUrl = baseUrl;
             this.downloadUrl = `${baseUrl}${RE_DownloadUrl}`;
         },

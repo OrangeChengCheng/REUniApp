@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-23 14:42:45
- * @LastEditTime: 2026-01-21 10:36:00
+ * @LastEditTime: 2026-07-13 11:21:18
  */
 
 const RE_AppVersion = "2.0.1";
@@ -402,12 +402,13 @@ const api: ApiMethods = {
         // 获取挤出纹理信息
         const extrudeTexList = await serviceApi.getExtrudeTexList(res_2);
         // 并行处理各种数据
-        const [terrainList, entityList, waterList, extrudeList, monomerList] = await Promise.all([
+        const [terrainList, entityList, waterList, extrudeList, monomerList, projectionList] = await Promise.all([
             dataTool.handle_terrainDataSetList(res_2, 2),
             dataTool.handle_entityData(res_2, res_1.componentPosition),
             dataTool.handle_waterData(res_2),
             dataTool.handle_extrudeData(res_2, extrudeTexList),
             dataTool.handle_monomerData(res_2),
+            dataTool.handle_projectionData(res_2),
         ]);
 
         // 获取数据集信息
@@ -444,6 +445,7 @@ const api: ApiMethods = {
             extrudeList: extrudeList,
             extrudeTexList: extrudeTexList,
             monomerList: monomerList,
+            projectionList: projectionList,
         });
 
         return shareData;

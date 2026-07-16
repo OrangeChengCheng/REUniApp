@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-23 16:54:42
- * @LastEditTime: 2026-01-21 10:40:52
+ * @LastEditTime: 2026-07-13 11:21:44
  */
 
 
@@ -55,6 +55,7 @@ export interface Share {
     extrudeList: any; // 挤出列表 
     extrudeTexList: any; // 挤出纹理列表 
     monomerList: any; // 单体化列表 
+    projectionList: any; // 视频投射列表 
 }
 
 export const newShare = (overrides?: Partial<Share>): Share => {
@@ -83,6 +84,7 @@ export const newShare = (overrides?: Partial<Share>): Share => {
         extrudeList: [],
         extrudeTexList: [],
         monomerList: [],
+        projectionList: [],
         ...overrides
     };
 };
