@@ -2,8 +2,8 @@
     "name" : "REUniApp",
     "appid" : "__UNI__C5A81A5",
     "description" : "",
-    "versionName" : "2.0.3",
-    "versionCode" : 2,
+    "versionName" : "2.0.4",
+    "versionCode" : 1,
     "transformPx" : false,
     /* 5+App特有相关 */
     "app-plus" : {
