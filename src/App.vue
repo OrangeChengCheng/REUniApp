@@ -1,13 +1,14 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-14 10:24:21
- * @LastEditTime: 2026-01-20 16:48:46
+ * @LastEditTime: 2026-07-28 17:48:37
 -->
 <script setup lang="ts">
 import { onLaunch, onShow, onHide, onExit } from '@dcloudio/uni-app';
 import { useCardStore } from '@/stores/card';
 import { useDeviceStore } from '@/stores/device';
 import { useMessageStore } from '@/stores/message';
+import { useStateStore } from '@/stores/state';
 import uniApi from '@/utils/uniApi';
 
 onLaunch(() => {
@@ -43,27 +44,27 @@ onLaunch(() => {
     // }
 });
 onShow(() => {
-    console.log('App Show');
-    uni.$re.unipluginLog('onShow');
-	if (typeof plus !== 'undefined') {
-	    // 安全地使用 plus 对象，接受app外部参数
-	    var args = plus.runtime.arguments;//在真机上使用运行时对象
-	    if (args) {
-	        uni.$re.unipluginLog(`app接收外部参数:${JSON.stringify(args)}`);
-	        console.log(`app接收外部参数:${JSON.stringify(args)}`);
-			let queryString = args.split('?')[1];
-			if (!queryString) return '';
-			let match = queryString.match(/shareUrl=([^&]*)/);
-			if (match && match[1]) {
-			  // 使用 decodeURIComponent 进行 URL 解码
-			  let realUrl = decodeURIComponent(match[1]);
-			  const msgData = { type: "openURL", data: realUrl };
-			  // 发送消息，通知处理外部参数
-			  const message_store = useMessageStore();
-			  message_store.sendMessage(message_store.M_AppToUni, msgData);
-			}
-	    }
-	}
+    console.log('App onShow');
+    uni.$re.unipluginLog('App onShow');
+    if (typeof plus !== 'undefined') {
+        // 安全地使用 plus 对象，接受app外部参数
+        var args = plus.runtime.arguments; //在真机上使用运行时对象
+        if (args) {
+            uni.$re.unipluginLog(`app接收外部参数:${JSON.stringify(args)}`);
+            console.log(`app接收外部参数:${JSON.stringify(args)}`);
+            let queryString = args.split('?')[1];
+            if (!queryString) return '';
+            let match = queryString.match(/shareUrl=([^&]*)/);
+            if (match && match[1]) {
+                // 使用 decodeURIComponent 进行 URL 解码
+                let realUrl = decodeURIComponent(match[1]);
+                const msgData = { type: 'appWakeup', data: realUrl };
+                // 存储外部参数，冷启动页面消息注册还没有完成，保存数据，等待页面自行获取
+                const state_store = useStateStore();
+                state_store.appWakeupData = msgData;
+            }
+        }
+    }
     uni.getNetworkType({
         success: function (res) {
             const device_store = useDeviceStore();

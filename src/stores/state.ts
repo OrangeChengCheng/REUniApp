@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-11-09 10:46:29
- * @LastEditTime: 2026-07-14 16:18:23
+ * @LastEditTime: 2026-07-28 17:25:41
  */
 import { defineStore } from 'pinia'
 
@@ -55,6 +55,7 @@ interface StateMold {
     appSupportProjectionType: Number,
     launchOnce: Boolean,
     agreePolicy: Boolean,
+    appWakeupData: any,
 }
 
 
@@ -81,6 +82,7 @@ export const useStateStore = defineStore('state', {
         appSupportProjectionType: 29,
         launchOnce: JSON.parse(uni.getStorageSync('RE_launchOnce') || "false") || false, // 首次启动标记，避免多次创建store
         agreePolicy: JSON.parse(uni.getStorageSync('RE_agreePolicy') || "false") || false,
+        appWakeupData: null,// 外部唤醒应用携带参数
     }),
     actions: {
         appLaunchOnceUpdate() {

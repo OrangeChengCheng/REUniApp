@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2026-02-28 11:31:59
+ * @LastEditTime: 2026-07-28 17:47:15
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -117,7 +117,9 @@ const style_grid_computed = computed(() => {
 });
 
 onShow(() => {
+    uni.$re.unipluginLog(`MainPage onShow`);
     update_cardList();
+    appWakeup();
 });
 
 onMounted(() => {
@@ -146,10 +148,7 @@ onUnmounted(() => {
 });
 
 const appToUni = (e: any) => {
-	console.log("appToUni: ", e);
-	if (e.type == 'openURL') {
-		appExternalData_callback(e.data);
-	}
+    console.log('appToUni: ', e);
     // setTimeout(() => {
     //     let postData = { data: { key: '666', value: [1, 2, 3, 4, 5] }, msg: '---', item: e };
     //     uni.$re.unipluginLog('reUniPostData: ' + JSON.stringify(postData));
@@ -238,11 +237,12 @@ const topbar_scan_callback = () => {
         });
 };
 
-// MARK app外部数据来源
-const appExternalData_callback = (e: any) => {
-    if (!e.length) return;
-	uni.$re.unipluginLog('appExternalData: ' + e);
-	tool_handleUrl(e);
+// MARK app外部唤醒
+const appWakeup = () => {
+    const appWakeupData = state_store.appWakeupData;
+    uni.$re.unipluginLog(`MainPage appWakeup: ${JSON.stringify(appWakeupData)}`);
+    if (!appWakeupData || !appWakeupData.data || appWakeupData.type != 'appWakeup') return;
+    tool_handleUrl(appWakeupData.data);
 };
 
 // MARK Url 处理url内容
