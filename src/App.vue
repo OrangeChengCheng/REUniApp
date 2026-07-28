@@ -45,6 +45,25 @@ onLaunch(() => {
 onShow(() => {
     console.log('App Show');
     uni.$re.unipluginLog('onShow');
+	if (typeof plus !== 'undefined') {
+	    // 安全地使用 plus 对象，接受app外部参数
+	    var args = plus.runtime.arguments;//在真机上使用运行时对象
+	    if (args) {
+	        uni.$re.unipluginLog(`app接收外部参数:${JSON.stringify(args)}`);
+	        console.log(`app接收外部参数:${JSON.stringify(args)}`);
+			let queryString = args.split('?')[1];
+			if (!queryString) return '';
+			let match = queryString.match(/shareUrl=([^&]*)/);
+			if (match && match[1]) {
+			  // 使用 decodeURIComponent 进行 URL 解码
+			  let realUrl = decodeURIComponent(match[1]);
+			  const msgData = { type: "openURL", data: realUrl };
+			  // 发送消息，通知处理外部参数
+			  const message_store = useMessageStore();
+			  message_store.sendMessage(message_store.M_AppToUni, msgData);
+			}
+	    }
+	}
     uni.getNetworkType({
         success: function (res) {
             const device_store = useDeviceStore();

@@ -105,7 +105,15 @@ const api: ApiMethods = {
 
             uni.$re.unipluginLog('url = ' + url);
             if (url.length <= 0) return null;
-
+			
+			// 处理app外部数据连接，兼容老版本的url形式，只获取其中的连接后续操作一致
+			const targetPrefix = 'http://192.168.31.197:5503';
+			if (url.indexOf(targetPrefix) !== -1) {
+				let match = url.match(/[?&]shareUrl=([^&]*)/);
+				if (!(match && match[1])) { return null; }
+				const realShareUrl = decodeURIComponent(match[1]);
+				url = realShareUrl;
+			}
             //提取baseUrl（域名和端口号）
             let baseUrl = api.url_base(url);
 

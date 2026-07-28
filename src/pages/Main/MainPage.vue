@@ -146,9 +146,10 @@ onUnmounted(() => {
 });
 
 const appToUni = (e: any) => {
-    if (e.code == 'error') {
-        uni.showToast({ title: e.msg, icon: 'none' });
-    }
+	console.log("appToUni: ", e);
+	if (e.type == 'openURL') {
+		appExternalData_callback(e.data);
+	}
     // setTimeout(() => {
     //     let postData = { data: { key: '666', value: [1, 2, 3, 4, 5] }, msg: '---', item: e };
     //     uni.$re.unipluginLog('reUniPostData: ' + JSON.stringify(postData));
@@ -237,6 +238,13 @@ const topbar_scan_callback = () => {
         });
 };
 
+// MARK app外部数据来源
+const appExternalData_callback = (e: any) => {
+    if (!e.length) return;
+	uni.$re.unipluginLog('appExternalData: ' + e);
+	tool_handleUrl(e);
+};
+
 // MARK Url 处理url内容
 const tool_handleUrl = async (e: any) => {
     const urlData = await uni.$tool.url_handle(e);
@@ -244,7 +252,7 @@ const tool_handleUrl = async (e: any) => {
     console.log(urlData);
     //处理白名单配置
     const whiteList = uni.$service.getServerWhiteList();
-    const hasWhiteList = whiteList.some((item: any) => e.includes(item.url));
+    const hasWhiteList = whiteList.some((item: any) => urlData.url.includes(item.url));
     if (!hasWhiteList) {
         uni.showToast({ title: '数据不在白名单范围, 请前往服务配置中设置', icon: 'none' });
         return;
