@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2026-07-28 17:47:15
+ * @LastEditTime: 2026-07-29 14:11:31
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -243,6 +243,7 @@ const appWakeup = () => {
     uni.$re.unipluginLog(`MainPage appWakeup: ${JSON.stringify(appWakeupData)}`);
     if (!appWakeupData || !appWakeupData.data || appWakeupData.type != 'appWakeup') return;
     tool_handleUrl(appWakeupData.data);
+    state_store.appWakeupData = "";
 };
 
 // MARK Url 处理url内容
