@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-14 10:24:21
- * @LastEditTime: 2026-07-28 17:48:37
+ * @LastEditTime: 2026-07-29 14:23:09
 -->
 <script setup lang="ts">
 import { onLaunch, onShow, onHide, onExit } from '@dcloudio/uni-app';
@@ -62,6 +62,7 @@ onShow(() => {
                 // 存储外部参数，冷启动页面消息注册还没有完成，保存数据，等待页面自行获取
                 const state_store = useStateStore();
                 state_store.appWakeupData = msgData;
+                plus.runtime.arguments = "";
             }
         }
     }
