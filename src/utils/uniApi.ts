@@ -95,10 +95,17 @@ const api: ApiMethods = {
             }
             // 扫二维码
             uni.scanCode({
+                scanType: ['qrCode'], // 只识别二维码！屏蔽UPC_E/EAN等所有一维条码
+                onlyFromCamera: true,
                 autoZoom: false,
                 success: (res) => {
                     uni.$re.unipluginLog('scan_QRCode: ' + JSON.stringify(res));
-                    resolve(res.result);
+                    // 防御：如果不是QR_CODE直接丢弃，提示重新扫描
+                    if (res.scanType !== 'QR_CODE') {
+                        reject(res);
+                    } else {
+                        resolve(res.result);
+                    }
                 },
                 fail: (err) => {
                     uni.showToast({ title: "扫码取消", icon: 'none' });

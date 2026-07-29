@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2026-07-29 14:20:34
+ * @LastEditTime: 2026-07-29 16:07:53
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -234,6 +234,7 @@ const topbar_scan_callback = () => {
         })
         .catch((err: any) => {
             console.log(err);
+            uni.showToast({ title: '识别失败，请对准二维码重试', icon: 'none' })
         });
 };
 
