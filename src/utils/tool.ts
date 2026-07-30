@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-23 14:42:45
- * @LastEditTime: 2026-07-13 11:21:18
+ * @LastEditTime: 2026-07-30 16:03:47
  */
 
 const RE_AppVersion = "2.0.1";
@@ -107,8 +107,9 @@ const api: ApiMethods = {
             if (url.length <= 0) return null;
 			
 			// 处理app外部数据连接，兼容老版本的url形式，只获取其中的连接后续操作一致
-			const targetPrefix = 'http://192.168.31.197:5503';
-			if (url.indexOf(targetPrefix) !== -1) {
+			const targetPrefix = 'https://developer.bjblackhole.com/AppWakeup';
+			// const targetPrefix = 'http://192.168.31.197';
+			if (url.startsWith(targetPrefix)) {
 				let match = url.match(/[?&]shareUrl=([^&]*)/);
 				if (!(match && match[1])) { return null; }
 				const realShareUrl = decodeURIComponent(match[1]);

@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2026-07-29 16:07:53
+ * @LastEditTime: 2026-07-30 16:00:57
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -217,7 +217,7 @@ const uniapp_getClipboard = () => {
         success: function (res) {
             uni.$re.unipluginLog('uni.getClipboardData: ' + JSON.stringify(res));
             if (!res.data || !res.data.length) return;
-            tool_handleUrl(res.data);
+            tool_handleUrl(res.data, 1);
         },
         fail: (err) => {
             console.log(err);
@@ -230,11 +230,12 @@ const topbar_scan_callback = () => {
     uni.scan_code()
         .then((res: any) => {
             uni.$re.unipluginLog('uni.scan_code: ' + JSON.stringify(res));
-            tool_handleUrl(res);
+            tool_handleUrl(res, 2);
         })
         .catch((err: any) => {
             console.log(err);
-            uni.showToast({ title: '识别失败，请对准二维码重试', icon: 'none' })
+            uni.$re.unipluginLog('识别失败，请对准二维码重试');
+            uni.showToast({ title: '识别失败，请对准二维码重试', icon: 'none' });
         });
 };
 
@@ -243,14 +244,20 @@ const appWakeup = () => {
     const appWakeupData = state_store.appWakeupData;
     uni.$re.unipluginLog(`MainPage appWakeup: ${JSON.stringify(appWakeupData)}`);
     if (!appWakeupData || !appWakeupData.data || appWakeupData.type != 'appWakeup') return;
-    tool_handleUrl(appWakeupData.data);
+    tool_handleUrl(appWakeupData.data, 3);
     state_store.appWakeupData = null;
 };
 
-// MARK Url 处理url内容
-const tool_handleUrl = async (e: any) => {
+// MARK Url 处理url内容 1: 粘贴板  2: 扫码  3: 外部唤醒
+const tool_handleUrl = async (e: any, type: number) => {
     const urlData = await uni.$tool.url_handle(e);
-    if (!urlData) return null;
+    if (!urlData) {
+        if (type == 2) {
+            uni.$re.unipluginLog('识别到违规二维码，请确认后重新扫描');
+            uni.showToast({ title: '识别到违规二维码，请确认后重新扫描', icon: 'none' });
+        }
+        return null;
+    }
     console.log(urlData);
     //处理白名单配置
     const whiteList = uni.$service.getServerWhiteList();
