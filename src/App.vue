@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-08-14 10:24:21
- * @LastEditTime: 2026-07-29 14:23:09
+ * @LastEditTime: 2026-10-13 10:52:17
 -->
 <script setup lang="ts">
 import { onLaunch, onShow, onHide, onExit } from '@dcloudio/uni-app';
@@ -20,9 +20,12 @@ onLaunch(() => {
     const card_store = useCardStore();
     card_store.updateSample();
     uniApi.get_deviceInfo();
-    uni.$re.registerAppMsg((data) => {
+    uni.$re.registerAppMsg((msgData) => {
         const message_store = useMessageStore();
-        message_store.sendMessage(message_store.M_AppToUni, data);
+        // message_store.sendMessage(message_store.M_AppToUni, data);
+        if (msgData && msgData.type == 'Listen.systemSel') {
+            message_store.sendMessage(message_store.M_AppToUni_Listen_SystemSel, msgData.data);
+        }
     });
 
     uni.$tool.update_data(); //是否重置数据，处理版本导致的数据异常
@@ -62,7 +65,7 @@ onShow(() => {
                 // 存储外部参数，冷启动页面消息注册还没有完成，保存数据，等待页面自行获取
                 const state_store = useStateStore();
                 state_store.appWakeupData = msgData;
-                plus.runtime.arguments = "";
+                plus.runtime.arguments = '';
             }
         }
     }

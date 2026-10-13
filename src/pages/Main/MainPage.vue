@@ -1,7 +1,7 @@
 <!--
  * @Author: Lemon C
  * @Date: 2024-09-13 15:36:25
- * @LastEditTime: 2026-07-30 16:00:57
+ * @LastEditTime: 2026-10-13 11:45:19
 -->
 <template>
     <base-view :nav_bar="false" :nav_bar_color="`--color-main-bg`">
@@ -140,20 +140,25 @@ onMounted(() => {
     uniapp_getClipboard();
     uni.onWindowResize(listen_windoeResize); // 监听屏幕变化
     message_store.addMessageHandler(message_store.M_AppToUni, appToUni);
+    message_store.addMessageHandler(message_store.M_AppToUni_Listen_SystemSel, systemSelCallback);
 });
 
 onUnmounted(() => {
     uni.offWindowResize(listen_windoeResize); // 监听屏幕变化
     message_store.removeMessageHandler(message_store.M_AppToUni, appToUni);
+    message_store.removeMessageHandler(message_store.M_AppToUni_Listen_SystemSel, systemSelCallback);
 });
 
-const appToUni = (e: any) => {
-    console.log('appToUni: ', e);
+const appToUni = (msgData: any) => {
     // setTimeout(() => {
     //     let postData = { data: { key: '666', value: [1, 2, 3, 4, 5] }, msg: '---', item: e };
     //     uni.$re.unipluginLog('reUniPostData: ' + JSON.stringify(postData));
     //     uni.$re.reUniPostData(postData);
     // }, 2000);
+};
+
+const systemSelCallback = (selInfo: any) => {
+    uni.$re.entitySel(selInfo, card_store.sceneInfo, card_store.treeList);
 };
 
 // MARK 更新数据

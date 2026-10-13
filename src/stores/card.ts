@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-13 15:14:00
- * @LastEditTime: 2026-02-25 17:19:13
+ * @LastEditTime: 2026-10-13 11:44:12
  */
 import { defineStore } from 'pinia'
 import { newCard, type Card } from '@/types/class';
@@ -10,6 +10,8 @@ import { newCard, type Card } from '@/types/class';
 interface CardMold {
     cardList: Array<Card>,
     sample_cardList: Array<any>,
+    sceneInfo: any,
+    treeList: any,
 }
 
 
@@ -19,6 +21,8 @@ export const useCardStore = defineStore('card', {
     state: (): CardMold => ({
         cardList: JSON.parse(uni.getStorageSync('RE_cardList') || '[]') || [],
         sample_cardList: JSON.parse(uni.getStorageSync('RE_sample_cardList') || '[]') || [],
+        sceneInfo: null,
+        treeList: null,
     }),
     actions: {
         handleCardData(urlInfo: any, shareData: any, changeName: boolean = false): Card {
@@ -135,6 +139,7 @@ export const useCardStore = defineStore('card', {
                     });
                 });
 
+                console.log("示例模型资源获取");
                 console.log("onlineVersion: ", sampleList_res.data.onlineVersion);
                 this.sample_cardList = [];
                 uni.setStorageSync('RE_sample_cardList', JSON.stringify(this.sample_cardList));
@@ -146,7 +151,7 @@ export const useCardStore = defineStore('card', {
                 // 生成获取分享信息Promise数组
                 const urlDataPromiseList = validShareUrlList.map(async (item: any) => {
                     try {
-                        const urlData_res = await uni.$tool.url_handle(item.shareUrl);
+                        const urlData_res = await uni.$tool.url_handle(item.shareUrl, 1);
                         return urlData_res;
                     } catch (error) {
                         return null;

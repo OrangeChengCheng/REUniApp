@@ -1,7 +1,7 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-11-09 10:46:29
- * @LastEditTime: 2026-07-28 17:25:41
+ * @LastEditTime: 2026-10-10 11:58:24
  */
 import { defineStore } from 'pinia'
 
@@ -15,9 +15,9 @@ const RE_AuthorIndex = "pathindex/res/index.xml";
 
 /**
     0 BIM模型
-    13 遥感影像
     10 WMTS地图服务
     11 倾斜摄影
+    13 遥感影像
     14 360全景图
     15 点云
     16 二维图纸
@@ -31,6 +31,7 @@ const RE_AuthorIndex = "pathindex/res/index.xml";
     24 挤出
     25 单体化
     29 视频投射
+    31 高斯泼溅
 */
 
 interface StateMold {
@@ -71,10 +72,10 @@ export const useStateStore = defineStore('state', {
         authorTxt: RE_AuthorTxt,// 授权文件
         authorIndexId: RE_AuthorIndexId,// 授权文件索引标识
         authorIndex: RE_AuthorIndex,// 授权文件索引
-        allDataSetType: [0, 13, 10, 11, 14, 15, 16, 17, 18, 19, 20, 21, 22],
+        allDataSetType: [0, 10, 11, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
         entityDataSetType: [17, 18, 19],
-        sceneDataSetType: [0, 13, 10, 11, 14, 15, 17, 18, 19, 21, 22],
-        appSupportDataSetType: [0, 13, 10, 11, 14, 15, 16, 20, 21, 22],
+        sceneDataSetType: [0, 10, 11, 13, 15, 16, 19, 21, 22, 31],
+        appSupportDataSetType: [0, 10, 11, 13, 14, 15, 16, 20, 21, 22, 23, 24, 25, 29],
         appSupportEntityType: 19,
         appSupportWaterType: 23,
         appSupportExtrudeType: 24,

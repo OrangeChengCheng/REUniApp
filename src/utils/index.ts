@@ -1,12 +1,14 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-14 10:05:14
- * @LastEditTime: 2026-01-20 12:15:09
+ * @LastEditTime: 2026-10-09 15:09:47
  */
 import config from './config'
 import reApi from './reApi'
 import uniApi from './uniApi'
 import tool from './tool'
+import dataTool from './dataTool'
+import entityTool from './entityTool'
 import serviceApi from './serviceApi'
 import { initRsaPublicKey, rsaEncrypt } from './rsa/rsa'
 
@@ -29,6 +31,7 @@ export default {
             registerAppMsg: reApi.registerAppMsg,
             sendMsgUniToApp: reApi.sendMsgUniToApp,
             showShareRes: reApi.showShareRes,
+            entitySel: reApi.entitySel,
         };
         uni.$tool = {
             update_data: tool.update_data,
@@ -40,11 +43,21 @@ export default {
             time_To_IOSDate: tool.time_To_IOSDate,
             time_compare: tool.time_compare,
             time_format: tool.time_format,
-            cam_defauleDataSet: tool.cam_defauleDataSet,
-            card_getProjName: tool.card_getProjName,
-            card_getSceneData: tool.card_getSceneData,
-            card_getBimData: tool.card_getBimData,
-            card_getCadData: tool.card_getCadData,
+            generateUUID: tool.generateUUID,
+            utf8ByteLength: tool.utf8ByteLength,
+            splitStringByByteLength: tool.splitStringByByteLength,
+            formatByte: tool.formatByte,
+        };
+        uni.$dataTool = {
+            cam_defauleDataSet: dataTool.cam_defauleDataSet,
+            card_getProjName: dataTool.card_getProjName,
+            card_getSceneData: dataTool.card_getSceneData,
+            card_getBimData: dataTool.card_getBimData,
+            card_getCadData: dataTool.card_getCadData,
+        };
+        uni.$entityTool = {
+            getEntitySetNodes: entityTool.getEntitySetNodes,
+            getEntityNodes: entityTool.getEntityNodes,
         };
         uni.$rsa = {
             initRsaPublicKey: initRsaPublicKey,

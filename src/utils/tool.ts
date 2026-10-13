@@ -1,37 +1,34 @@
 /*
  * @Author: Lemon C
  * @Date: 2024-09-23 14:42:45
- * @LastEditTime: 2026-07-30 16:03:47
+ * @LastEditTime: 2026-10-13 10:44:38
  */
 
-const RE_AppVersion = "2.0.1";
+const RE_AppVersion = "2.0.5";
 const RE_NeedUpdate = true;
 
 import { useCardStore } from '@/stores/card';
 import { useDeviceStore } from '@/stores/device';
 import { useStateStore } from '@/stores/state';
 import uniApi from '@/utils/uniApi';
-import serviceApi from '@/utils/serviceApi';
-import dataTool from '@/utils/dataTool';
-import { newShare, type Share } from '@/types/class';
+
 
 interface ApiMethods {
     url_base(url: string): string;
-    url_handle(url: string): Promise<any>;
+    url_handle(url: string, priority?: number): Promise<any>;
     time_compare(frontTime: Date, backTime: Date): string;
     time_To_IOSDate(timeStr: string): string;
     time_format(utcTime: Date): string;
     time_pad2(n: any): any;
-    cam_defauleDataSet(dataSetList: any): string;
     update_data(): void;
     del_data(): void;
+    generateUUID(): string;
+    utf8ByteLength(str: string): number;
+    splitStringByByteLength(str: string, maxByte: number): string[];
+    formatByte(bytes: number, fixed?: number): string;
     compareVersions(version1: string, version2: string): number;
     getAppVersion(): string;
     initializeData(): void;
-    card_getProjName(urlInfo: any): Promise<any>;
-    card_getSceneData(urlInfo: any): Promise<any>;
-    card_getBimData(urlInfo: any): Promise<any>;
-    card_getCadData(urlInfo: any): Promise<any>;
 }
 
 const api: ApiMethods = {
@@ -98,143 +95,158 @@ const api: ApiMethods = {
         return baseUrl;
     },
     // MARK tool 处理分享链接
-    url_handle: async (url: string): Promise<any> => {
+    // 使用IIFE立即执行函数，创建独立闭包环境
+    // 闭包内私有变量 taskQueue / isProcessing 外部无法访问，保证状态私有化
+    url_handle: (() => {
+        // 单个url处理任务的类型定义
+        type UrlHandleTask = {
+            url: string;                // 需要解析的分享链接
+            priority: number;           // 任务优先级，数值越大优先级越高
+            resolve: (v: any) => void;  // 任务对应的Promise resolve回调，用于返回结果给调用方
+        };
 
-        try {
-            url = url.trim();
+        // 任务队列：存放等待执行的url解析任务
+        let taskQueue: UrlHandleTask[] = [];
+        // 任务执行锁：标记当前是否正在处理任务，保证同一时间只跑1个任务（串行执行）
+        let isProcessing = false;
 
-            uni.$re.unipluginLog('url = ' + url);
-            if (url.length <= 0) return null;
-			
-			// 处理app外部数据连接，兼容老版本的url形式，只获取其中的连接后续操作一致
-			const targetPrefix = 'https://developer.bjblackhole.com/AppWakeup';
-			// const targetPrefix = 'http://192.168.31.197';
-			if (url.startsWith(targetPrefix)) {
-				let match = url.match(/[?&]shareUrl=([^&]*)/);
-				if (!(match && match[1])) { return null; }
-				const realShareUrl = decodeURIComponent(match[1]);
-				url = realShareUrl;
-			}
-            //提取baseUrl（域名和端口号）
-            let baseUrl = api.url_base(url);
+        async function runNextTask() {
+            // 如果当前正在处理任务 或者 任务队列为空，直接退出，不执行
+            if (isProcessing || taskQueue.length === 0) return;
+            // 标记：开始处理任务，防止并发进入
+            isProcessing = true;
 
-            // 短链接分享数据
-            if (url.includes("#/shareViews/") || url.includes("#/shareView/")) {
-                // 提取短链接中的ID（适配两种格式）
-                const shareViewIndex = url.includes('#/shareViews/')
-                    ? url.indexOf('#/shareViews/')
-                    : url.indexOf('#/shareView/');
-                // 计算基础路径长度（根据实际格式取对应的长度）
-                const basePathLength = url.includes('#/shareViews/')
-                    ? '#/shareViews/'.length
-                    : '#/shareView/'.length;
+            // 遍历队列，找出优先级最高任务的下标（数值越大优先级越高）
+            const highestIdx = taskQueue.reduce((maxIdx, item, idx, arr) => {
+                // 当前任务优先级 > 已记录最大优先级，则更新最大下标为当前idx
+                return item.priority > arr[maxIdx].priority ? idx : maxIdx;
+            }, 0);
 
-                const idStartIndex = shareViewIndex + basePathLength;
-                let idEndIndex = url.indexOf('?', idStartIndex); // 处理可能的查询参数
-                const _shareId = idEndIndex !== -1
-                    ? url.substring(idStartIndex, idEndIndex)
-                    : url.substring(idStartIndex);
+            // 从队列中移除该最高优先级任务，并取出任务对象
+            const task = taskQueue.splice(highestIdx, 1)[0];
 
-                const state_store = useStateStore();
-                state_store.updateCurrBaseUrl(baseUrl);
-                try {
-                    const urlData = await uni.$service.getSharedUrlInfo(_shareId);
-                    if (!urlData || !urlData.token) return null;
-                    let _shareType: number = 0; // 判断分享链接类型 0：无 1：模型 2：场景
-                    if (urlData.viewMode.length > 0) {
-                        _shareType = 2;
-                    } else if (urlData.viewMode == "") {
-                        _shareType = 1;
+            try {
+                // 执行url解析业务逻辑
+                const result = await execUrlHandleLogic(task.url);
+                // 任务成功，把结果返回给调用方Promise
+                task.resolve(result);
+            } catch (e) {
+                // 捕获异常，不向外抛出，直接resolve返回null
+                task.resolve(null);
+            } finally {
+                // 无论成功失败，都标记处理结束
+                isProcessing = false;
+                // 递归调用，继续处理下一个任务
+                runNextTask();
+            }
+        }
+
+        // 业务逻辑处理
+        async function execUrlHandleLogic(url: string): Promise<any> {
+            try {
+                url = url.trim();
+                uni.$re.unipluginLog('url = ' + url);
+                if (url.length <= 0) return null;
+
+                // 处理app外部数据连接，兼容老版本的url形式，只获取其中的连接后续操作一致
+                const targetPrefix = 'https://developer.bjblackhole.com/AppWakeup';
+                // const targetPrefix = 'http://192.168.31.197';
+                if (url.startsWith(targetPrefix)) {
+                    let match = url.match(/[?&]shareUrl=([^&]*)/);
+                    if (!(match && match[1])) { return null; }
+                    const realShareUrl = decodeURIComponent(match[1]);
+                    url = realShareUrl;
+                }
+                //提取baseUrl（域名和端口号）
+                let baseUrl = api.url_base(url);
+                // 短链接分享数据
+                if (url.includes("#/shareViews/") || url.includes("#/shareView/")) {
+                    // 提取短链接中的ID（适配两种格式）
+                    const shareViewIndex = url.includes('#/shareViews/')
+                        ? url.indexOf('#/shareViews/')
+                        : url.indexOf('#/shareView/');
+                    // 计算基础路径长度（根据实际格式取对应的长度）
+                    const basePathLength = url.includes('#/shareViews/')
+                        ? '#/shareViews/'.length
+                        : '#/shareView/'.length;
+                    const idStartIndex = shareViewIndex + basePathLength;
+                    let idEndIndex = url.indexOf('?', idStartIndex); // 处理可能的查询参数
+                    const _shareId = idEndIndex !== -1
+                        ? url.substring(idStartIndex, idEndIndex)
+                        : url.substring(idStartIndex);
+                    const state_store = useStateStore();
+                    state_store.updateCurrBaseUrl(baseUrl);
+                    try {
+                        const urlData = await uni.$service.getSharedUrlInfo(_shareId);
+                        if (!urlData || !urlData.token) return null;
+                        let _shareType: number = 0; // 判断分享链接类型 0：无 1：模型 2：场景
+                        if (urlData.viewMode.length > 0) {
+                            _shareType = 2;
+                        } else if (urlData.viewMode == "") {
+                            _shareType = 1;
+                        }
+                        // 解构urlData，分离出需要替换的字段和剩余字段
+                        const {
+                            resourceId,
+                            viewMode,
+                            dataType,
+                            ...restUrlData
+                        } = urlData;
+                        // 构造最终的params，只保留你指定的参数名，无原始冲突字段
+                        const params = {
+                            url: url,
+                            shareId: _shareId,
+                            baseUrl: baseUrl,
+                            shareType: _shareType,
+                            id: urlData.resourceId,
+                            shareViewMode: urlData.viewMode,
+                            shareDataType: urlData.dataType,
+                            ...restUrlData
+                        }
+                        // 获取项目名称
+                        state_store.updateCurrToken(urlData.token);
+                        const projName = await uni.$dataTool.card_getProjName(params);
+                        params.projName = projName || '';
+                        uni.$re.unipluginLog('params = ' + JSON.stringify(params));
+                        return params;
+                    } catch (error) {
+                        return null;
                     }
-
-                    // 解构urlData，分离出需要替换的字段和剩余字段
-                    const {
-                        resourceId,
-                        viewMode,
-                        dataType,
-                        ...restUrlData
-                    } = urlData;
-
-                    // 构造最终的params，只保留你指定的参数名，无原始冲突字段
-                    const params = {
-                        url: url,
-                        shareId: _shareId,
-                        baseUrl: baseUrl,
-                        shareType: _shareType,
-                        id: urlData.resourceId,
-                        shareViewMode: urlData.viewMode,
-                        shareDataType: urlData.dataType,
-                        ...restUrlData
+                } else {
+                    // 使用字符串截取方式，无法使用URL的方式，uniapp在真机上无法使用URL方式
+                    let shareType: number = 0; // 判断分享链接类型 0：无 1：模型 2：场景
+                    if (url.includes('sceneShare/view')) {
+                        shareType = 2;
+                    } else if (url.includes('dataSetShare/view')) {
+                        shareType = 1;
                     }
-
-                    // 获取项目名称
-                    state_store.updateCurrToken(urlData.token);
-                    const projName = await api.card_getProjName(params);
-                    params.projName = projName || '';
-
-                    uni.$re.unipluginLog('params = ' + JSON.stringify(params));
-                    return params;
-                } catch (error) {
-                    return null;
-                }
-
-            } else {
-
-                // 使用字符串截取方式，无法使用URL的方式，uniapp在真机上无法使用URL方式
-                let shareType: number = 0; // 判断分享链接类型 0：无 1：模型 2：场景
-                if (url.includes('sceneShare/view')) {
-                    shareType = 2;
-                } else if (url.includes('dataSetShare/view')) {
-                    shareType = 1;
-                }
-                if (!shareType) return null;
-                if (!url.includes('token')) return null; // 分享链接不包含token报错
-
-                let searchType = shareType === 2 ? '#/sceneShare/view' : '#/dataSetShare/view';
-                let startIndex = url.indexOf(searchType) + searchType.length; // 找到 searchType 在URL中的位置
-                let valueStartIndex = url.indexOf('/', startIndex + 1) + 1; // 计算所需值的起始位置（即第二个"/"之后的位置）
-                let valueEndIndex = url.indexOf('?', valueStartIndex + 1);
-                let _id = url.substring(valueStartIndex, valueEndIndex); // 截取所需的值
-
-                let tokenStartIndex = url.indexOf('token=') + 'token='.length; // 计算token的起始位置（即"token="之后的位置）
-                let tokenEndIndex = url.indexOf('&', tokenStartIndex); // 如果URL中有其他查询参数，找到"&"字符的位置，作为token的结束位置
-                let _token = tokenEndIndex !== -1 ? url.substring(tokenStartIndex, tokenEndIndex) : url.substring(tokenStartIndex); // 截取并输出token的
-
-                // 解析viewMode和dataType
-                let viewModeIndex = url.indexOf('viewMode=');
-                let dataTypeIndex = url.indexOf('dataType=');
-                let _viewMode = "", _dataType = "";
-
-                if (viewModeIndex !== -1) {
-                    let viewModeEndIndex = url.indexOf('&', viewModeIndex + 'viewMode='.length);
-                    _viewMode = viewModeEndIndex !== -1 ? url.substring(viewModeIndex + 'viewMode='.length, viewModeEndIndex) : url.substring(viewModeIndex + 'viewMode='.length);
-                }
-
-                if (dataTypeIndex !== -1) {
-                    let dataTypeEndIndex = url.indexOf('&', dataTypeIndex + 'dataType='.length);
-                    _dataType = dataTypeEndIndex !== -1 ? url.substring(dataTypeIndex + 'dataType='.length, dataTypeEndIndex) : url.substring(dataTypeIndex + 'dataType='.length);
-                }
-
-                const state_store = useStateStore();
-                state_store.updateCurrToken(_token);
-                state_store.updateCurrBaseUrl(baseUrl);
-                try {
-                    const shareData = await uni.$service.getSharedInfo(false);
-                    const params = {
-                        url: url,
-                        baseUrl: baseUrl,
-                        shareType: shareType,
-                        id: _id,
-                        token: _token,
-                        shareViewMode: _viewMode,
-                        shareDataType: _dataType,
-                        shareItem: shareData,
-                    };
-                    uni.$re.unipluginLog('params = ' + JSON.stringify(params));
-                    return params;
-
-                } catch (error: any) {
-                    if (error.statusCode == 404) {
+                    if (!shareType) return null;
+                    if (!url.includes('token')) return null; // 分享链接不包含token报错
+                    let searchType = shareType === 2 ? '#/sceneShare/view' : '#/dataSetShare/view';
+                    let startIndex = url.indexOf(searchType) + searchType.length; // 找到 searchType 在URL中的位置
+                    let valueStartIndex = url.indexOf('/', startIndex + 1) + 1; // 计算所需值的起始位置（即第二个"/"之后的位置）
+                    let valueEndIndex = url.indexOf('?', valueStartIndex + 1);
+                    let _id = url.substring(valueStartIndex, valueEndIndex); // 截取所需的值
+                    let tokenStartIndex = url.indexOf('token=') + 'token='.length; // 计算token的起始位置（即"token="之后的位置）
+                    let tokenEndIndex = url.indexOf('&', tokenStartIndex); // 如果URL中有其他查询参数，找到"&"字符的位置，作为token的结束位置
+                    let _token = tokenEndIndex !== -1 ? url.substring(tokenStartIndex, tokenEndIndex) : url.substring(tokenStartIndex); // 截取并输出token的
+                    // 解析viewMode和dataType
+                    let viewModeIndex = url.indexOf('viewMode=');
+                    let dataTypeIndex = url.indexOf('dataType=');
+                    let _viewMode = "", _dataType = "";
+                    if (viewModeIndex !== -1) {
+                        let viewModeEndIndex = url.indexOf('&', viewModeIndex + 'viewMode='.length);
+                        _viewMode = viewModeEndIndex !== -1 ? url.substring(viewModeIndex + 'viewMode='.length, viewModeEndIndex) : url.substring(viewModeIndex + 'viewMode='.length);
+                    }
+                    if (dataTypeIndex !== -1) {
+                        let dataTypeEndIndex = url.indexOf('&', dataTypeIndex + 'dataType='.length);
+                        _dataType = dataTypeEndIndex !== -1 ? url.substring(dataTypeIndex + 'dataType='.length, dataTypeEndIndex) : url.substring(dataTypeIndex + 'dataType='.length);
+                    }
+                    const state_store = useStateStore();
+                    state_store.updateCurrToken(_token);
+                    state_store.updateCurrBaseUrl(baseUrl);
+                    try {
+                        const shareData = await uni.$service.getSharedInfo(false);
                         const params = {
                             url: url,
                             baseUrl: baseUrl,
@@ -243,19 +255,47 @@ const api: ApiMethods = {
                             token: _token,
                             shareViewMode: _viewMode,
                             shareDataType: _dataType,
+                            shareItem: shareData,
                         };
                         uni.$re.unipluginLog('params = ' + JSON.stringify(params));
                         return params;
-                    } else {
-                        return null;
+                    } catch (error: any) {
+                        if (error.statusCode == 404) {
+                            const params = {
+                                url: url,
+                                baseUrl: baseUrl,
+                                shareType: shareType,
+                                id: _id,
+                                token: _token,
+                                shareViewMode: _viewMode,
+                                shareDataType: _dataType,
+                            };
+                            uni.$re.unipluginLog('params = ' + JSON.stringify(params));
+                            return params;
+                        } else {
+                            return null;
+                        }
                     }
                 }
+            } catch (error) {
+                throw null;
             }
-
-        } catch (error) {
-            throw null;
         }
-    },
+
+        // 对外暴露的url_handle方法
+        // 接收分享链接url和可选优先级参数，将任务推入队列，返回Promise等待任务执行完成
+        return async function (url: string, priority?: number): Promise<any> {
+            // 优先级默认值为2；使用??空值合并，传入0/1这类低优先级数字会保留原值，不会被覆盖
+            const p = priority ?? 2;
+            return new Promise((resolve) => {
+                // 构造任务对象，加入任务等待队列
+                taskQueue.push({ url, priority: p, resolve });
+                // 启动任务调度，尝试消费队列中的任务
+                runNextTask();
+            });
+        }
+
+    })(),
 
     // MARK tool 时间对比
     time_compare: (frontTime: Date, backTime: Date): string => {
@@ -299,15 +339,6 @@ const api: ApiMethods = {
         return n < 10 ? "0" + n : n;
     },
 
-    // MARK tool 获取默认相机定位目标
-    cam_defauleDataSet: (dataSetList: any): string => {
-        let find = dataSetList.find((e: any) => e.dataSetType === 0);
-        if (find) {
-            return find.dataSetId;
-        } else {
-            return '';
-        }
-    },
 
     // MARK tool 提示更新数据
     update_data: (): void => {
@@ -362,6 +393,100 @@ const api: ApiMethods = {
         return 0; // 版本号相等
     },
 
+    // MARK tool 生成分片消息唯一 msgId
+    // 生成简单UUID v4
+    generateUUID: (): string => {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+            const r = Math.random() * 16 | 0;
+            const v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    },
+
+    // MARK tool 按 UTF-8 字节截断
+    /**
+     * 计算字符串的 UTF-8 字节长度（不依赖 Blob）
+     */
+    utf8ByteLength: (str: string): number => {
+        let len = 0;
+        for (let i = 0; i < str.length; i++) {
+            const code = str.charCodeAt(i);
+            if (code <= 0x7f) {
+                len += 1;
+            } else if (code <= 0x7ff) {
+                len += 2;
+            } else if (code >= 0xd800 && code <= 0xdbff) {
+                // 高位代理项，与低位代理项组成一个4字节字符
+                len += 4;
+                i++;
+            } else {
+                len += 3;
+            }
+        }
+        return len;
+    },
+
+    /**
+     * 按UTF8字节长度切割字符串，保证不会切断多字节字符
+     * @param str 原始完整字符串
+     * @param maxByte 每片最大字节数
+     * @returns 分片数组
+     */
+    splitStringByByteLength: (str: string, maxByte: number): string[] => {
+        const chunks: string[] = [];
+        const totalLength = str.length;
+        let start = 0;
+        let byteCount = 0;
+        let i = 0;
+
+        while (i < totalLength) {
+            const code = str.charCodeAt(i);
+            let charBytes = 1;
+            let charLen = 1; // UTF-16 码元个数
+            if (code <= 0x7f) {
+                charBytes = 1;
+            } else if (code <= 0x7ff) {
+                charBytes = 2;
+            } else if (code >= 0xd800 && code <= 0xdbff) {
+                charBytes = 4; // 代理对
+                charLen = 2;
+            } else {
+                charBytes = 3;
+            }
+
+            if (byteCount + charBytes > maxByte) {
+                // 当前片已满，切断
+                chunks.push(str.slice(start, i));
+                start = i;
+                byteCount = 0;
+            }
+            byteCount += charBytes;
+            i += charLen;
+        }
+
+        if (start < totalLength) {
+            chunks.push(str.slice(start));
+        }
+
+        return chunks;
+    },
+
+    /**
+     * 格式化字节数为可读字符串
+     * @param bytes 字节数
+     * @param fixed 小数位数，默认 2
+     * @returns 如 "272.51 KB" / "9.04 MB" / "512 B"
+     */
+    formatByte: (bytes: number, fixed: number = 2): string => {
+        if (!bytes || bytes < 0) return '0 B';
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(fixed) + ' KB';
+        if (bytes < 1024 * 1024 * 1024) return (bytes / 1024 / 1024).toFixed(fixed) + ' MB';
+        return (bytes / 1024 / 1024 / 1024).toFixed(fixed) + ' GB';
+    },
+
+
+
     // MARK tool 提示删除数据
     del_data: (): void => {
         uni.showModal({
@@ -388,133 +513,6 @@ const api: ApiMethods = {
         card_store.clearCardList();//清空卡片列表
     },
 
-    // MARK Service 获取项目名称
-    card_getProjName: async (urlInfo: any): Promise<any> => {
-        if (urlInfo.shareType === 2) {
-            const sceneInfo = await serviceApi.getSceneInfo(urlInfo.id);
-            return sceneInfo?.sceneName;
-        } else {
-            const modelInfo = await serviceApi.getModelTree({ dataSetId: urlInfo.id });
-            const find_obj = modelInfo?.find((item: any) => item.dataSetId === urlInfo.id);
-            return find_obj ? find_obj.dataSetName : '项目查询失败';
-        }
-    },
-
-    // MARK tool 处理场景分享的卡片数据
-    card_getSceneData: async (urlInfo: any): Promise<any> => {
-        // 获取场景信息
-        const res_1 = await serviceApi.getSceneInfo(urlInfo.id);
-        // 获取场景树
-        const res_2 = await serviceApi.getSceneTree({ sceneId: urlInfo.id, isPublished: true }, res_1);
-        // 处理数据集ID列表
-        const dataSetIdList = dataTool.handle_dataSetIdList(res_2, res_1);
-        // 获取挤出纹理信息
-        const extrudeTexList = await serviceApi.getExtrudeTexList(res_2);
-        // 并行处理各种数据
-        const [terrainList, entityList, waterList, extrudeList, monomerList, projectionList] = await Promise.all([
-            dataTool.handle_terrainDataSetList(res_2, 2),
-            dataTool.handle_entityData(res_2, res_1.componentPosition),
-            dataTool.handle_waterData(res_2),
-            dataTool.handle_extrudeData(res_2, extrudeTexList),
-            dataTool.handle_monomerData(res_2),
-            dataTool.handle_projectionData(res_2),
-        ]);
-
-        // 获取数据集信息
-        const res_3 = await serviceApi.getDataSetList({ dataSetIds: dataSetIdList }, urlInfo);
-
-        const dataSetList_temp1: any[] = dataTool.handle_dataSetTrans(res_3, res_1.dataSetPosition);
-        const dataSetList_temp2 = dataTool.handle_terrainLayerLev(dataSetList_temp1, terrainList);
-        const dataSetList = dataTool.handle_dataSetId(dataSetList_temp2);
-        const urlHeaderList = dataTool.handle_dataSetResHeader(dataSetList_temp2, urlInfo);
-        const authorData = dataTool.handle_dataSetResAuthorInfo(urlInfo);
-
-        const cam_dataSetId = api.cam_defauleDataSet(dataSetList);
-
-        const shareData: Share = newShare({
-            url: urlInfo.url,
-            shareId: urlInfo.shareId,
-            token: urlInfo.token,
-            baseUrl: urlInfo.baseUrl,
-            source: urlInfo.shareItem?.source,
-            projName: urlInfo.projName,
-            id: urlInfo.id,
-            lastTime: new Date(),
-            endTime: api.time_To_IOSDate(urlInfo.shareItem?.endTime),
-            shareFormUserExpirationTime: api.time_To_IOSDate(urlInfo.shareItem?.shareFormUserExpirationTime),
-            urlHeaderList: urlHeaderList,
-            authorData: authorData,
-            dataSetList: dataSetList,
-            worldCRS: res_1.coordinates,
-            shareType: 2,
-            camDefaultDataSetId: cam_dataSetId,
-            shareViewMode: urlInfo.shareViewMode,
-            entityList: entityList,
-            waterList: waterList,
-            extrudeList: extrudeList,
-            extrudeTexList: extrudeTexList,
-            monomerList: monomerList,
-            projectionList: projectionList,
-        });
-
-        return shareData;
-    },
-
-    // MARK tool 处理单模型分享的卡片数据
-    card_getBimData: async (urlInfo: any): Promise<any> => {
-        // 获取资源数据
-        const dataSetList = await serviceApi.getDataSetList({ dataSetIds: [urlInfo.id] }, urlInfo);
-        const urlHeaderList = dataTool.handle_dataSetResHeader(dataSetList, urlInfo);
-        const authorData = dataTool.handle_dataSetResAuthorInfo(urlInfo);
-
-        const shareData: Share = newShare({
-            url: urlInfo.url,
-            shareId: urlInfo.shareId,
-            token: urlInfo.token,
-            baseUrl: urlInfo.baseUrl,
-            source: urlInfo.shareItem?.source,
-            projName: urlInfo.projName,
-            id: urlInfo.id,
-            lastTime: new Date(),
-            endTime: api.time_To_IOSDate(urlInfo.shareItem?.endTime),
-            shareFormUserExpirationTime: api.time_To_IOSDate(urlInfo.shareItem?.shareFormUserExpirationTime),
-            urlHeaderList: urlHeaderList,
-            authorData: authorData,
-            dataSetList: dataSetList,
-            shareType: 1,
-            shareDataType: urlInfo.shareDataType,
-        });
-
-        return shareData;
-    },
-
-    // MARK tool 处理CAD分享的卡片数据
-    card_getCadData: async (urlInfo: any): Promise<any> => {
-        // 获取资源数据
-        const cadDataSetList = await serviceApi.getCadDataSetList({ dataSetId: urlInfo.id });
-        const urlHeaderList = dataTool.handle_dataSetResHeader(cadDataSetList, urlInfo);
-        const authorData = dataTool.handle_dataSetResAuthorInfo(urlInfo);
-
-        const shareData: Share = newShare({
-            url: urlInfo.url,
-            shareId: urlInfo.shareId,
-            token: urlInfo.token,
-            baseUrl: urlInfo.baseUrl,
-            source: urlInfo.shareItem?.source,
-            projName: urlInfo.projName,
-            id: urlInfo.id,
-            lastTime: new Date(),
-            endTime: api.time_To_IOSDate(urlInfo.shareItem?.endTime),
-            shareFormUserExpirationTime: api.time_To_IOSDate(urlInfo.shareItem?.shareFormUserExpirationTime),
-            urlHeaderList: urlHeaderList,
-            authorData: authorData,
-            dataSetList: cadDataSetList,
-            shareType: 1,
-            shareDataType: urlInfo.shareDataType,
-        });
-
-        return shareData;
-    },
 }
 
 
